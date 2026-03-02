@@ -3,6 +3,7 @@ package doido;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
+import flixel.text.FlxBitmapFont;
 import animate.FlxAnimateFrames;
 import openfl.Assets as OpenFLAssets;
 import openfl.events.Event;
@@ -23,6 +24,12 @@ enum Asset
     SCRIPT;
     BINARY;
     OTHER;
+}
+
+enum Frames
+{
+    SPARROW;
+    ATLAS;
 }
 
 // Paths V2
@@ -194,8 +201,11 @@ class Assets
     public static inline function music(key:String):Sound
         return getAsset('music/$key', SOUND);
 
-    public static inline function font(key:String):String
-        return getAsset('fonts/$key', FONT);
+    public static inline function inst(song:String):Sound
+		return getAsset('songs/$song/audio/Inst', SOUND);
+
+    public static inline function voices(song:String, postfix:String = ""):Sound
+		return getAsset('songs/$song/audio/Voices$postfix', SOUND);
 
     public static inline function json(key:String):Dynamic
 		return TJSON.parse(getAsset('$key', JSON));
@@ -203,15 +213,31 @@ class Assets
     public static inline function script(key:String):String
         return getAsset('$key', SCRIPT, false);
 
+    public static inline function font(key:String):String
+        return getAsset('fonts/$key', FONT);
+
+    public static inline function bitmapFont(key:String):FlxBitmapFont
+        return FlxBitmapFont.fromAngelCode(getAsset('fonts/$key', IMAGE), getAsset('fonts/$key', XML));
+
     public static inline function sparrow(key:String):FlxFramesCollection
-		return FlxAtlasFrames.fromSparrow(getAsset('images/$key', IMAGE), getAsset('images/$key', XML));
+		return framesCollection(key, SPARROW);
 	
 	public static inline function animate(key:String):FlxAnimateFrames
-		return FlxAnimateFrames.fromAnimate('images/$key');
+		return cast framesCollection(key, ATLAS);
 
-    public static inline function inst(song:String):Sound
-		return getAsset('songs/$song/audio/Inst', SOUND);
+    public static inline function framesCollection(key:String, type:Frames):FlxFramesCollection {
+        var path = getPath(key);
+        var frames:FlxFramesCollection = null;
 
-    public static inline function voices(song:String, postfix:String = ""):Sound
-		return getAsset('songs/$song/audio/Voices$postfix', SOUND);
+        if(Cache.isFramesCached(path)) frames = Cache.getCachedFrames(path);
+        else {
+            frames = switch(type) {
+                case ATLAS: FlxAnimateFrames.fromAnimate('images/$key');
+                default: FlxAtlasFrames.fromSparrow(getAsset('images/$key', IMAGE), getAsset('images/$key', XML));
+            }
+            Cache.setCachedFrames(path, frames);
+        }
+        
+        return frames;
+    }
 }

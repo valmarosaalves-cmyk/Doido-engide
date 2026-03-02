@@ -4,10 +4,12 @@ import openfl.Assets as OpenFLAssets;
 import openfl.display.BitmapData;
 import flixel.graphics.FlxGraphic;
 import openfl.media.Sound;
+import flixel.graphics.frames.FlxFramesCollection;
 
 typedef Cached =
 {
 	var graphics:Map<String, FlxGraphic>;
+    var frames:Map<String, FlxFramesCollection>;
 	var sounds:Map<String, Sound>;
 }
 
@@ -26,11 +28,13 @@ class Cache
     {
         current = {
             graphics: new Map<String, FlxGraphic>(),
+            frames: new Map<String, FlxFramesCollection>(),
             sounds: new Map<String, Sound>()
         };
 
         permanent = {
             graphics: new Map<String, FlxGraphic>(),
+            frames: new Map<String, FlxFramesCollection>(),
             sounds: new Map<String, Sound>()
         };
 
@@ -41,6 +45,7 @@ class Cache
     {
         if(!initialized) return;
         clearGraphics();
+        clearFrames();
         clearSounds();
         clearOther();
     }
@@ -115,6 +120,40 @@ class Cache
             permanent.graphics.set(key, graphic);
         }
         return graphic;      
+    }
+
+    // FRAMES
+
+    public static function clearFrames() {
+        for(key => frames in current.frames) {
+            frames = null;
+            current.frames.remove(key);
+        }
+    }
+
+    public static function isFramesCached(key:String)
+        return current.frames.exists(key) || permanent.frames.exists(key);
+
+    public static function setCachedFrames(key:String, frames:FlxFramesCollection, persist:Bool = false) {
+        if(persist)
+            permanent.frames.set(key, frames);
+        else
+            current.frames.set(key, frames);
+        return frames;      
+    }
+
+    public static function getCachedFrames(key:String, persist:Bool = false):FlxFramesCollection {
+        //Logs.print("we gotta get a cached frame! " + key);
+
+        if(!isFramesCached(key)) return null; //just in case?
+        if(permanent.frames.exists(key)) return permanent.frames.get(key);
+
+        var frames = current.frames.get(key);
+        if(persist) { //if you ever want to move a graphic from current to permanent?
+            current.frames.remove(key);
+            permanent.frames.set(key, frames);
+        }
+        return frames;
     }
 
     // SOUND
