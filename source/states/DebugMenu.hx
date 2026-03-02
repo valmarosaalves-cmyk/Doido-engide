@@ -16,7 +16,7 @@ using doido.utils.TextUtil;
 
 class DebugMenu extends MusicBeatState
 {
-    var options:Array<String> = ["Play", "Controls", "Options", "Credits", "Crash Handler", "Chart Converter",];
+    var options:Array<String> = ["Play", "Controls", "Options", "Credits", "Crash Handler", "Chart Converter"];
     var text:FlxText;
     var title:FlxText;
     var ver:FlxText;
@@ -62,7 +62,7 @@ class DebugMenu extends MusicBeatState
     function drawText() {
         text.text = "";
         for(i in 0...options.length)
-            text.text += options[i] + (i == cur ? " <\n" : "\n");
+            text.text += (i == cur ? "> " : "") + options[i] + "\n";
     }
 
     override function update(elapsed:Float)
@@ -163,7 +163,7 @@ class Credits extends MusicBeatState
     function drawText() {
         text.text = "";
         for(i in 0...creditList.length)
-            text.text += creditList[i].name + (i == cur ? " <\n" : "\n");
+            text.text += (i == cur ? "> " : "") + creditList[i].name + "\n";
     }
 
     override function update(elapsed:Float)
@@ -194,7 +194,7 @@ class Credits extends MusicBeatState
 
 class Freeplay extends MusicBeatState
 {
-    var options:Array<String> = ["bopeebo", "corn-theft", "useless", "bittersweet", "lunar-odyssey", "commotion", "Load Other"];
+    var options:Array<String> = ["bopeebo", "corn-theft", "useless", "bittersweet", "lunar-odyssey", "commotion", #if sys "Load Other" #end];
     var text:FlxText;
     var title:FlxText;
     var cur:Int = 0;
@@ -225,7 +225,7 @@ class Freeplay extends MusicBeatState
     function drawText() {
         text.text = "";
         for(i in 0...options.length)
-            text.text += options[i] + (i == cur ? " <\n" : "\n");
+            text.text += (i == cur ? "> " : "") + options[i] + "\n";
     }
 
     override function update(elapsed:Float)
@@ -274,6 +274,7 @@ class Freeplay extends MusicBeatState
 class LoadOther extends MusicBeatState
 {
     var options:Array<String> = ["Load Chart", "Load Inst", "Load Voices (Optional)", "Load Player (Optional)", "Load Opponent (Optional)", "Play"];
+    var fileNames:Array<String> = ["", "", "", "", "", ""];
     var text:FlxText;
     var title:FlxText;
     var ver:FlxText;
@@ -305,7 +306,13 @@ class LoadOther extends MusicBeatState
     function drawText() {
         text.text = "";
         for(i in 0...options.length)
-            text.text += options[i] + (i == cur ? " <\n" : "\n");
+        {
+            text.text += (i == cur ? "> " : "") + options[i];
+            if (fileNames[i] != "")
+                text.text += ' - "${fileNames[i]}"';
+
+            text.text += "\n";
+        }
     }
 
     override function update(elapsed:Float)
@@ -336,6 +343,9 @@ class LoadOther extends MusicBeatState
                         FlxG.sound.play(Assets.sound('beep'));
             }
         }
+
+        if (Controls.justPressed(BACK))
+            MusicBeat.switchState(new states.DebugMenu());
     }
 
     public function changeSelection(change:Int = 0)
@@ -356,6 +366,9 @@ class LoadOther extends MusicBeatState
                 var text = bytes.readUTFBytes(bytes.length);
                 PlayState.SONG = Handler.parseSong(TJSON.parse(text));
                 chartLoaded = true;
+
+                fileNames[0] = fr.name;
+                drawText();
             },
             new openfl.net.FileFilter("Any Charts", "*.json"),
             (err) -> {
@@ -378,6 +391,15 @@ class LoadOther extends MusicBeatState
                 sound.loadCompressedDataFromByteArray(bytes, bytes.length);
                 var key:String = 'assets/songs/${PlayState.SONG.song}/audio/$file.ogg';
                 Cache.permanent.sounds.set(key, sound);
+
+                switch(file)
+                {
+                    case "Inst": fileNames[1] = fr.name;
+                    case "Voices": fileNames[2] = fr.name;
+                    case "Voices-player": fileNames[3] = fr.name;
+                    case "Voices-opponent": fileNames[4] = fr.name;
+                }
+                drawText();
             },
             new openfl.net.FileFilter("Audio File", "*.ogg"),
             (err) -> {
@@ -421,7 +443,7 @@ class ChartConverter extends MusicBeatState
     function drawText() {
         text.text = "";
         for(i in 0...options.length)
-            text.text += options[i] + (i == cur ? " <\n" : "\n");
+            text.text += (i == cur ? "> " : "") + options[i] + "\n";
     }
 
     override function update(elapsed:Float)
@@ -734,7 +756,7 @@ class DebugOptions extends MusicBeatState
     function drawText() {
         text.text = "";
         for(i in 0...options.length)
-            text.text += '${options[i].name} ${options[i].get()} ${(i == cur ? "<\n" : "\n")}';
+            text.text += '${(i == cur ? ">" : "")} ${options[i].name} ${options[i].get()}\n';
     }
 
     var holdTimer:Float = 0;
