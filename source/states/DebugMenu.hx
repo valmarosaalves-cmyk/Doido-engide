@@ -16,7 +16,7 @@ using doido.utils.TextUtil;
 
 class DebugMenu extends MusicBeatState
 {
-    var options:Array<String> = ["Play", "Controls", "Options", "Credits", "Crash Handler", "Chart Converter"];
+    var options:Array<String> = ["Play", "Controls", "Options", "Credits", #if !mobile "Crash Handler", "Chart Converter"#end];
     var text:FlxText;
     var title:FlxText;
     var ver:FlxText;
