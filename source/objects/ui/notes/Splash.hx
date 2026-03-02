@@ -1,6 +1,5 @@
 package objects.ui.notes;
 
-import flixel.FlxSprite;
 import objects.ui.notes.Note;
 import doido.song.Timings;
 
@@ -61,7 +60,7 @@ class Cover extends BaseSplash
 			setPosition(strum.x, strum.y);
 			if(strum.animation.curAnim.name != "confirm" || note.holdHitPercent >= 1.0) {
 				if(animation.curAnim.name != "splash") {
-					trace(note.holdHitPercent);
+					//trace(note.holdHitPercent);
 					if(note.holdHitPercent < Timings.timings.get("sick").hold)
 						kill();
 					else
