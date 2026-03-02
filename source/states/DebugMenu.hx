@@ -756,7 +756,7 @@ class DebugOptions extends MusicBeatState
     function drawText() {
         text.text = "";
         for(i in 0...options.length)
-            text.text += '${(i == cur ? ">" : "")} ${options[i].name} ${options[i].get()}\n';
+            text.text += '${(i == cur ? "> " : "")}${options[i].name} ${options[i].get()}\n';
     }
 
     var holdTimer:Float = 0;
