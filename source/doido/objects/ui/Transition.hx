@@ -88,7 +88,7 @@ class Transition extends MusicBeatSubState
 	{
 		super.update(elapsed);
 
-		this.cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
+		setToTopCamera();
 
 		switch(transition) {
 			case 'funkin':

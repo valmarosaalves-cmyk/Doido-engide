@@ -13,6 +13,7 @@ class AudioHandler
     public function new(song:String)
     {
         inst = FlxG.sound.load(Assets.inst(song));
+		length = inst.length;
 
 		// global voices
 		if (Assets.fileExists('songs/${song}/audio/Voices-player', SOUND))
@@ -20,11 +21,15 @@ class AudioHandler
 		else if (Assets.fileExists('songs/${song}/audio/Voices', SOUND))
 			voicesGlobal = FlxG.sound.load(Assets.voices(song));
 
+		if (voicesGlobal.length < length) length = voicesGlobal.length;
+
 		// opponent voices
 		if (Assets.fileExists('songs/${song}/audio/Voices-opp', SOUND))
 			voicesOpp = FlxG.sound.load(Assets.voices(song, "-opp"));
 		else if (Assets.fileExists('songs/${song}/audio/Voices-opponent', SOUND))
 			voicesOpp = FlxG.sound.load(Assets.voices(song, "-opponent"));
+
+		if (voicesOpp.length < length) length = voicesOpp.length;
 
 		muteVoices = false;
     }
@@ -83,6 +88,8 @@ class AudioHandler
 		sync();
 		return speed;
 	}
+
+	public var length:Float = 0.0;
 
 	public var speed(default, set):Float = 1.0;
 	public function set_speed(v:Float) {

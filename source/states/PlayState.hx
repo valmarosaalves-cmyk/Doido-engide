@@ -1,5 +1,7 @@
 package states;
 
+import flixel.math.FlxMath;
+import substates.PauseSubState;
 import animate.FlxAnimate;
 import doido.song.*;
 import doido.song.chart.SongHandler;
@@ -35,8 +37,14 @@ class PlayState extends MusicBeatState
 
 	var camGame:FlxCamera;
 	var camHUD:FlxCamera;
-	
-	var paused:Bool = true;
+	var camStrum:FlxCamera;
+	var camOther:FlxCamera;
+
+	var defaultCamZoom:Float = 1.0;
+	var defaultHudZoom:Float = 1.0;
+
+	public var paused:Bool = false;
+	public var canPause:Bool = true;
 
 	var audio:AudioHandler;
 	var defaultSpeed:Float = 1.0;
@@ -64,6 +72,8 @@ class PlayState extends MusicBeatState
 		super.create();
 		instance = this;
 		DiscordIO.changePresence("Playing - " + SONG.song);
+		persistentDraw = true;
+		persistentUpdate = false;
 
 		var scriptPaths:Array<String> = Assets.getScriptArray(SONG.song);
 		for(path in scriptPaths) {
@@ -72,15 +82,17 @@ class PlayState extends MusicBeatState
 		}
 		//setScript("this", instance); //hopefully we wont be needing THIS anymore!
 
-		Conductor.songPos = 0;
 		Conductor.initialBPM = SONG.bpm;
 		Conductor.mapBPMChanges(EVENTS.events);
+		Conductor.songPos = -(Conductor.crochet * 5);
 		resetStatics();
 		
 		audio = new AudioHandler(SONG.song);
 
 		camGame = new FlxCamera().createCam(false, true);
 		camHUD = new FlxCamera().createCam(true, false);
+		camStrum = new FlxCamera().createCam(true, false);
+		camOther = new FlxCamera().createCam(true, false);
 		
 		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
 		//bg.zIndex = 500;
@@ -96,10 +108,11 @@ class PlayState extends MusicBeatState
 		callScript("create");
 		
 		playField = new PlayField(SONG.notes, SONG.speed, Save.data.downscroll, Save.data.middlescroll);
-		playField.cameras = [camHUD];
+		playField.cameras = [camStrum];
 		add(playField);
 
 		hudClass.init();
+		hudClass.cameras = [camHUD];
 		setUpInput();
 		
 		debugInfo = new DebugInfo(this);
@@ -182,13 +195,13 @@ class PlayState extends MusicBeatState
 		callScript("update", [elapsed]);
 		super.update(elapsed);
 		
+		camGame.zoom = FlxMath.lerp(camGame.zoom, defaultCamZoom, elapsed * 12);
+		for(cam in [camHUD, camStrum])
+			cam.zoom = FlxMath.lerp(cam.zoom, defaultHudZoom, elapsed * 12);
+
 		if(Controls.justPressed(RESET)) {
 			MusicBeat.skipClearCache = true;
 			MusicBeat.switchState(new states.PlayState());
-		}
-		
-		if(Controls.justPressed(BACK)) {
-			MusicBeat.switchState(new states.DebugMenu());
 		}
 
 		#if debug
@@ -198,18 +211,14 @@ class PlayState extends MusicBeatState
 			audio.speed = defaultSpeed;
 		#end
 		
-		var pause:Bool = Controls.justPressed(PAUSE);
-		#if TOUCH_CONTROLS
-		pause = Controls.justPressed(PAUSE) || pauseButton.justPressed;
-		#end
-		if(pause) {
-			if (!paused)
+		if (canPause)
+		{
+			if(Controls.justPressed(PAUSE) #if TOUCH_CONTROLS || pauseButton.justPressed #end) {
 				pauseSong();
-			else
-				unpauseSong();
+			}
 		}
 		
-		if (audio.playing)
+		if (!paused)
 			Conductor.songPos += elapsed * 1000 * audio.speed;
 			
 		playField.updateNotes(curStepFloat);
@@ -220,36 +229,58 @@ class PlayState extends MusicBeatState
 	{
 		paused = true;
 		audio.pause();
+		openSubState(new PauseSubState());
 	}
 
 	public function unpauseSong()
 	{
 		paused = false;
-		audio.play();
+		if (Conductor.songPos >= 0 && Conductor.songPos < audio.length)
+			audio.play();
+	}
+
+	public function beatCamera(gameZoom:Float, hudZoom:Float)
+	{
+		camGame.zoom *= gameZoom;
+		for(cam in [camHUD, camStrum])
+			cam.zoom *= hudZoom;
 	}
 
 	override function stepHit()
 	{
 		super.stepHit();
-		playField.stepHit(curStep);
-		audio.sync();
-
-		if (curStep % 16 == 0)
-		{
-			FlxTween.cancelTweensOf(camHUD);
-			camHUD.zoom *= 1.02;
-			FlxTween.tween(camHUD, {zoom: 1.0}, Conductor.crochet / 1000 * 1, {
-				ease: FlxEase.cubeOut
-			});
-		}
-		
 		callScript("stepHit", [curStep]);
+		playField.stepHit(curStep);
+		if (audio.playing && Conductor.songPos < audio.length)
+			audio.sync();
+		
+		if (Conductor.songPos >= audio.length)
+		{
+			canPause = false;
+			MusicBeat.switchState(new states.DebugMenu());
+		}
 	}
 
 	override function beatHit()
 	{
 		super.beatHit();
 		callScript("beatHit", [curBeat]);
+
+		// COUNTDOWN AND SONG START
+		if (curBeat <= 0)
+		{
+			// start song
+			if (curBeat == 0)
+				audio.play();
+			else if (curBeat + 4 >= 0) // countdown
+			{
+				//trace(curBeat + 4);
+				FlxG.sound.play(Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][curBeat + 4]));
+			}
+		}
+
+		if (curBeat % 4 == 0)
+			beatCamera(1.05, 1.02);
 	}
 
 	public function callScript(fun:String, ?args:Array<Dynamic>) {

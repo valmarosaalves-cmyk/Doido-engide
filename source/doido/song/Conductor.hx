@@ -23,15 +23,15 @@ class Conductor
     public static var initialBPM:Float = 100;
     public static var bpmChangeMap:Array<BPMChangeEvent> = [];
 
-	public static var bpm(get, null):Float;
+	public static var bpm(get, never):Float;
 	public static function get_bpm():Float
 		return getBPMAtTime(songPos);
 
-	public static var stepCrochet(get, null):Float;
+	public static var stepCrochet(get, never):Float;
 	public static function get_stepCrochet():Float
 		return calcStep(bpm);
 
-	public static var crochet(get, null):Float;
+	public static var crochet(get, never):Float;
 	public static function get_crochet():Float
 		return calcBeat(bpm);
 

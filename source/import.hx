@@ -9,5 +9,6 @@ import Main.Paths; //just to help
 
 using StringTools;
 using doido.utils.SpriteUtil;
+using doido.utils.TextUtil;
 using doido.utils.ZIndex;
 using flixel.util.FlxArrayUtil;

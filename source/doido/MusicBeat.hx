@@ -155,6 +155,12 @@ class MusicBeatSubState extends FlxSubState
 		persistentUpdate = false;
 		curStepFloat = Conductor.getStepAtTime();
 		curStep = _curStep = Math.floor(curStepFloat);
+
+		setToTopCamera();
+	}
+
+	public function setToTopCamera() {
+		this.cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 	}
 	
 	override function close()
