@@ -29,7 +29,7 @@ Over the coming days we are looking into writting a full contributing guide incl
 
 ### Libraries
 
-To install the correct libraries, you can run your platform's respective script in `art/setup/`. You can also install manually by checking the `.hmm` file.
+To install the correct libraries, you can run your platform's respective script in `art/setup/`. You can also install manually by checking the `.hmm` file. Please note we only support Windows, Android and HTML5 right now.
 
 ## Licenses
 
