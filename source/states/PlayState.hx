@@ -98,6 +98,12 @@ class PlayState extends MusicBeatState
 		//bg.zIndex = 500;
 		add(bg);
 
+		//temporary caching
+		Assets.image("hud/base/numbers");
+		Assets.image("hud/base/ratings");
+		Assets.sparrow("notes/base/splashes");
+		Assets.sparrow("notes/base/covers");
+
 		hudClass = switch(SONG.song)
 		{
 			default: new DoidoHud();
