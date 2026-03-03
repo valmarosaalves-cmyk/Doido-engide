@@ -47,7 +47,7 @@ class PlayState extends MusicBeatState
 	public var canPause:Bool = true;
 
 	var audio:AudioHandler;
-	var defaultSpeed:Float = 1.0;
+	var defaultSongSpeed:Float = 1.0;
 
 	#if TOUCH_CONTROLS
 	var pauseButton:ButtonHitbox;
@@ -205,10 +205,10 @@ class PlayState extends MusicBeatState
 		}
 
 		#if debug
-		if (FlxG.keys.pressed.F9)
+		if (FlxG.keys.justPressed.F9)
 			audio.speed = 10;
 		if (FlxG.keys.justReleased.F9)
-			audio.speed = defaultSpeed;
+			audio.speed = defaultSongSpeed;
 		#end
 		
 		if (canPause)
@@ -225,18 +225,34 @@ class PlayState extends MusicBeatState
 		callScript("updatePost", [elapsed]);
 	}
 
+	public function startSong()
+	{
+		audio.play();
+	}
+
 	public function pauseSong()
 	{
 		paused = true;
 		audio.pause();
+		audio.speed = 0.0;
+		MusicBeat.activateTimers(false);
 		openSubState(new PauseSubState());
 	}
 
 	public function unpauseSong()
 	{
+		MusicBeat.activateTimers(true);
 		paused = false;
-		if (Conductor.songPos >= 0 && Conductor.songPos < audio.length)
-			audio.play();
+		if (Conductor.songPos < audio.length)
+		{
+			if (Conductor.songPos >= 0)
+				audio.play();
+
+			FlxTween.cancelTweensOf(audio);
+			FlxTween.tween(audio, {speed: defaultSongSpeed}, Conductor.crochet / 1000, {ease: FlxEase.sineIn});
+		}
+		else
+			audio.speed = defaultSongSpeed;
 	}
 
 	public function beatCamera(gameZoom:Float, hudZoom:Float)
@@ -271,7 +287,7 @@ class PlayState extends MusicBeatState
 		{
 			// start song
 			if (curBeat == 0)
-				audio.play();
+				startSong();
 			else if (curBeat + 4 >= 0) // countdown
 			{
 				//trace(curBeat + 4);

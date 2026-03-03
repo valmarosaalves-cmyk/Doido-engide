@@ -1,12 +1,14 @@
 package doido;
 
+import doido.Cache;
+import doido.song.Conductor;
+import doido.objects.ui.Transition;
 import flixel.FlxState;
 import flixel.FlxSubState;
 import flixel.addons.ui.FlxUIState;
 import flixel.group.FlxGroup;
-import doido.Cache;
-import doido.song.Conductor;
-import doido.objects.ui.Transition;
+import flixel.tweens.FlxTween;
+import flixel.util.FlxTimer;
 
 class MusicBeat
 {
@@ -52,6 +54,22 @@ class MusicBeat
 		skipTrans = newSkip;
 		skipClearCache = newSkip;
 		return newSkip;
+	}
+
+	// for pausing timers and tweens
+	public static function activateTimers(apple:Bool = true)
+	{
+		FlxTimer.globalManager.forEach(function(tmr:FlxTimer)
+		{
+			if(!tmr.finished)
+				tmr.active = apple;
+		});
+
+		FlxTween.globalManager.forEach(function(twn:FlxTween)
+		{
+			if(!twn.finished)
+				twn.active = apple;
+		});
 	}
 }
 

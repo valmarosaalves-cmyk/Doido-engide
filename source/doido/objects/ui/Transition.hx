@@ -87,7 +87,6 @@ class Transition extends MusicBeatSubState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-
 		setToTopCamera();
 
 		switch(transition) {

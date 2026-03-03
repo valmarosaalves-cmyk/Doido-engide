@@ -13,7 +13,7 @@ class AudioHandler
     public function new(song:String)
     {
         inst = FlxG.sound.load(Assets.inst(song));
-		length = inst.length;
+		length = inst?.length;
 
 		// global voices
 		if (Assets.fileExists('songs/${song}/audio/Voices-player', SOUND))
@@ -21,7 +21,7 @@ class AudioHandler
 		else if (Assets.fileExists('songs/${song}/audio/Voices', SOUND))
 			voicesGlobal = FlxG.sound.load(Assets.voices(song));
 
-		if (voicesGlobal.length < length) length = voicesGlobal.length;
+		if (voicesGlobal?.length < length) length = voicesGlobal.length;
 
 		// opponent voices
 		if (Assets.fileExists('songs/${song}/audio/Voices-opp', SOUND))
@@ -29,7 +29,7 @@ class AudioHandler
 		else if (Assets.fileExists('songs/${song}/audio/Voices-opponent', SOUND))
 			voicesOpp = FlxG.sound.load(Assets.voices(song, "-opponent"));
 
-		if (voicesOpp.length < length) length = voicesOpp.length;
+		if (voicesOpp?.length < length) length = voicesOpp.length;
 
 		muteVoices = false;
     }
