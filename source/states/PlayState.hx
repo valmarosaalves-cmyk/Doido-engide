@@ -103,6 +103,8 @@ class PlayState extends MusicBeatState
 		Assets.image("hud/base/ratings");
 		Assets.sparrow("notes/base/splashes");
 		Assets.sparrow("notes/base/covers");
+		for(i in 0...4)
+			Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i]);
 
 		hudClass = switch(SONG.song)
 		{
