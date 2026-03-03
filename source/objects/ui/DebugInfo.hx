@@ -39,6 +39,7 @@ class DebugInfo extends FlxGroup
 			text += "Time: " + Math.floor(Conductor.songPos / 1000 * 100) / 100;
 			text += "\nStep: " + Math.floor(playState.curStepFloat * 100) / 100;
 			text += "\nBeat: " + Math.floor(playState.curStepFloat / 4 * 100) / 100;
+			text += "\nBPM: " + Math.floor(Conductor.bpm * 100) / 100;
 			
 			if (daText.text != text) {
 				daText.text = text;

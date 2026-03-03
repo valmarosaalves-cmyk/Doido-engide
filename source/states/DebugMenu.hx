@@ -1,6 +1,7 @@
 package states;
 
-import doido.song.chart.Handler;
+import doido.song.chart.Legacy;
+import doido.song.chart.SongHandler;
 import flixel.FlxSprite;
 import flixel.text.FlxText;
 import flixel.math.FlxMath;
@@ -364,7 +365,7 @@ class LoadOther extends MusicBeatState
             (fr) -> {
                 var bytes = fr.data;
                 var text = bytes.readUTFBytes(bytes.length);
-                PlayState.SONG = Handler.parseSong(TJSON.parse(text));
+                PlayState.SONG = SongHandler.parseSong(TJSON.parse(text));
                 chartLoaded = true;
 
                 fileNames[0] = fr.name;
@@ -411,7 +412,7 @@ class LoadOther extends MusicBeatState
 
 class ChartConverter extends MusicBeatState
 {
-    var options:Array<String> = ["FNF 2 Doido", "Doido 2 FNF"];
+    var options:Array<String> = ["FNF 2 Doido", "Old Doido 2 Doido", "Doido 2 FNF"];
     var text:FlxText;
     var title:FlxText;
     var ver:FlxText;
@@ -462,8 +463,10 @@ class ChartConverter extends MusicBeatState
             switch(options[cur]) {
                 case "FNF 2 Doido":
                     fnf2doido();
+                case "Old Doido 2 Doido":
+                    FlxG.camera.shake(0.05, 0.05);
                 case "Doido 2 FNF":
-
+                    FlxG.camera.shake(0.05, 0.05);
             }
         }
     }
@@ -474,7 +477,19 @@ class ChartConverter extends MusicBeatState
             (fr) -> {
                 var bytes = fr.data;
                 var text = bytes.readUTFBytes(bytes.length);
-                var SONG:DoidoSong = Handler.parseSong(TJSON.parse(text));
+
+                var legacySong:LegacySong = cast TJSON.parse(text).song;
+                var SONG = Legacy.getSongFromLegacy(legacySong);
+                var EVENTS = Legacy.getEventsFromLegacy(legacySong);
+
+                var data:String = Json.stringify(EVENTS, "\t");
+                if(data != null && data.length > 0)
+                {
+                    Assets.fileSave(
+                        data.trim(),
+                        'events.json'
+                    );
+                }
 
                 var data:String = Json.stringify(SONG, "\t");
                 if(data != null && data.length > 0)

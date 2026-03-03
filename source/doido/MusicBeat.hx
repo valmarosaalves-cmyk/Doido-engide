@@ -78,14 +78,14 @@ class MusicBeatState extends FlxUIState
 
 		MusicBeat.skip = false;
 
-		curStepFloat = Conductor.calcStateStep();
+		curStepFloat = Conductor.getStepAtTime();
 		curStep = _curStep = Math.floor(curStepFloat);
 	}
 
 	private var _curStep = 0; // actual curStep
 	public var curStep = 0;
 	public var curStepFloat:Float = 0;
-	//private var curBeat = 0;
+	private var curBeat = 0;
 
 	override function update(elapsed:Float)
 	{
@@ -100,7 +100,7 @@ class MusicBeatState extends FlxUIState
 
 	private function updateStep()
 	{
-		curStepFloat = Conductor.calcStateStep();
+		curStepFloat = Conductor.getStepAtTime();
 		_curStep = Math.floor(curStepFloat);
 
 		while(_curStep != curStep)
@@ -138,7 +138,7 @@ class MusicBeatState extends FlxUIState
 	private function beatHit()
 	{
 		// finally you're useful for something
-		//curBeat = Math.floor(curStep / 4);
+		curBeat = Math.floor(curStep / 4);
 	}
 }
 
@@ -153,7 +153,7 @@ class MusicBeatSubState extends FlxSubState
 		MusicBeat.activeState = this;
 		persistentDraw = true;
 		persistentUpdate = false;
-		curStepFloat = Conductor.calcStateStep();
+		curStepFloat = Conductor.getStepAtTime();
 		curStep = _curStep = Math.floor(curStepFloat);
 	}
 	
@@ -166,7 +166,7 @@ class MusicBeatSubState extends FlxSubState
 	private var _curStep:Int = 0; // actual curStep
 	public var curStep:Int = 0;
 	public var curStepFloat:Float = 0;
-	//private var curBeat:Int = 0;
+	private var curBeat:Int = 0;
 	
 	override function update(elapsed:Float)
 	{
@@ -176,7 +176,7 @@ class MusicBeatSubState extends FlxSubState
 
 	private function updateStep()
 	{
-		curStepFloat = Conductor.calcStateStep();
+		curStepFloat = Conductor.getStepAtTime();
 		_curStep = Math.floor(curStepFloat);
 
 		while(_curStep != curStep)
@@ -214,7 +214,7 @@ class MusicBeatSubState extends FlxSubState
 	private function beatHit()
 	{
 		// finally you're useful for something
-		//curBeat = Math.floor(curStep / 4);
+		curBeat = Math.floor(curStep / 4);
 	}
 }
 

@@ -2,8 +2,9 @@ package states;
 
 import animate.FlxAnimate;
 import doido.song.*;
-import doido.song.chart.Handler;
-import doido.song.chart.Handler.DoidoSong;
+import doido.song.chart.SongHandler;
+import doido.song.chart.SongHandler.DoidoSong;
+import doido.song.chart.SongHandler.DoidoEvents;
 import flixel.FlxSprite;
 import flixel.sound.FlxSound;
 import flixel.tweens.FlxEase;
@@ -25,6 +26,7 @@ using doido.utils.CameraUtil;
 class PlayState extends MusicBeatState
 {
 	public static var SONG:DoidoSong;
+	public static var EVENTS:DoidoEvents;
 	public static var skip:Bool = false;
 
 	public var playField:PlayField;
@@ -48,7 +50,8 @@ class PlayState extends MusicBeatState
 
 	public static function loadSong(jsonInput:String, ?diff:String = "normal")
 	{
-		SONG = Handler.loadSong(jsonInput, diff);
+		SONG = SongHandler.loadSong(jsonInput, diff);
+		EVENTS = SongHandler.loadEvents(jsonInput, diff);
 	}
 
 	public function resetStatics()
@@ -70,7 +73,8 @@ class PlayState extends MusicBeatState
 		//setScript("this", instance); //hopefully we wont be needing THIS anymore!
 
 		Conductor.songPos = 0;
-		Conductor.setBPM(SONG.bpm);
+		Conductor.initialBPM = SONG.bpm;
+		Conductor.mapBPMChanges(EVENTS.events);
 		resetStatics();
 		
 		audio = new AudioHandler(SONG.song);
@@ -239,9 +243,13 @@ class PlayState extends MusicBeatState
 			});
 		}
 		
-		if (curStep % 4 == 0)
-			callScript("beatHit", [curStep / 4]); //compatibilidade?
 		callScript("stepHit", [curStep]);
+	}
+
+	override function beatHit()
+	{
+		super.beatHit();
+		callScript("beatHit", [curBeat]);
 	}
 
 	public function callScript(fun:String, ?args:Array<Dynamic>) {

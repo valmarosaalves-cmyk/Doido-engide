@@ -44,7 +44,7 @@ class Cover extends BaseSplash
 				animation.addByPrefix("splash",	'holdCoverEnd$direction', 	24, false);
 				
 				for(anim in ["start", "loop", "splash"])
-					addOffset(anim, 6, -28);
+					addOffset(anim, 6, -32);
 		}
 
         alpha = startAlpha;

@@ -5,7 +5,7 @@ import flixel.math.FlxRect;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import doido.song.Conductor;
-import doido.song.chart.Handler.NoteData;
+import doido.song.chart.SongHandler.NoteData;
 import doido.song.Timings;
 import doido.utils.NoteUtil;
 import flixel.FlxSprite;

@@ -1,6 +1,7 @@
 package doido.utils;
 
-import doido.song.chart.Handler.NoteData;
+import doido.song.chart.SongHandler.EventData;
+import doido.song.chart.SongHandler.NoteData;
 import flixel.FlxSprite;
 import flixel.math.FlxAngle;
 import flixel.util.FlxSort;
@@ -49,9 +50,9 @@ class NoteUtil
 			+ (Math.sin(radAngle) * offsetX);
 	}
 
-	public static function sortData(Obj1:NoteData, Obj2:NoteData):Int
+	public static function sortNotes(Obj1:NoteData, Obj2:NoteData):Int
 		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.stepTime, Obj2.stepTime);
 
-	public static function sortLayer(Obj1:Note, Obj2:Note):Int
-		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.data.stepTime + Obj1.holdIndex, Obj2.data.stepTime + Obj2.holdIndex);
+	public static function sortEvents(Obj1:EventData, Obj2:EventData):Int
+		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.stepTime, Obj2.stepTime);
 }

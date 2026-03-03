@@ -22,8 +22,27 @@ typedef NoteData = {
 	var length:Float;
 }
 
-class Handler
+typedef DoidoEvents =
 {
+	var events:Array<EventData>;
+}
+
+typedef EventData =
+{
+	var name:String;
+	var stepTime:Float;
+	var data:Array<Dynamic>;
+	//var isCamera:Bool;
+}
+
+class SongHandler
+{
+	/*public static final allEvents:Map<String, Dynamic> = [
+		"BPM Change" => [],
+		"BPM Tween" => [],
+
+	];*/
+
     inline public static function loadSong(jsonInput:String, ?diff:String = "normal"):DoidoSong
 	{		
 		Logs.print('Chart Loaded: ' + '$jsonInput/$diff');
@@ -34,13 +53,30 @@ class Handler
 		return parseSong(Assets.json('songs/$jsonInput/chart/$diff'));
 	}
 
+	inline public static function loadEvents(jsonInput:String, ?diff:String = "normal"):DoidoEvents
+	{
+		var eventPath:String = 'songs/$jsonInput/chart/events-$diff';
+		if(!Assets.fileExists('$eventPath.json'))
+			eventPath = eventPath.replace('-$diff', "");
+		
+		if(!Assets.fileExists('$eventPath.json'))
+		{
+			Logs.print('Events not found: ${eventPath}');
+			return {events:[]};
+		}
+
+		Logs.print('Events Loaded: ' + '$jsonInput/$eventPath');
+
+		return formatEvents(cast Assets.json(eventPath));
+	}
+
 	inline public static function parseSong(content:Dynamic):DoidoSong
 	{
 		var rawSong:Dynamic = cast content;
 		var SONG:DoidoSong = null;
 		
         if (!Std.isOfType(rawSong.song, String))
-            SONG = Legacy.fromLegacy(rawSong.song);
+            SONG = Legacy.getSongFromLegacy(rawSong.song);
 		else
         	SONG = cast rawSong;
 
@@ -77,8 +113,14 @@ class Handler
 		/*if(SONG.gfVersion == null)
 			SONG.gfVersion = "stage-set";*/
 
-		SONG.notes.sort(NoteUtil.sortData);
+		SONG.notes.sort(NoteUtil.sortNotes);
 		
 		return SONG;
+	}
+
+	inline private static function formatEvents(EVENTS:DoidoEvents):DoidoEvents
+	{
+		EVENTS.events.sort(NoteUtil.sortEvents);
+		return EVENTS;
 	}
 }
