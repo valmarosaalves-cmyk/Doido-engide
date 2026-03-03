@@ -19,6 +19,10 @@ This branch contains an early, in development version of FNF: Doido Engine, comp
 - Full Flixel 6.x support
 - Many rewritten classes
 
+## Planned Features
+- Completely redone editors
+- New events
+
 ## Why did you restart development?
 
 Mostly for fun. Also because Doido Engine v3.x.x was starting to feel a little bloated and we wanted to be able to structure the engine better and try to have better performance (which was one of the initial goals of Doido Engine and we gradually forgot about!).
