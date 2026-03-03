@@ -365,7 +365,9 @@ class LoadOther extends MusicBeatState
             (fr) -> {
                 var bytes = fr.data;
                 var text = bytes.readUTFBytes(bytes.length);
-                PlayState.SONG = SongHandler.parseSong(TJSON.parse(text));
+                var legacySong:LegacySong = cast TJSON.parse(text).song;
+                PlayState.SONG = Legacy.getSongFromLegacy(legacySong);
+                PlayState.EVENTS = Legacy.getEventsFromLegacy(legacySong);
                 chartLoaded = true;
 
                 fileNames[0] = fr.name;
