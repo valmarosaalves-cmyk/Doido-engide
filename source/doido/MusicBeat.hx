@@ -85,7 +85,7 @@ class MusicBeatState extends FlxUIState
 	private var _curStep = 0; // actual curStep
 	public var curStep = 0;
 	public var curStepFloat:Float = 0;
-	private var curBeat = 0;
+	public var curBeat = 0;
 
 	override function update(elapsed:Float)
 	{
@@ -166,7 +166,7 @@ class MusicBeatSubState extends FlxSubState
 	private var _curStep:Int = 0; // actual curStep
 	public var curStep:Int = 0;
 	public var curStepFloat:Float = 0;
-	private var curBeat:Int = 0;
+	public var curBeat:Int = 0;
 	
 	override function update(elapsed:Float)
 	{
