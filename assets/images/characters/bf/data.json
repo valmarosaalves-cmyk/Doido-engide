@@ -4,39 +4,48 @@
     "anims": [
         {
             "name": "idle",
-            "prefix": "BF idle dance"
+            "prefix": "BF idle dance",
+            "offset": {"x": 0, "y": 0}
         },
         {
             "name": "singLEFT",
-            "prefix": "BF NOTE LEFT0"
+            "prefix": "BF NOTE LEFT0",
+            "offset": {"x": 12, "y": -6}
         },
         {
             "name": "singDOWN",
-            "prefix": "BF NOTE DOWN0"
+            "prefix": "BF NOTE DOWN0",
+            "offset": {"x": -12, "y": -50}
         },
         {
             "name": "singUP",
-            "prefix": "BF NOTE UP0"
+            "prefix": "BF NOTE UP0",
+            "offset": {"x": -41, "y": 32}
         },
         {
             "name": "singRIGHT",
-            "prefix": "BF NOTE RIGHT0"
+            "prefix": "BF NOTE RIGHT0",
+            "offset": {"x": -46, "y": -6}
         },
         {
             "name": "singLEFTmiss",
-            "prefix": "BF NOTE LEFT MISS"
+            "prefix": "BF NOTE LEFT MISS",
+            "offset": {"x": 10, "y": 18}
         },
         {
             "name": "singDOWNmiss",
-            "prefix": "BF NOTE DOWN MISS"
+            "prefix": "BF NOTE DOWN MISS",
+            "offset": {"x": -11, "y": -22}
         },
         {
             "name": "singUPmiss",
-            "prefix": "BF NOTE UP MISS"
+            "prefix": "BF NOTE UP MISS",
+            "offset": {"x": -36, "y": 28}
         },
         {
             "name": "singRIGHTmiss",
-            "prefix": "BF NOTE RIGHT MISS"
+            "prefix": "BF NOTE RIGHT MISS",
+            "offset": {"x": -45, "y": 21}
         }
     ]
 }

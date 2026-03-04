@@ -137,8 +137,9 @@ class DoidoSprite extends FlxAnimate
 					animData.flipY ?? false
 				);
 		}
+
 		if(animData.offset != null)
-			addOffset(anim.name, animData.offset);
+			addOffset(animData.name, animData.offset);
 	}
 
 	public function playAnim(animName:String, forced:Bool = true, frame:Int = 0)

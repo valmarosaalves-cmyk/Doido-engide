@@ -48,6 +48,7 @@ class Character extends DoidoSprite
 
     public var globalOffset:Offset = {x: 0, y: 0};
     public var cameraOffset:Offset = {x: 0, y: 0};
+    public var scaleOffset:Offset = {x: 0, y:0};
 
     function loadCharacter()
     {
@@ -88,7 +89,10 @@ class Character extends DoidoSprite
         if (isPlayer) flipX = !flipX;
 
         playAnim(idleAnims[0]);
+
 		updateHitbox();
+        scaleOffset = {x: offset.x, y: offset.y};
+
         dance();
     }
 
@@ -107,6 +111,12 @@ class Character extends DoidoSprite
 
         if(singStep > 0)
             singStep -= Conductor.stepCrochet * elapsed;
+    }
+
+    override public function updateOffset() {
+        super.updateOffset();
+        offset.x += scaleOffset.x;
+		offset.y += scaleOffset.y;
     }
 
     function getPath() return 'characters/$curChar';
