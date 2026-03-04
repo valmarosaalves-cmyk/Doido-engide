@@ -9,7 +9,7 @@ import openfl.Assets as OpenFLAssets;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
 import openfl.media.Sound;
-import tjson.TJSON;
+import haxe.Json;
 import doido.Cache;
 import doido.objects.DoidoSprite.SpriteType;
 
@@ -207,7 +207,7 @@ class Assets
 		return getAsset('songs/$song/audio/Voices$postfix', SOUND);
 
     public static inline function json(key:String):Dynamic
-		return TJSON.parse(getAsset('$key', JSON));
+		return Json.parse(getAsset('$key', JSON));
 
     public static inline function script(key:String):String
         return getAsset('$key', SCRIPT, false);

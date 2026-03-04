@@ -7,7 +7,7 @@ import flixel.text.FlxText;
 import flixel.math.FlxMath;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID as FlxPad;
-import tjson.TJSON;
+import haxe.Json;
 import haxe.Json;
 import openfl.media.Sound;
 import doido.Cache;
@@ -365,7 +365,7 @@ class LoadOther extends MusicBeatState
             (fr) -> {
                 var bytes = fr.data;
                 var text = bytes.readUTFBytes(bytes.length);
-                var legacySong:LegacySong = cast TJSON.parse(text).song;
+                var legacySong:LegacySong = cast Json.parse(text).song;
                 PlayState.SONG = Legacy.getSongFromLegacy(legacySong);
                 PlayState.EVENTS = Legacy.getEventsFromLegacy(legacySong);
                 chartLoaded = true;
@@ -480,7 +480,7 @@ class ChartConverter extends MusicBeatState
                 var bytes = fr.data;
                 var text = bytes.readUTFBytes(bytes.length);
 
-                var legacySong:LegacySong = cast TJSON.parse(text).song;
+                var legacySong:LegacySong = cast Json.parse(text).song;
                 var SONG = Legacy.getSongFromLegacy(legacySong);
                 var EVENTS = Legacy.getEventsFromLegacy(legacySong);
 

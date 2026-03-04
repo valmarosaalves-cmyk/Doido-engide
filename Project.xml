@@ -60,7 +60,6 @@
 	
 	<!-- ______ Custom Doido Libraries ______ -->
 	<haxelib name="flixel-animate" version="1.4.0" />
-	<haxelib name="tjson"/>
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
