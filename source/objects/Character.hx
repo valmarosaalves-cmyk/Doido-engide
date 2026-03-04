@@ -46,8 +46,8 @@ class Character extends DoidoSprite
     public var singLength:Float = 4.0;
     public var singStep:Float = 0.0;
 
-    var globalOffset:Offset = {x: 0, y: 0};
-    var cameraOffset:Offset = {x: 0, y: 0};
+    public var globalOffset:Offset = {x: 0, y: 0};
+    public var cameraOffset:Offset = {x: 0, y: 0};
 
     function loadCharacter()
     {
