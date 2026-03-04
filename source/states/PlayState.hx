@@ -1,5 +1,6 @@
 package states;
 
+import doido.utils.NoteUtil;
 import flixel.math.FlxMath;
 import substates.PauseSubState;
 import animate.FlxAnimate;
@@ -49,7 +50,9 @@ class PlayState extends MusicBeatState
 	var audio:AudioHandler;
 	var defaultSongSpeed:Float = 1.0;
 
-	var bf:Character;
+	var dad:CharGroup;
+	var bf:CharGroup;
+	var characters:Array<CharGroup> = [];
 
 	#if TOUCH_CONTROLS
 	var pauseButton:ButtonHitbox;
@@ -98,9 +101,25 @@ class PlayState extends MusicBeatState
 		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
 		//bg.zIndex = 500;
 		add(bg);
-
-		bf = new Character("face");
+		
+		bf = new CharGroup(true);
+		bf.addChar("bf", true);
+		bf.setPos(
+			(FlxG.width / 2) + (FlxG.width / 4),
+			FlxG.height - 50
+		);
 		add(bf);
+
+		dad = new CharGroup(false);
+		dad.addChar("face", true);
+		dad.setPos(
+			(FlxG.width / 2) - (FlxG.width / 4),
+			FlxG.height - 50
+		);
+		add(dad);
+		
+		characters.push(dad);
+		characters.push(bf);
 
 		//temporary caching
 		Assets.image("hud/base/numbers");
@@ -122,6 +141,9 @@ class PlayState extends MusicBeatState
 		playField = new PlayField(SONG.notes, SONG.speed, Save.data.downscroll, Save.data.middlescroll);
 		playField.cameras = [camStrum];
 		add(playField);
+
+		bf.strumline = playField.bfStrumline;
+		dad.strumline = playField.dadStrumline;
 
 		hudClass.init();
 		hudClass.cameras = [camHUD];
@@ -174,6 +196,12 @@ class PlayState extends MusicBeatState
 		{
 			if (note.isHold && !note.isHoldEnd) return;
 
+			for(char in characters)
+			{
+				if (char.strumline == strumline)
+					char.playSingAnim(note);
+			}
+
 			if (strumline.isPlayer)
 			{
 				audio.muteVoices = false;
@@ -187,11 +215,27 @@ class PlayState extends MusicBeatState
 		playField.onNoteMiss = (note, strumline) ->
 		{
 			if (note.isHold && !note.isHoldEnd) return;
+
+			for(char in characters)
+			{
+				if (char.strumline == strumline)
+					char.playSingAnim(note, true);
+			}
 			
 			if (strumline.isPlayer)
 			{
 				audio.muteVoices = true;
 				updateScore(note, Timings.getTiming("miss").diff);
+			}
+		};
+		playField.onNoteHold = (note, strumline) -> {
+			if (playField.canPlayHoldAnims)
+			{
+				for(char in characters)
+				{
+					if (char.strumline == strumline)
+						char.playSingAnim(note);
+				}
 			}
 		};
 		
@@ -307,8 +351,26 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if (curBeat % 4 == 0) {
-			bf.dance();
+		if (curBeat % 2 == 0)
+		{
+			// dancing
+			for(char in characters)
+			{
+				if (char.char.singStep <= 0)
+				{
+					if (char.isPlayer)
+					{
+						if (!playField.playerHolding)
+							char.dance();
+					}
+					else
+						char.dance();
+				}
+			}
+		}
+
+		if (curBeat % 4 == 0)
+		{
 			beatCamera(1.05, 1.02);
 		}
 	}

@@ -86,6 +86,8 @@ class PlayField extends FlxGroup
 			Controls.released(RIGHT) 	|| touchInput.released("right"),
 		];
 
+		if (!pressed.contains(true)) playerHolding = false;
+
 		// spawning notes
 		if (curSpawnNote < spawnNotes.length)
 		{
@@ -308,6 +310,9 @@ class PlayField extends FlxGroup
 		var strum = strumline.strums[note.data.lane];
 		var diff = noteDiff(note.data);
 
+		if (strumline.isPlayer)
+			playerHolding = true;
+
 		if (!note.isHold)
 		{
 			// makes the note transparent if you hit less than good (bad or shit)
@@ -342,6 +347,7 @@ class PlayField extends FlxGroup
 	}
 
 	public var canPlayHoldAnims:Bool = true;
+	public var playerHolding:Bool = false;
 	public var onNoteHold:(note:Note, strumline:Strumline)->Void = null;
 	private function _onNoteHold(note:Note, strumline:Strumline)
 	{

@@ -1,5 +1,6 @@
 package objects;
 
+import doido.song.Conductor;
 import doido.objects.DoidoSprite;
 
 typedef DoidoCharacter = {
@@ -16,6 +17,8 @@ typedef DoidoCharacter = {
     var ?globalOffset:Offset;
     var ?cameraOffset:Offset;
 
+    var ?singLength:Float;
+
     var ?scale:Offset;
     var ?pixel:Bool;
     var ?flipX:Bool;
@@ -24,19 +27,24 @@ typedef DoidoCharacter = {
 
 class Character extends DoidoSprite
 {
-    var curChar:String = "bf";
+    public var curChar:String = "bf";
+    public var isPlayer:Bool = false;
     var data:DoidoCharacter;
 
-    public function new(curChar:String = "bf")
+    public function new(curChar:String = "bf", isPlayer:Bool = false)
     {
         super(0,0);
         this.curChar = curChar;
+        this.isPlayer = isPlayer;
         loadCharacter();
     }
 
     var idleAnims:Array<String> = ["idle"];
     var quickDancer:Bool = false;
     var deathChar:String = "bf-dead";
+
+    public var singLength:Float = 4.0;
+    public var singStep:Float = 0.0;
 
     var globalOffset:Offset = {x: 0, y: 0};
     var cameraOffset:Offset = {x: 0, y: 0};
@@ -61,6 +69,8 @@ class Character extends DoidoSprite
         quickDancer = data.quickDancer ?? quickDancer;
         deathChar = data.deathChar ?? deathChar;
 
+        singLength = data.singLength ?? 16;
+
         for(i in 0...idleAnims.length) {
 			if(!animExists(idleAnims[i]))
 				idleAnims[i] = "idle"; //ill fix this later?????
@@ -74,6 +84,8 @@ class Character extends DoidoSprite
         antialiasing = ((data.pixel == true) ? false : flixel.FlxSprite.defaultAntialiasing);
         flipX = data.flipX ?? false;
         flipY = data.flipY ?? false;
+
+        if (isPlayer) flipX = !flipX;
 
         playAnim(idleAnims[0]);
 		updateHitbox();
@@ -92,6 +104,9 @@ class Character extends DoidoSprite
         super.update(elapsed);
         if(animExists(curAnimName + '-loop') && curAnimFinished)
 			playAnim(curAnimName + '-loop');
+
+        if(singStep > 0)
+            singStep -= Conductor.stepCrochet * elapsed;
     }
 
     function getPath() return 'characters/$curChar';

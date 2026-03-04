@@ -1,25 +1,42 @@
 {
     "spritesheet": "BOYFRIEND",
+    "flipX": true,
     "anims": [
         {
             "name": "idle",
             "prefix": "BF idle dance"
         },
         {
-            "name": "left",
+            "name": "singLEFT",
             "prefix": "BF NOTE LEFT0"
         },
         {
-            "name": "down",
+            "name": "singDOWN",
             "prefix": "BF NOTE DOWN0"
         },
         {
-            "name": "up",
+            "name": "singUP",
             "prefix": "BF NOTE UP0"
         },
         {
-            "name": "right",
+            "name": "singRIGHT",
             "prefix": "BF NOTE RIGHT0"
+        },
+        {
+            "name": "singLEFTmiss",
+            "prefix": "BF NOTE LEFT MISS"
+        },
+        {
+            "name": "singDOWNmiss",
+            "prefix": "BF NOTE DOWN MISS"
+        },
+        {
+            "name": "singUPmiss",
+            "prefix": "BF NOTE UP MISS"
+        },
+        {
+            "name": "singRIGHTmiss",
+            "prefix": "BF NOTE RIGHT MISS"
         }
     ]
 }

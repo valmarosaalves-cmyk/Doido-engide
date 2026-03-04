@@ -29,6 +29,25 @@ class NoteUtil
 			default: ["how???"];
 		}
 	}
+
+	public static function getSingAnims(howMany:Int = 4):Array<String>
+	{
+		if (howMany < 1) howMany = 1;
+		if (howMany > 9) howMany = 9;
+		return switch(howMany)
+		{
+			case 1: ["singUP"];
+			case 2: ["singLEFT", "singRIGHT"];
+			case 3: ["singLEFT", "singUP", "singRIGHT"];
+			case 4: ["singLEFT", "singDOWN", "singUP", "singRIGHT"];
+			case 5: ["singLEFT", "singDOWN", "singUP", "singUP", "singRIGHT"];
+			case 6: ["singLEFT", "singDOWN", "singRIGHT", "singLEFT", "singUP", "singRIGHT"];
+			case 7: ["singLEFT", "singDOWN", "singRIGHT", "singUP", "singLEFT", "singUP", "singRIGHT"];
+			case 8: ["singLEFT", "singDOWN", "singUP", "singRIGHT", "singLEFT", "singDOWN", "singUP", "singRIGHT"];
+			case 9: ["singLEFT", "singDOWN", "singUP", "singRIGHT", "singUP", "singLEFT", "singDOWN", "singUP", "singRIGHT"];
+			default: ["how???"];
+		}
+	}
 	
 	public static function intToString(data:Int):String
 		return directions[data];

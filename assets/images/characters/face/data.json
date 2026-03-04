@@ -4,6 +4,22 @@
         {
             "name": "idle",
             "prefix": "idle-alive"
+        },
+        {
+            "name": "singLEFT",
+            "prefix": "left-alive"
+        },
+        {
+            "name": "singDOWN",
+            "prefix": "down-alive"
+        },
+        {
+            "name": "singUP",
+            "prefix": "up-alive"
+        },
+        {
+            "name": "singRIGHT",
+            "prefix": "right-alive"
         }
     ]
 }
