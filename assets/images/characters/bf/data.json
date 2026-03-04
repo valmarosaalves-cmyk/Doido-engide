@@ -1,6 +1,5 @@
 {
     "spritesheet": "BOYFRIEND",
-    "type": "SPARROW",
     "anims": [
         {
             "name": "idle",

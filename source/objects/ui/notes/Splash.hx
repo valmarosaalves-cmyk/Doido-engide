@@ -44,7 +44,7 @@ class Cover extends BaseSplash
 				animation.addByPrefix("splash",	'holdCoverEnd$direction', 	24, false);
 				
 				for(anim in ["start", "loop", "splash"])
-					addOffset(anim, 6, -32);
+					addOffset(anim, {x: 6, y: -32});
 		}
 
         alpha = startAlpha;
@@ -112,8 +112,8 @@ class BaseSplash extends DoidoSprite
 		if(animOffsets.exists(curAnimName))
 		{
 			var daOffset = animOffsets.get(curAnimName);
-			offset.x += daOffset[0];
-			offset.y += daOffset[1];
+			offset.x += daOffset.x;
+			offset.y += daOffset.y;
 		}
 	}
 }

@@ -99,7 +99,7 @@ class PlayState extends MusicBeatState
 		//bg.zIndex = 500;
 		add(bg);
 
-		bf = new Character("bf");
+		bf = new Character("face");
 		add(bf);
 
 		//temporary caching

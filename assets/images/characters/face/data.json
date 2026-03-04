@@ -1,0 +1,9 @@
+{
+    "spriteType": "ATLAS",
+    "anims": [
+        {
+            "name": "idle",
+            "prefix": "idle-alive"
+        }
+    ]
+}

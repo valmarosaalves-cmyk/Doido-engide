@@ -11,6 +11,7 @@ import openfl.events.IOErrorEvent;
 import openfl.media.Sound;
 import tjson.TJSON;
 import doido.Cache;
+import doido.objects.DoidoSprite.SpriteType;
 
 //am i gonna do something with this?
 enum Asset
@@ -24,12 +25,6 @@ enum Asset
     SCRIPT;
     BINARY;
     OTHER;
-}
-
-enum Frames
-{
-    SPARROW;
-    ATLAS;
 }
 
 // Paths V2
@@ -133,8 +128,10 @@ class Assets
     public static function resolvePath(key:String, type:Asset):String {
         var path = getPath(key);
         var index = whichExists(path, type);
-        if(index == -1)
+        if(index == -1) {
+            Logs.print("PATH NOT FOUND: " + path, ERROR);
             return null;
+        }
 
         return getExt(path, extensions.get(type)[index]);
     }
@@ -151,6 +148,8 @@ class Assets
                     path = resolvePath('sounds/beep', SOUND);
                 return cast Cache.getSound(path, false);
             case TEXT | JSON | XML | SCRIPT:
+                if(path == null)
+                    return cast "";
                 return cast OpenFLAssets.getText(path).trim();
             case BINARY:
                 return cast OpenFLAssets.getBytes(path);
@@ -225,15 +224,25 @@ class Assets
 	public static inline function animate(key:String):FlxAnimateFrames
 		return cast framesCollection(key, ATLAS);
 
-    public static inline function framesCollection(key:String, type:Frames):FlxFramesCollection {
+    public static inline function framesCollection(key:String, ?extrasheets:Array<String>, type:SpriteType):FlxFramesCollection {
         var path = getPath(key);
         var frames:FlxFramesCollection = null;
 
         if(Cache.isFramesCached(path)) frames = Cache.getCachedFrames(path);
         else {
             frames = switch(type) {
+                case ASEPRITE: FlxAtlasFrames.fromAseprite(getAsset('images/$key', IMAGE), getAsset('images/$key', JSON));
+                case PACKER: FlxAtlasFrames.fromSpriteSheetPacker(getAsset('images/$key', IMAGE), getAsset('images/$key', TEXT));
                 case ATLAS: FlxAnimateFrames.fromAnimate('images/$key');
                 default: FlxAtlasFrames.fromSparrow(getAsset('images/$key', IMAGE), getAsset('images/$key', XML));
+            }
+            if(type == MULTISPARROW && (extrasheets ?? []).length > 0) {
+                for(i in 0...extrasheets.length) {
+                    var newFrames:FlxFramesCollection = FlxAtlasFrames.fromSparrow(getAsset('images/$key', IMAGE), getAsset('images/$key', XML));
+                    for(frame in newFrames.frames) {
+                        frames.pushFrame(frame);
+                    }
+                }
             }
             Cache.setCachedFrames(path, frames);
         }
