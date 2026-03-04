@@ -68,10 +68,30 @@ class Character extends DoidoSprite
         type = framesFromString(data.type);
         frames = cast Assets.framesCollection('${getPath()}/${data.spritesheet}', type);
 
-        for(anim in data.anims) {
-            if((anim.indices ?? []).length > 0) animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.framerate ?? 24, anim.looped ?? false, anim.flipX ?? false, anim.flipY ?? false);
-            else animation.addByPrefix(anim.name, anim.prefix, anim.framerate ?? 24, anim.looped ?? false, anim.flipX ?? false, anim.flipY ?? false);
-            if(anim.offset != null) addOffset(anim.name, anim.offset.x, anim.offset.y);
+        for(anim in data.anims)
+        {
+            if((anim.indices ?? []).length > 0)
+                animation.addByIndices(
+                    anim.name,
+                    anim.prefix,
+                    anim.indices, "",
+                    anim.framerate ?? 24,
+                    anim.looped ?? false,
+                    anim.flipX ?? false,
+                    anim.flipY ?? false
+                );
+            else
+                animation.addByPrefix(
+                    anim.name,
+                    anim.prefix,
+                    anim.framerate ?? 24,
+                    anim.looped ?? false,
+                    anim.flipX ?? false,
+                    anim.flipY ?? false
+                );
+            
+            if(anim.offset != null)
+                addOffset(anim.name, anim.offset.x, anim.offset.y);
         }
 
         idleAnims = data.idleAnims ?? idleAnims;
