@@ -12,7 +12,7 @@ class Splash extends BaseSplash
 				this.loadSparrow("notes/base/splashes");
 				animation.addByPrefix("splash1", '$direction splash 1', 24, false);
 				animation.addByPrefix("splash2", '$direction splash 2', 24, false);
-				splashScale = 0.7;
+				splashScale = 0.8;
 		}
 
         alpha = startAlpha;
