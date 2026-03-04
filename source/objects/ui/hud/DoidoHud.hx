@@ -8,10 +8,9 @@ class DoidoHud extends BaseHud
 
         add(ratingGrp);
         
-        scoreTxt = new FlxText(10, 0, 0, '');
-		scoreTxt.setFormat(Main.globalFont, 18, 0xFFFFFFFF, CENTER);
-		scoreTxt.setOutline(0xFF000000, 1.5);
-		scoreTxt.antialiasing = false;
+        scoreTxt = new FlxBitmapText(10, 0, Assets.bitmapFont("vcr"));
+		scoreTxt.setOutline(0xFF000000, 2);
+        scoreTxt.alignment = CENTER;
 		add(scoreTxt);
     }
 
@@ -47,6 +46,6 @@ class DoidoHud extends BaseHud
 
         scoreTxt.y = (playState.playField.bfStrumline.downscroll ? 50 : FlxG.height - scoreTxt.height - 50);
         scoreTxt.screenCenter(X);
-        scoreTxt.floorPos();
+        //scoreTxt.floorPos();
     }
 }

@@ -6,7 +6,7 @@ class BaseHud extends FlxGroup
     public var hudName:String = "base";
 
     public var separator:String = " | ";
-    public var scoreTxt:FlxText;
+    public var scoreTxt:FlxBitmapText;
 
     public var ratingGrp:FlxGroup;
 
