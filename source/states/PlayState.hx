@@ -49,6 +49,8 @@ class PlayState extends MusicBeatState
 	var audio:AudioHandler;
 	var defaultSongSpeed:Float = 1.0;
 
+	var bf:Character;
+
 	#if TOUCH_CONTROLS
 	var pauseButton:ButtonHitbox;
 	#end
@@ -80,7 +82,6 @@ class PlayState extends MusicBeatState
 			var newScript:Iris = new Iris(Assets.script('$path'), instance, {name: path, autoRun: true, autoPreset: true});
 			loadedScripts.push(newScript);
 		}
-		//setScript("this", instance); //hopefully we wont be needing THIS anymore!
 
 		Conductor.initialBPM = SONG.bpm;
 		Conductor.mapBPMChanges(EVENTS.events);
@@ -97,6 +98,9 @@ class PlayState extends MusicBeatState
 		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
 		//bg.zIndex = 500;
 		add(bg);
+
+		bf = new Character("bf");
+		add(bf);
 
 		//temporary caching
 		Assets.image("hud/base/numbers");
@@ -303,8 +307,10 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		if (curBeat % 4 == 0)
+		if (curBeat % 4 == 0) {
+			bf.dance();
 			beatCamera(1.05, 1.02);
+		}
 	}
 
 	public function callScript(fun:String, ?args:Array<Dynamic>) {

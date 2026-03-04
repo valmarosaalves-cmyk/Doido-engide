@@ -1,0 +1,26 @@
+{
+    "spritesheet": "BOYFRIEND",
+    "type": "SPARROW",
+    "anims": [
+        {
+            "name": "idle",
+            "prefix": "BF idle dance0000"
+        },
+        {
+            "name": "left",
+            "prefix": "BF NOTE LEFT0"
+        },
+        {
+            "name": "down",
+            "prefix": "BF NOTE DOWN0"
+        },
+        {
+            "name": "up",
+            "prefix": "BF NOTE UP0"
+        },
+        {
+            "name": "right",
+            "prefix": "BF NOTE RIGHT0"
+        }
+    ]
+}

@@ -61,15 +61,15 @@ class Character extends DoidoSprite
 
     var globalOffset:Offset = {x: 0, y: 0};
     var cameraOffset:Offset = {x: 0, y: 0};
-    
+
     function loadCharacter()
     {
-        data = cast(Assets.json('images/characters/$curChar/data.json'));
+        data = cast(Assets.json('images/${getPath()}/data'));
         type = framesFromString(data.type);
-        frames = cast Assets.framesCollection(data.spritesheet, type);
+        frames = cast Assets.framesCollection('${getPath()}/${data.spritesheet}', type);
 
         for(anim in data.anims) {
-            if((anim.indices ?? []).length <= 0) animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.framerate ?? 24, anim.looped ?? false, anim.flipX ?? false, anim.flipY ?? false);
+            if((anim.indices ?? []).length > 0) animation.addByIndices(anim.name, anim.prefix, anim.indices, "", anim.framerate ?? 24, anim.looped ?? false, anim.flipX ?? false, anim.flipY ?? false);
             else animation.addByPrefix(anim.name, anim.prefix, anim.framerate ?? 24, anim.looped ?? false, anim.flipX ?? false, anim.flipY ?? false);
             if(anim.offset != null) addOffset(anim.name, anim.offset.x, anim.offset.y);
         }
@@ -86,14 +86,13 @@ class Character extends DoidoSprite
         globalOffset = data.globalOffset ?? globalOffset;
         cameraOffset = data.cameraOffset ?? cameraOffset;
 
-        data.scale ??= {x: 0, y: 0};
+        data.scale ??= {x: 1, y: 1};
         scale.set(data.scale.x, data.scale.y);
         antialiasing = ((data.pixel == true) ? false : flixel.FlxSprite.defaultAntialiasing);
         flipX = data.flipX ?? false;
         flipY = data.flipY ?? false;
 
         playAnim(idleAnims[0]);
-
 		updateHitbox();
         dance();
     }
@@ -107,14 +106,17 @@ class Character extends DoidoSprite
 	}
 
     override public function update(elapsed:Float) {
+        super.update(elapsed);
         if(animExists(curAnimName + '-loop') && curAnimFinished)
 			playAnim(curAnimName + '-loop');
     }
 
     function framesFromString(frames:Null<String>):Frames {
-        return switch(frames) {
+        return switch(frames.toUpperCase()) {
             case "ATLAS": ATLAS;
             default: SPARROW;
         }
     }
+
+    function getPath() return 'characters/$curChar';
 }
