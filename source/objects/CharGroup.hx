@@ -44,8 +44,8 @@ class CharGroup extends FlxTypedGroup<Character>
 
     public function updateChar()
     {
-        char.x = x - char.width / 2;
-        char.y = y - char.height;
+        char.x = x - char.width / 2 + char.globalOffset.x;
+        char.y = y - char.height + char.globalOffset.y;
     }
 
     public var x(default, set):Float = 0.0;
@@ -64,8 +64,8 @@ class CharGroup extends FlxTypedGroup<Character>
     }
     public function setPos(x:Float = 0, y:Float = 0)
     {
-        this.x = x + char.globalOffset.x;
-        this.y = y + char.globalOffset.y;
+        this.x = x;
+        this.y = y;
     }
 
     public function playSingAnim(note:Note, miss:Bool = false)
