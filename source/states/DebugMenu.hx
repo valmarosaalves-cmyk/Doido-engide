@@ -17,7 +17,7 @@ using doido.utils.TextUtil;
 
 class DebugMenu extends MusicBeatState
 {
-    var options:Array<String> = ["Play", "Controls", "Options", "Credits", #if !mobile "Crash Handler", "Chart Converter"#end];
+    var options:Array<String> = ["Play", "Controls", "Options", "Credits", #if !mobile "Offset Editor", "Crash Handler", "Chart Converter"#end];
     var text:FlxText;
     var title:FlxText;
     var ver:FlxText;
@@ -87,6 +87,8 @@ class DebugMenu extends MusicBeatState
                     MusicBeat.switchState(new ChartConverter());
                 case "credits":
                     MusicBeat.switchState(new Credits());
+                case "offset editor":
+                    MusicBeat.switchState(new OffsetSel());
                 default:
                     MusicBeat.switchState(new Freeplay());
             }
@@ -189,6 +191,76 @@ class Credits extends MusicBeatState
 		
 		cur += change;
 		cur = FlxMath.wrap(cur, 0, creditList.length - 1);
+		drawText();
+	}
+}
+
+class OffsetSel extends MusicBeatState
+{
+    var options:Array<String> = ["bf", "face"];
+    var text:FlxText;
+    var ver:FlxText;
+    var title:FlxText;
+    var cur:Int = 0;
+
+    override function create()
+    {
+        super.create();
+        DiscordIO.changePresence("In the Offset Editor");
+
+        var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+        bg.screenCenter();
+		add(bg);
+
+        text = new FlxText(10, 0, 0, '');
+		text.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);
+		text.setOutline(0xFF000000, 3);
+		add(text);
+        drawText();
+        text.y = FlxG.height - text.height - 10;
+
+        title = new FlxText(10, 0, 0, 'Offset Editor');
+		title.setFormat(Main.globalFont, 100, 0xFFFFFFFF, LEFT);
+		title.setOutline(0xFF000000, 5);
+        title.y = text.y - title.height;
+		add(title);
+
+        ver = new FlxText(10, 0, 0, "Press SHIFT for player");
+		ver.setFormat(Main.globalFont, 32, 0xFFFFFFFF, LEFT);
+		ver.setOutline(0xFF000000, 2.5);
+        ver.x = title.x + title.width + 5;
+        ver.y = text.y - ver.height;
+		add(ver);
+    }
+
+    function drawText() {
+        text.text = "";
+        for(i in 0...options.length)
+            text.text += (i == cur ? "> " : "") + options[i] + "\n";
+    }
+
+    override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+        if(Controls.justPressed(UI_UP))
+            changeSelection(-1);
+        if(Controls.justPressed(UI_DOWN))
+            changeSelection(1);
+
+        if(Controls.justPressed(BACK))
+			MusicBeat.switchState(new states.DebugMenu());
+
+        if(Controls.justPressed(ACCEPT) || FlxG.keys.justPressed.SHIFT)
+            MusicBeat.switchState(new OffsetEditor(options[cur], FlxG.keys.justPressed.SHIFT));
+    }
+
+    public function changeSelection(change:Int = 0)
+	{
+		if(change != 0) FlxG.sound.play(Assets.sound('scroll'));
+		
+		cur += change;
+		cur = FlxMath.wrap(cur, 0, options.length - 1);
 		drawText();
 	}
 }

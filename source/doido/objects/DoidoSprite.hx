@@ -38,6 +38,7 @@ class DoidoSprite extends FlxAnimate
 	public var curAnimFrame(get, never):Int;
 	public var curAnimFinished(get, never):Bool;
 	public var animOffsets:Map<String, Offset> = [];
+	public var animList:Array<String> = [];
 
 	public var spriteType:SpriteType = SPARROW;
     public var atlasType:AtlasType = SYMBOL;
@@ -140,6 +141,8 @@ class DoidoSprite extends FlxAnimate
 
 		if(animData.offset != null)
 			addOffset(animData.name, animData.offset);
+
+		animList.push(animData.name);
 	}
 
 	public function playAnim(animName:String, forced:Bool = true, frame:Int = 0)
