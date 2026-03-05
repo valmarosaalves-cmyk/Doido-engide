@@ -21,7 +21,7 @@ import hscript.iris.Iris;
 import flixel.FlxCamera;
 
 #if TOUCH_CONTROLS
-import doido.objects.ButtonHitbox;
+import doido.objects.DoidoHitbox;
 #end
 
 using doido.utils.CameraUtil;
@@ -55,7 +55,7 @@ class PlayState extends MusicBeatState
 	var characters:Array<CharGroup> = [];
 
 	#if TOUCH_CONTROLS
-	var pauseButton:ButtonHitbox;
+	var pauseButton:DoidoHitbox;
 	#end
 
 	public static var instance:PlayState;
@@ -153,7 +153,7 @@ class PlayState extends MusicBeatState
 		add(debugInfo);
 
 		#if TOUCH_CONTROLS
-		pauseButton = new ButtonHitbox(0,0,100,100,0.4);
+		pauseButton = new DoidoHitbox(0,0,100,100,0.4);
 		add(pauseButton);
 		#end
 

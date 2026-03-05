@@ -11,7 +11,7 @@ import flixel.util.FlxSignal;
 import flixel.group.FlxSpriteGroup;
 
 // custom button hitbox thing?
-class ButtonHitbox extends FlxSprite implements IFlxInput
+class DoidoHitbox extends FlxSprite implements IFlxInput
 {
     public var currentState:FlxInputState = RELEASED;
 	public var lastState:FlxInputState = RELEASED;
@@ -126,12 +126,12 @@ class ButtonHitbox extends FlxSprite implements IFlxInput
 //likely to go unused
 class DoidoButton extends FlxSpriteGroup implements IFlxInput
 {
-    var hitbox:ButtonHitbox;
+    var hitbox:DoidoHitbox;
     var sprite:FlxSprite;
 
     public function new(x:Float = 0, y:Float = 0) {
 		super(x,y);
-        hitbox = new ButtonHitbox(0,0,100,100,0.5);
+        hitbox = new DoidoHitbox(0,0,100,100,0.5);
         sprite = new FlxSprite();
         add(sprite);
         add(hitbox);
