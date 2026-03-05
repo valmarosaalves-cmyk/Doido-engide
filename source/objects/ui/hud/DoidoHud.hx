@@ -1,19 +1,32 @@
 package objects.ui.hud;
 
+import doido.objects.DoidoSprite.Offset;
+import objects.ui.hud.BaseHud.IconChange;
+import flixel.math.FlxMath;
+
 class DoidoHud extends BaseHud
 {
     public var scoreTxt:FlxBitmapText;
-    public var healthBar:DoidoBar;
 
-    public function new()
+    public var healthBar:DoidoBar;
+    public var iconP1:HealthIcon;
+	public var iconP2:HealthIcon;
+
+    public function new(play:Playable)
     {
-        super("doido");
+        super("doido", play);
         add(ratingGrp);
 
         healthBar = new DoidoBar("hud/base/healthBar", "hud/base/healthBar-border");
-        healthBar.sideL.color = 0xFFFF0000;
-        healthBar.sideR.color = 0xFF66FF33;
 		add(healthBar);
+
+        iconP1 = new HealthIcon();
+		changeIcon(play.player1, PLAYER);
+		add(iconP1);
+
+		iconP2 = new HealthIcon();
+		changeIcon(play.player2, ENEMY);
+		add(iconP2);
         
         scoreTxt = new FlxBitmapText(10, 0, Assets.bitmapFont("vcr"));
 		scoreTxt.setOutline(0xFF000000, 2);
@@ -66,6 +79,56 @@ class DoidoHud extends BaseHud
 
     override function update(elapsed:Float) {
         super.update(elapsed);
-        healthBar.percent = (play.health * 50);
+        healthBar.percent = (health * 50);
+
+        for(icon in [iconP1, iconP2])
+		{
+			icon.scale.set(
+				FlxMath.lerp(icon.scale.x, 1, FlxG.elapsed * 6),
+				FlxMath.lerp(icon.scale.y, 1, FlxG.elapsed * 6)
+			);
+			if(!icon.isPlayer)
+				icon.setAnim(2 - play.health);
+			else
+				icon.setAnim(play.health);
+
+			icon.updateHitbox();
+		}
+		updateIconPos();
     }
+
+    public function updateIconPos() {
+		var healthBarPos:Offset = {
+			x: healthBar.x + FlxMath.lerp(healthBar.border.width, 0, healthBar.percent / 100),
+			y: healthBar.y - (healthBar.border.height / 2)
+        };
+
+		iconP1.y = healthBarPos.y - (iconP1.height / 2);
+		iconP2.y = healthBarPos.y - (iconP2.height / 2);
+
+		iconP1.x = healthBarPos.x - 20;
+		iconP2.x = healthBarPos.x - iconP2.width + 32;
+	}
+
+    override function changeIcon(newIcon:String = "face", type:IconChange = ENEMY) {
+		super.changeIcon(newIcon, type);
+		var isPlayer:Bool = (type == PLAYER);
+		var icon = (isPlayer ? iconP1 : iconP2);
+		icon.setIcon(newIcon, isPlayer);
+
+		(isPlayer ? healthBar.sideR : healthBar.sideL).color = icon.barColor;
+	}
+
+	override function beatHit(curBeat:Int = 0) {
+		super.beatHit(curBeat);
+		if(curBeat % 2 == 0)
+		{
+			for(icon in [iconP1, iconP2])
+			{
+				icon.scale.set(1.3,1.3);
+				icon.updateHitbox();
+				updateIconPos();
+			}
+		}
+	}
 }

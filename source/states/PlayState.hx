@@ -131,11 +131,9 @@ class PlayState extends MusicBeatState implements Playable
 		for(i in 0...4)
 			Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i]);
 
-		hudClass = switch(SONG.song)
-		{
-			default: new DoidoHud();
+		hudClass = switch(SONG.song) {
+			default: new DoidoHud(this);
 		}
-		hudClass.play = this;
 		add(hudClass);
 
 		callScript("create");
@@ -341,6 +339,7 @@ class PlayState extends MusicBeatState implements Playable
 			canPause = false;
 			MusicBeat.switchState(new states.DebugMenu());
 		}
+		hudClass.stepHit(curStep);
 	}
 
 	override function beatHit()
@@ -383,6 +382,8 @@ class PlayState extends MusicBeatState implements Playable
 		{
 			beatCamera(1.05, 1.02);
 		}
+
+		hudClass.beatHit(curBeat);
 	}
 
 	public function callScript(fun:String, ?args:Array<Dynamic>) {
@@ -403,8 +404,18 @@ class PlayState extends MusicBeatState implements Playable
 		for(script in loadedScripts)
 			script.set(name, value, allowOverride);
 	}
+
+	public var player1(get, never):String;
+	public function get_player1():String
+		return bf.curChar;
+
+	public var player2(get, never):String;
+	public function get_player2():String
+		return dad.curChar;
 }
 
 interface Playable {
 	var health:Float;
+	var player1(get, never):String;
+	var player2(get, never):String;
 }

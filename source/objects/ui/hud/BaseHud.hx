@@ -1,15 +1,24 @@
 package objects.ui.hud;
 
+import flixel.math.FlxMath;
+
+enum IconChange {
+    PLAYER;
+    ENEMY;
+}
+
 class BaseHud extends FlxGroup
 {
     public var play:Playable;
     public var hudName:String = "base";
     public var separator:String = " | ";
+    public var health:Float = 1;
     public var ratingGrp:FlxGroup;
 
-    public function new(hudName:String) {
+    public function new(hudName:String, play:Playable) {
         super();
         this.hudName = hudName;
+        this.play = play;
         ratingGrp = new FlxGroup();
     }
 
@@ -22,6 +31,10 @@ class BaseHud extends FlxGroup
     function updatePositions() {
         updateScoreTxt();
     }
+
+    public function changeIcon(newIcon:String = "face", type:IconChange = ENEMY) {}
+    public function stepHit(curStep:Int = 0) {}
+	public function beatHit(curBeat:Int = 0) {}
 
     var ratingCount:Int = 0;
     public function popUpRating(ratingName:String = ""):RatingSprite
@@ -73,5 +86,14 @@ class BaseHud extends FlxGroup
         comboCount++;
         ratingGrp.members.sort(ZIndex.sortAscending);
         return numberArray;
+    }
+
+    override function update(elapsed:Float)
+    {
+        super.update(elapsed);
+        health = FlxMath.lerp(health, play.health, elapsed * 8);
+        if(Math.abs(health - play.health) <= 0.00001)
+            health = play.health;
+        //updateTimeTxt();
     }
 }

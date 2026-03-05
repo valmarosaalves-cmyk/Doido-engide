@@ -82,4 +82,8 @@ class CharGroup extends FlxTypedGroup<Character>
 
     public function dance(forced:Bool = false)
         char.dance(forced);
+
+    public var curChar(get, never):String;
+    public function get_curChar():String
+        return char.curChar;
 }
