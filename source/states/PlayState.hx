@@ -26,7 +26,7 @@ import doido.objects.DoidoHitbox;
 
 using doido.utils.CameraUtil;
 
-class PlayState extends MusicBeatState
+class PlayState extends MusicBeatState implements Playable
 {
 	public static var SONG:DoidoSong;
 	public static var EVENTS:DoidoEvents;
@@ -53,6 +53,8 @@ class PlayState extends MusicBeatState
 	var dad:CharGroup;
 	var bf:CharGroup;
 	var characters:Array<CharGroup> = [];
+
+	public var health:Float = 1;
 
 	#if TOUCH_CONTROLS
 	var pauseButton:DoidoHitbox;
@@ -133,7 +135,7 @@ class PlayState extends MusicBeatState
 		{
 			default: new DoidoHud();
 		}
-		hudClass.playState = this;
+		hudClass.play = this;
 		add(hudClass);
 
 		callScript("create");
@@ -188,6 +190,12 @@ class PlayState extends MusicBeatState
 				rating = Timings.addAccuracyDiff(noteDiff);
 				hudClass.popUpCombo(Timings.combo);
 			}
+
+			var judge = Timings.getTiming(rating).judge;
+			var healthJudge:Float = 0.02 * judge;
+			if(judge < 0) healthJudge *= 2;
+			health += healthJudge;
+
 			if (rating != "miss") hudClass.popUpRating(rating);
 			hudClass.updateScoreTxt();
 		}
@@ -255,10 +263,12 @@ class PlayState extends MusicBeatState
 		for(cam in [camHUD, camStrum])
 			cam.zoom = FlxMath.lerp(cam.zoom, defaultHudZoom, elapsed * 12);
 
-		if(Controls.justPressed(RESET)) {
+		if(Controls.justPressed(RESET) || health <= 0) {
 			MusicBeat.skipClearCache = true;
 			MusicBeat.switchState(new states.PlayState());
 		}
+
+		health = FlxMath.bound(health, 0, 2);
 
 		#if debug
 		if (FlxG.keys.justPressed.F9)
@@ -393,4 +403,8 @@ class PlayState extends MusicBeatState
 		for(script in loadedScripts)
 			script.set(name, value, allowOverride);
 	}
+}
+
+interface Playable {
+	var health:Float;
 }

@@ -2,12 +2,9 @@ package objects.ui.hud;
 
 class BaseHud extends FlxGroup
 {
-    public var playState:PlayState;
+    public var play:Playable;
     public var hudName:String = "base";
-
     public var separator:String = " | ";
-    public var scoreTxt:FlxBitmapText;
-
     public var ratingGrp:FlxGroup;
 
     public function new(hudName:String) {
@@ -22,6 +19,9 @@ class BaseHud extends FlxGroup
     }
 
     public function updateScoreTxt() {}
+    function updatePositions() {
+        updateScoreTxt();
+    }
 
     var ratingCount:Int = 0;
     public function popUpRating(ratingName:String = ""):RatingSprite
