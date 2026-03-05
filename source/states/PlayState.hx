@@ -187,12 +187,12 @@ class PlayState extends MusicBeatState implements Playable
 				Timings.addScore(note, noteDiff);
 				rating = Timings.addAccuracyDiff(noteDiff);
 				hudClass.popUpCombo(Timings.combo);
-			}
 
-			var judge = Timings.getTiming(rating).judge;
-			var healthJudge:Float = 0.02 * judge;
-			if(judge < 0) healthJudge *= 2;
-			health += healthJudge;
+				var judge = Timings.getTiming(rating).judge;
+				var healthJudge:Float = 0.05 * judge;
+				if(judge < 0) healthJudge *= 2;
+				health += healthJudge;
+			}
 
 			if (rating != "miss") hudClass.popUpRating(rating);
 			hudClass.updateScoreTxt();
@@ -243,6 +243,9 @@ class PlayState extends MusicBeatState implements Playable
 						char.playSingAnim(note);
 				}
 			}
+
+			if (strumline.isPlayer)
+				health += FlxG.elapsed * 0.08;
 		};
 		
 		playField.onGhostTap = (lane, direction) ->
