@@ -3,7 +3,7 @@ package doido.mobile;
 import objects.ui.notes.Strumline;
 import flixel.group.FlxSpriteGroup;
 #if TOUCH_CONTROLS
-import doido.objects.DoidoButton.ButtonHitbox;
+import doido.objects.ButtonHitbox;
 import doido.utils.NoteUtil;
 import flixel.input.FlxInput.FlxInputState;
 import flixel.util.FlxColor;

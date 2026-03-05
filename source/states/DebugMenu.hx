@@ -11,7 +11,6 @@ import haxe.Json;
 import haxe.Json;
 import openfl.media.Sound;
 import doido.Cache;
-import doido.objects.DoidoButton;
 
 using doido.utils.TextUtil;
 

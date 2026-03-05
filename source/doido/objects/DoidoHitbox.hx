@@ -10,43 +10,6 @@ import flixel.util.FlxColor;
 import flixel.util.FlxSignal;
 import flixel.group.FlxSpriteGroup;
 
-class DoidoButton extends FlxSpriteGroup implements IFlxInput
-{
-    var hitbox:ButtonHitbox;
-    var sprite:FlxSprite;
-
-    public function new(x:Float = 0, y:Float = 0) {
-		super(x,y);
-        hitbox = new ButtonHitbox(0,0,100,100,0.5);
-        sprite = new FlxSprite();
-        add(sprite);
-        add(hitbox);
-    }
-
-    public function fromImage(key:String) {
-        sprite.loadImage(key);
-        sprite.updateHitbox();
-        hitbox.reload(sprite.width, sprite.height);
-    }
-
-    public var justReleased(get, never):Bool;
-	public var released(get, never):Bool;
-	public var pressed(get, never):Bool;
-	public var justPressed(get, never):Bool;
-
-    inline function get_justReleased():Bool
-		return hitbox.justReleased;
-
-	inline function get_released():Bool
-		return hitbox.released;
-
-	inline function get_pressed():Bool
-		return hitbox.pressed;
-
-	inline function get_justPressed():Bool
-		return hitbox.justPressed;
-}
-
 // custom button hitbox thing?
 class ButtonHitbox extends FlxSprite implements IFlxInput
 {
@@ -158,4 +121,42 @@ class ButtonHitbox extends FlxSprite implements IFlxInput
 
 	inline function get_justPressed():Bool
 		return currentState == JUST_PRESSED;
+}
+
+//likely to go unused
+class DoidoButton extends FlxSpriteGroup implements IFlxInput
+{
+    var hitbox:ButtonHitbox;
+    var sprite:FlxSprite;
+
+    public function new(x:Float = 0, y:Float = 0) {
+		super(x,y);
+        hitbox = new ButtonHitbox(0,0,100,100,0.5);
+        sprite = new FlxSprite();
+        add(sprite);
+        add(hitbox);
+    }
+
+    public function fromImage(key:String) {
+        sprite.loadImage(key);
+        sprite.updateHitbox();
+        hitbox.reload(sprite.width, sprite.height);
+    }
+
+    public var justReleased(get, never):Bool;
+	public var released(get, never):Bool;
+	public var pressed(get, never):Bool;
+	public var justPressed(get, never):Bool;
+
+    inline function get_justReleased():Bool
+		return hitbox.justReleased;
+
+	inline function get_released():Bool
+		return hitbox.released;
+
+	inline function get_pressed():Bool
+		return hitbox.pressed;
+
+	inline function get_justPressed():Bool
+		return hitbox.justPressed;
 }

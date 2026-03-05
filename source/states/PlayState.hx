@@ -21,7 +21,7 @@ import hscript.iris.Iris;
 import flixel.FlxCamera;
 
 #if TOUCH_CONTROLS
-import doido.objects.DoidoButton.ButtonHitbox;
+import doido.objects.ButtonHitbox;
 #end
 
 using doido.utils.CameraUtil;
