@@ -4,7 +4,7 @@ import doido.song.Conductor;
 import doido.objects.DoidoSprite;
 
 typedef DoidoCharacter = {
-	var ?spritesheet:String;
+	var spritesheet:String;
     var ?extrasheets:Array<String>;
     var ?spriteType:String;
     var ?atlasType:String;
@@ -52,17 +52,19 @@ class Character extends DoidoSprite
 
     function loadCharacter()
     {
-        data = cast(Assets.json('images/${getPath()}/data'));
+        if(Assets.fileExists('images/characters/data/$curChar.json')) data = cast(Assets.json('images/characters/data/$curChar'));
+        else data = DEFAULT;
+
         spriteTypeFromString(data.spriteType);
         atlasTypeFromString(data.atlasType);
 
         var extrasheets:Array<String> = [];
         if((data.extrasheets ?? []).length > 0) {
             for(sheet in (data.extrasheets ?? []))
-                extrasheets.push('${getPath()}/$sheet');
+                extrasheets.push('images/characters/$sheet');
         }
 
-        frames = cast Assets.framesCollection('${getPath()}/${(data.spritesheet ?? (spriteType == ATLAS ? "sprite" : curChar))}', extrasheets, spriteType);
+        frames = cast Assets.framesCollection('images/characters/${data.spritesheet}', extrasheets, spriteType);
         for(animData in data.anims)
             addAnim(animData);
 
@@ -119,5 +121,35 @@ class Character extends DoidoSprite
 		offset.y += scaleOffset.y;
     }
 
-    function getPath() return 'characters/$curChar';
+    final DEFAULT:DoidoCharacter = {
+        spritesheet: "face",
+        spriteType: "ATLAS",
+        anims: [
+            {
+                name: "idle",
+                prefix: "idle-alive",
+                offset: {x: 0, y: 0}
+            },
+            {
+                name: "singLEFT",
+                prefix: "left-alive",
+                offset: {x: 42, y: 0}
+            },
+            {
+                name: "singDOWN",
+                prefix: "down-alive",
+                offset: {x: 0, y: 8}
+            },
+            {
+                name: "singUP",
+                prefix: "up-alive",
+                offset: {x: 19, y: 40}
+            },
+            {
+                name: "singRIGHT",
+                prefix: "right-alive",
+                offset: {x: -23, y: 13}
+            }
+        ]
+    }
 }
