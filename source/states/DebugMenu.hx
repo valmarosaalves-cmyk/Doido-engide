@@ -1,5 +1,6 @@
 package states;
 
+import doido.Cache;
 import doido.song.chart.Legacy;
 import doido.song.chart.SongHandler;
 import flixel.FlxSprite;
@@ -8,9 +9,8 @@ import flixel.math.FlxMath;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID as FlxPad;
 import haxe.Json;
-import haxe.Json;
 import openfl.media.Sound;
-import doido.Cache;
+import states.editors.ChartingState;
 
 using doido.utils.TextUtil;
 
@@ -312,18 +312,29 @@ class Freeplay extends MusicBeatState
         if(Controls.justPressed(BACK))
 			MusicBeat.switchState(new states.DebugMenu());
 
-        if(Controls.justPressed(ACCEPT) || FlxG.keys.justPressed.SHIFT) {
+        if(Controls.justPressed(ACCEPT) || FlxG.keys.justPressed.SHIFT || FlxG.keys.justPressed.SEVEN) {
             if(options[cur] == "Load Other") {
                 MusicBeat.switchState(new states.LoadOther());
             }
             else {
                 try {
                     PlayState.loadSong(options[cur], "hard");
-                    if(FlxG.keys.justPressed.SHIFT)
-                        PlayState.skip = true;
+                    
+                    if (FlxG.keys.justPressed.SEVEN)
+                    {
+                        MusicBeat.switchState(
+                            new ChartingState(PlayState.SONG, PlayState.EVENTS)
+                        );
+                    }
                     else
-                        PlayState.skip = false;
-                    MusicBeat.switchState(new states.PlayState());
+                    {
+                        if(FlxG.keys.justPressed.SHIFT)
+                            PlayState.skip = true;
+                        else
+                            PlayState.skip = false;
+
+                        MusicBeat.switchState(new states.PlayState());
+                    }
                 }
                 catch(e) {
                     FlxG.sound.play(Assets.sound('beep'));

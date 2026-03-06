@@ -1,24 +1,22 @@
 package states;
 
-import doido.utils.NoteUtil;
+import flixel.FlxCamera;
 import flixel.math.FlxMath;
-import substates.PauseSubState;
-import animate.FlxAnimate;
 import doido.song.*;
 import doido.song.chart.SongHandler;
 import doido.song.chart.SongHandler.DoidoSong;
 import doido.song.chart.SongHandler.DoidoEvents;
 import flixel.FlxSprite;
-import flixel.sound.FlxSound;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
+import hscript.iris.Iris;
 import objects.*;
 import objects.play.*;
 import objects.ui.*;
 import objects.ui.hud.*;
 import objects.ui.notes.*;
-import hscript.iris.Iris;
-import flixel.FlxCamera;
+import states.editors.ChartingState;
+import substates.PauseSubState;
 
 #if TOUCH_CONTROLS
 import doido.objects.DoidoHitbox;
@@ -102,6 +100,7 @@ class PlayState extends MusicBeatState implements Playable
 		
 		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
 		//bg.zIndex = 500;
+		bg.screenCenter();
 		add(bg);
 		
 		bf = new CharGroup(true);
@@ -264,13 +263,15 @@ class PlayState extends MusicBeatState implements Playable
 		for(cam in [camHUD, camStrum])
 			cam.zoom = FlxMath.lerp(cam.zoom, defaultHudZoom, elapsed * 12);
 
+		health = FlxMath.bound(health, 0, 2);
 		if(Controls.justPressed(RESET) || health <= 0) {
 			MusicBeat.skipClearCache = true;
 			MusicBeat.switchState(new states.PlayState());
 		}
 
-		health = FlxMath.bound(health, 0, 2);
-
+		if (FlxG.keys.justPressed.SEVEN)
+			MusicBeat.switchState(new ChartingState(SONG, EVENTS));
+		
 		#if debug
 		if (FlxG.keys.justPressed.F9)
 			audio.speed = 10;

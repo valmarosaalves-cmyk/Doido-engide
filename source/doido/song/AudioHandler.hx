@@ -61,9 +61,10 @@ class AudioHandler
 		});
 	}
 
-	public function play() {
+	public function play(?time:Float) {
 		update((snd) -> {
 			snd.play();
+			if (time != null) snd.time = time;
 		});
 	}
 
