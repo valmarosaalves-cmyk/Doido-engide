@@ -1,5 +1,6 @@
 package states.editors;
 
+import objects.ui.DebugInfo;
 import doido.song.AudioHandler;
 import doido.song.Conductor;
 import doido.song.chart.SongHandler.DoidoEvents;
@@ -63,6 +64,10 @@ class ChartingState extends MusicBeatState
         timeBar = new FlxSprite(GRID_X).makeColor(GRID_SIZE * 8, 4, 0xFFFF0000);
         timeBar.screenCenter(Y);
         add(timeBar);
+
+        var debugInfo = new DebugInfo(this);
+        debugInfo.visible = true;
+        add(debugInfo);
     }
 
     var tweeningSongPos:Bool = false;

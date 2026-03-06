@@ -2,24 +2,23 @@ package objects.ui;
 
 import doido.song.Conductor;
 import flixel.group.FlxGroup;
-import flixel.text.FlxText;
-import states.PlayState;
+import flixel.text.FlxBitmapText;
 
 using doido.utils.TextUtil;
 
 class DebugInfo extends FlxGroup
 {
-	public var daText:FlxText;
-	public var playState:PlayState;
+	public var daText:FlxBitmapText;
+	public var curState:MusicBeatState;
 	
-	public function new(playState:PlayState)
+	public function new(curState:MusicBeatState)
 	{
 		super();
-		this.playState = playState;
+		this.curState = curState;
 		visible = false;
-		
-		daText = new FlxText(10, 0, 0, '');
-		daText.setFormat(Main.globalFont, 18, 0xFFFFFFFF, LEFT);
+
+		daText = new FlxBitmapText(10, 0, Assets.bitmapFont("vcr"));
+        daText.alignment = LEFT;
 		daText.setOutline(0xFF000000, 1.5);
 		daText.antialiasing = false;
 		add(daText);
@@ -37,8 +36,8 @@ class DebugInfo extends FlxGroup
 		{
 			var text:String = "";
 			text += "Time: " + Math.floor(Conductor.songPos / 1000 * 100) / 100;
-			text += "\nStep: " + Math.floor(playState.curStepFloat * 100) / 100;
-			text += "\nBeat: " + Math.floor(playState.curStepFloat / 4 * 100) / 100;
+			text += "\nStep: " + Math.floor(curState.curStepFloat * 100) / 100;
+			text += "\nBeat: " + Math.floor(curState.curStepFloat / 4 * 100) / 100;
 			text += "\nBPM: " + Math.floor(Conductor.bpm * 100) / 100;
 			
 			if (daText.text != text) {
@@ -46,7 +45,6 @@ class DebugInfo extends FlxGroup
 				daText.y = FlxG.height - daText.height - 10;
 			}
 		}
-		//daText.screenCenter(X);
 		super.draw();
 	}
 }
