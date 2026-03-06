@@ -112,7 +112,7 @@ class ChartingState extends MusicBeatState
             var dir = (FlxG.keys.justPressed.A ? -1 : 1) * (FlxG.keys.pressed.SHIFT ? 4 : 1);
             tweenSongPos(
                 getSectionStart(
-                    Conductor.songPos + (Conductor.crochet * 4 * dir)
+                    Conductor.songPos + ((Conductor.crochet * 4 + 10) * dir)
                 )
             );
         }
