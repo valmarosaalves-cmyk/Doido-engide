@@ -8,6 +8,7 @@ import doido.song.chart.SongHandler.DoidoEvents;
 import doido.song.chart.SongHandler.DoidoSong;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
+import doido.utils.NoteUtil;
 
 class ChartingState extends MusicBeatState
 {
@@ -41,6 +42,9 @@ class ChartingState extends MusicBeatState
 		Conductor.songPos = 0;
 
         audio = new AudioHandler(SONG.song);
+
+        if(NoteUtil.directions.length == 0)
+            NoteUtil.setUpDirections(4);
 
         var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
 		bg.screenCenter();

@@ -64,7 +64,7 @@ class Character extends DoidoSprite
                 extrasheets.push('images/characters/$sheet');
         }
 
-        frames = cast Assets.framesCollection('images/characters/${data.spritesheet}', extrasheets, spriteType);
+        frames = cast Assets.framesCollection('characters/${data.spritesheet}', extrasheets, spriteType);
         for(animData in data.anims)
             addAnim(animData);
 
