@@ -85,12 +85,21 @@ class ChartingState extends MusicBeatState
         else
         {
             if (FlxG.keys.justPressed.SPACE) playingSong = !playingSong;
-            
-            if (FlxG.mouse.wheel != 0)
-            {
-                playingSong = false;
-                Conductor.songPos -= FlxG.mouse.wheel * 10000 * elapsed;
-            }
+        }
+
+        if (FlxG.mouse.wheel != 0)
+        {
+            playingSong = false;
+            stopTweenSongPos();
+            Conductor.songPos += -FlxG.mouse.wheel * 10000 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1);
+        }
+
+        if (FlxG.keys.pressed.W || FlxG.keys.pressed.S)
+        {
+            playingSong = false;
+            stopTweenSongPos();
+            var dir:Int = (FlxG.keys.pressed.S ? 1 : 0) - (FlxG.keys.pressed.W ? 1 : 0);
+            Conductor.songPos += dir * 1000 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1);
         }
 
         if (playingSong)
@@ -134,6 +143,7 @@ class ChartingState extends MusicBeatState
                     {
                         FlxTween.tween(FlxG.camera, {zoom: 1.3}, 1.6, {ease: FlxEase.cubeIn, startDelay: 0.4});
                         tweenSongPos(0, 2, FlxEase.cubeIn, (twn) -> {
+                            FlxG.sound.play(Assets.sound("editors/clank"));
                             FlxTween.completeTweensOf(FlxG.camera);
                             FlxTween.tween(FlxG.camera, {zoom: 1.0}, 0.1, {ease: FlxEase.cubeOut});
                             FlxG.camera.shake(0.02, 0.15);
@@ -167,23 +177,36 @@ class ChartingState extends MusicBeatState
         return Math.floor(time / round) * round;
     }
 
+    public function stopTweenSongPos()
+    {
+        if (tweeningSongPos)
+            tweenSongPos(getSectionStart());
+    }
+
     public function tweenSongPos(target:Float, duration:Float = 0.1, ?ease:EaseFunction, ?onComplete:FlxTween->Void)
     {
         target = FlxMath.bound(target, 0, audio.length);
 
-        tweeningSongPos = true;
         FlxTween.completeTweensOf(Conductor);
-        FlxTween.tween(
-            Conductor, { songPos: target },
-            duration,
-            {
-                ease: ease ?? FlxEase.cubeOut,
-                onComplete: (twn) -> {
-                    tweeningSongPos = false;
-                    if (onComplete != null) onComplete(twn);
+        tweeningSongPos = true;
+        
+        if (duration == 0)
+        {
+            Conductor.songPos = target;
+            tweeningSongPos = false;
+        }
+        else
+            FlxTween.tween(
+                Conductor, { songPos: target },
+                duration,
+                {
+                    ease: ease ?? FlxEase.cubeOut,
+                    onComplete: (twn) -> {
+                        tweeningSongPos = false;
+                        if (onComplete != null) onComplete(twn);
+                    }
                 }
-            }
-        );
+            );
     }
 
     var lastDraw:Float = Math.NEGATIVE_INFINITY;
