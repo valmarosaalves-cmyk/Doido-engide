@@ -1,8 +1,8 @@
 package objects.ui.hud;
 
 import doido.objects.DoidoSprite.Offset;
-import objects.ui.hud.BaseHud.IconChange;
 import flixel.math.FlxMath;
+import objects.ui.hud.BaseHud.IconChange;
 
 class DoidoHud extends BaseHud
 {

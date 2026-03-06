@@ -79,9 +79,9 @@ class AudioHandler
 		return inst.playing;
 	}
 
-	public var time(default, set):Float = 1.0;
+	public var time(default, set):Float = 0.0;
 	public function set_time(v:Float) {
-		trace("before " + inst.time);
+		//trace("before " + inst.time);
 		time = v;
 		update((snd) -> {
 			snd.time = v;
