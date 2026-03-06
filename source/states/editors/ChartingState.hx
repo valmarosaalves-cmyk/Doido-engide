@@ -131,11 +131,11 @@ class ChartingState extends MusicBeatState
             );
         }
 
-        if (!tweeningSongPos)
+        if (FlxG.keys.justPressed.R)
         {
-            if (FlxG.keys.justPressed.R)
+            if (FlxG.keys.pressed.SHIFT)
             {
-                if (FlxG.keys.pressed.SHIFT)
+                if (!tweeningSongPos)
                 {
                     if (Conductor.songPos <= 10000)
                         tweenSongPos(0, 0.25, FlxEase.cubeInOut);
@@ -151,9 +151,11 @@ class ChartingState extends MusicBeatState
                     }
                 }
                 else
-                {
-                    tweenSongPos(getSectionStart());
-                }
+                    FlxTween.completeTweensOf(Conductor);
+            }
+            else
+            {
+                tweenSongPos(getSectionStart());
             }
         }
 
