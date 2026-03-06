@@ -1,6 +1,6 @@
 package objects.ui.hud;
 
-import doido.objects.DoidoSprite.Offset;
+import doido.utils.DoidoPoint;
 import flixel.math.FlxMath;
 import objects.ui.hud.BaseHud.IconChange;
 
@@ -98,7 +98,7 @@ class DoidoHud extends BaseHud
     }
 
     public function updateIconPos() {
-		var healthBarPos:Offset = {
+		var healthBarPos:DoidoPoint = {
 			x: healthBar.x + FlxMath.lerp(healthBar.border.width, 0, healthBar.percent / 100),
 			y: healthBar.y - (healthBar.border.height / 2)
         };

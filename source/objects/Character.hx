@@ -1,5 +1,6 @@
 package objects;
 
+import doido.utils.DoidoPoint;
 import doido.song.Conductor;
 import doido.objects.DoidoSprite;
 
@@ -14,12 +15,12 @@ typedef DoidoCharacter = {
     var ?quickDancer:Bool;
     var ?deathChar:String;
 
-    var ?globalOffset:Offset;
-    var ?cameraOffset:Offset;
+    var ?globalOffset:DoidoPoint;
+    var ?cameraOffset:DoidoPoint;
 
     var ?singLength:Float;
 
-    var ?scale:Offset;
+    var ?scale:DoidoPoint;
     var ?pixel:Bool;
     var ?flipX:Bool;
     var ?flipY:Bool;
@@ -46,9 +47,9 @@ class Character extends DoidoSprite
     public var singLength:Float = 4.0;
     public var singStep:Float = 0.0;
 
-    public var globalOffset:Offset = {x: 0, y: 0};
-    public var cameraOffset:Offset = {x: 0, y: 0};
-    public var scaleOffset:Offset = {x: 0, y:0};
+    public var globalOffset:DoidoPoint = {x: 0, y: 0};
+    public var cameraOffset:DoidoPoint = {x: 0, y: 0};
+    public var scaleOffset:DoidoPoint = {x: 0, y:0};
 
     function loadCharacter()
     {

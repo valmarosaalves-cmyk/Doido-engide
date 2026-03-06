@@ -1,5 +1,6 @@
 package objects;
 
+import flixel.math.FlxPoint;
 import doido.utils.NoteUtil;
 import objects.ui.notes.Note;
 import flixel.group.FlxGroup.FlxTypedGroup;
@@ -86,4 +87,11 @@ class CharGroup extends FlxTypedGroup<Character>
     public var curChar(get, never):String;
     public function get_curChar():String
         return char.curChar;
+
+    public function getMidpoint(?point:Null<FlxPoint>):FlxPoint
+        return char.getMidpoint(point);
+
+    public var cameraOffset(get, never):DoidoPoint;
+    public function get_cameraOffset():DoidoPoint
+        return char.cameraOffset;
 }

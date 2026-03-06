@@ -1,6 +1,6 @@
 package states;
 
-import doido.objects.DoidoSprite.Offset;
+import doido.utils.DoidoPoint;
 import objects.Character;
 import flixel.FlxSprite;
 import flixel.FlxCamera;
@@ -89,7 +89,7 @@ class OffsetEditor extends MusicBeatState
 			if(!char.animOffsets.exists(anim))
 				char.addOffset(anim, {x: 0, y: 0});
 
-			var offsets:Offset = char.animOffsets.get(anim);
+			var offsets:DoidoPoint = char.animOffsets.get(anim);
 
 			exportTxt.text += '$anim ${offsets.x} ${offsets.y}\n';
 		}

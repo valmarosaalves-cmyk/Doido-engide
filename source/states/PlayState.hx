@@ -1,5 +1,6 @@
 package states;
 
+import doido.utils.DoidoPoint;
 import flixel.FlxCamera;
 import flixel.math.FlxMath;
 import doido.song.*;
@@ -39,6 +40,7 @@ class PlayState extends MusicBeatState implements Playable
 	var camStrum:FlxCamera;
 	var camOther:FlxCamera;
 
+	var camFollow:DoidoPoint = {x: 0, y: 0};
 	var defaultCamZoom:Float = 1.0;
 	var defaultHudZoom:Float = 1.0;
 
@@ -169,6 +171,8 @@ class PlayState extends MusicBeatState implements Playable
 			}
 		}
 
+		followCamera("dad");
+
 		callScript("createPost");
 	}
 
@@ -255,10 +259,44 @@ class PlayState extends MusicBeatState implements Playable
 		};
 	}
 
+	var cameraSpeed:Float = 1.0;
+	var camTweening:Bool = false;
+	function followLerp(elapsed:Float):Float
+		return camTweening ? -1 : FlxMath.bound((cameraSpeed * 5 * elapsed), 0, 1);
+
+	public function followCamera(charStr:String = "", ?offset:DoidoPoint){
+		var char = strToChar(charStr);
+		camFollow = {x: 0,y: 0};
+
+		if(char != null) {
+			var playerMult:Int = (char.isPlayer ? -1 : 1);
+
+			camFollow = {x: char.getMidpoint().x + (200 * playerMult), y: char.getMidpoint().y - 20};
+
+			camFollow.x += char.cameraOffset.x * playerMult;
+			camFollow.y += char.cameraOffset.y;
+		}
+
+		if(offset != null) {
+			camFollow.x += offset.x;
+			camFollow.y += offset.y;
+		}
+	}
+
+	function strToChar(str:String, nullable:Bool = false):CharGroup {
+		return switch(str) {
+			default: nullable ? null : dad;
+			case 'dad': dad;
+			case 'bf'|'boyfriend': 	bf;
+			//case 'gf'|'girlfriend': gf; //she doesnt exist yet!
+		}
+	}
 	override function update(elapsed:Float)
 	{
 		callScript("update", [elapsed]);
 		super.update(elapsed);
+
+		camGame.moveCam(camFollow, followLerp(elapsed));
 		
 		camGame.zoom = FlxMath.lerp(camGame.zoom, defaultCamZoom, elapsed * 12);
 		for(cam in [camHUD, camStrum])
@@ -347,6 +385,7 @@ class PlayState extends MusicBeatState implements Playable
 		hudClass.stepHit(curStep);
 	}
 
+	var camSwitch:Bool = false; //remove later...
 	override function beatHit()
 	{
 		super.beatHit();
@@ -386,6 +425,11 @@ class PlayState extends MusicBeatState implements Playable
 		if (curBeat % 4 == 0)
 		{
 			beatCamera(1.05, 1.02);
+		}
+
+		if(curBeat % 16 == 0) {
+			followCamera(camSwitch ? "bf" : "dad");
+			camSwitch = !camSwitch;
 		}
 
 		hudClass.beatHit(curBeat);

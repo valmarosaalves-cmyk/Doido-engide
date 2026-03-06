@@ -1,6 +1,7 @@
 package doido.utils;
 
 import flixel.FlxCamera;
+import flixel.math.FlxMath;
 
 class CameraUtil
 {
@@ -13,4 +14,15 @@ class CameraUtil
         }
         return cam;
     }
+
+    public static function moveCam(cam:flixel.FlxCamera, target:DoidoPoint, lerp:Float = -1) {
+        if(lerp == -1) {
+            cam.scroll.x = target.x - FlxG.width / 2;
+		    cam.scroll.y = target.y - FlxG.height/ 2;
+        }
+        else {
+            cam.scroll.x = FlxMath.lerp(cam.scroll.x, target.x - FlxG.width / 2, lerp);
+		    cam.scroll.y = FlxMath.lerp(cam.scroll.y, target.y - FlxG.height/ 2, lerp);
+        }
+	}
 }

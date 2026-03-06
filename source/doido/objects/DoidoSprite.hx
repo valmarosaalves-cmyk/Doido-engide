@@ -2,17 +2,12 @@ package doido.objects;
 
 import animate.FlxAnimate;
 
-typedef Offset = {
-    var x:Float;
-    var y:Float;
-}
-
 typedef Animation = {
     var name:String;
     var prefix:String;
     var ?framerate:Int;
     var ?looped:Bool;
-    var ?offset:Offset;
+    var ?offset:DoidoPoint;
     var ?indices:Array<Int>;
     var ?flipX:Bool;
     var ?flipY:Bool;
@@ -37,7 +32,7 @@ class DoidoSprite extends FlxAnimate
 	public var curAnimName:String = '';
 	public var curAnimFrame(get, never):Int;
 	public var curAnimFinished(get, never):Bool;
-	public var animOffsets:Map<String, Offset> = [];
+	public var animOffsets:Map<String, DoidoPoint> = [];
 	public var animList:Array<String> = [];
 
 	public var spriteType:SpriteType = SPARROW;
@@ -48,7 +43,7 @@ class DoidoSprite extends FlxAnimate
 		super(x, y);
 	};
 	
-	public function addOffset(animName:String, offset:Offset) {
+	public function addOffset(animName:String, offset:DoidoPoint) {
 		animOffsets.set(animName, offset);
 	}
 

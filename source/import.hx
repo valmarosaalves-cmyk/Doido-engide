@@ -5,6 +5,7 @@ import doido.MusicBeat;
 import doido.Save;
 import doido.utils.SpriteUtil;
 import doido.system.Logs;
+import doido.utils.DoidoPoint;
 import Main.Paths; //just to help
 
 using StringTools;
