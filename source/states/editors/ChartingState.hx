@@ -117,7 +117,7 @@ class ChartingState extends MusicBeatState
             var dir = (FlxG.keys.justPressed.A ? -1 : 1) * (FlxG.keys.pressed.SHIFT ? 4 : 1);
             tweenSongPos(
                 getSectionStart(
-                    Conductor.songPos + ((Conductor.crochet * 4 + 10) * dir)
+                    Conductor.songPos + 10 + (Conductor.crochet * 4 * dir)
                 )
             );
         }
@@ -174,10 +174,7 @@ class ChartingState extends MusicBeatState
         tweeningSongPos = true;
         FlxTween.completeTweensOf(Conductor);
         FlxTween.tween(
-            Conductor,
-            {
-                songPos: target,
-            },
+            Conductor, { songPos: target },
             duration,
             {
                 ease: ease ?? FlxEase.cubeOut,
@@ -257,7 +254,7 @@ class ChartingGrid extends FlxSprite
         gridX = x;
         this.length = length;
         GRID_SIZE = ChartingState.GRID_SIZE;
-        this.makeColor(GRID_SIZE, GRID_SIZE, 0xFFFFFFFF); // 358
+        this.makeColor(GRID_SIZE, GRID_SIZE, 0xFFFFFFFF);
 
         border = new FlxSprite(gridX - GRID_SIZE * 0.25).makeColor(GRID_SIZE * 8.5, FlxG.height, 0xFF1C1A24);
 
@@ -275,8 +272,7 @@ class ChartingGrid extends FlxSprite
     override function draw()
     {
         border.draw();
-        //super.draw();
-        for (_y in 0...Math.floor(Conductor.getStepAtTime(length)))
+        for (_y in 0...Math.ceil(Conductor.getStepAtTime(length)))
         {
             var gridY:Float = gridY + (GRID_SIZE * _y);
             if (gridY < -GRID_SIZE) continue;

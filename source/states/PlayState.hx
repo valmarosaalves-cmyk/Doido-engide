@@ -149,6 +149,7 @@ class PlayState extends MusicBeatState implements Playable
 		setUpInput();
 		
 		debugInfo = new DebugInfo(this);
+		debugInfo.cameras = [camStrum];
 		add(debugInfo);
 
 		#if TOUCH_CONTROLS
