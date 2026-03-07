@@ -71,11 +71,16 @@ class CharGroup extends FlxTypedGroup<Character>
 
     public function playSingAnim(note:Note, miss:Bool = false)
     {
-        char.singStep = char.singLength;
+        resetSingStep();
         playAnim(
 			NoteUtil.getSingAnims(4)[note.data.lane] + (miss ? "miss" : ""),
 			true
 		);
+    }
+
+    public function resetSingStep()
+    {
+        char.singStep = char.singLength;
     }
 
     public function playAnim(animName:String, forced:Bool = true, frame:Int = 0)

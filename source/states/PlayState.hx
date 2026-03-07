@@ -206,10 +206,13 @@ class PlayState extends MusicBeatState implements Playable
 		{
 			if (note.isHold && !note.isHoldEnd) return;
 
-			for(char in characters)
+			if (!note.isHold)
 			{
-				if (char.strumline == strumline)
-					char.playSingAnim(note);
+				for(char in characters)
+				{
+					if (char.strumline == strumline)
+						char.playSingAnim(note);
+				}
 			}
 
 			if (strumline.isPlayer)
@@ -244,7 +247,7 @@ class PlayState extends MusicBeatState implements Playable
 				for(char in characters)
 				{
 					if (char.strumline == strumline)
-						char.playSingAnim(note);
+						char.resetSingStep();
 				}
 			}
 
