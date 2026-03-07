@@ -19,11 +19,18 @@ typedef DoidoCharacter = {
     var ?cameraOffset:DoidoPoint;
 
     var ?singLength:Float;
+    var ?singType:String;
 
     var ?scale:DoidoPoint;
     var ?pixel:Bool;
     var ?flipX:Bool;
     var ?flipY:Bool;
+}
+
+enum SingType {
+    FIRST;
+    LAST;
+    LOOP;
 }
 
 class Character extends DoidoSprite
@@ -44,8 +51,10 @@ class Character extends DoidoSprite
     var quickDancer:Bool = false;
     var deathChar:String = "bf-dead";
 
+    public var singType:SingType = LAST;
     public var singLength:Float = 0.7;
     public var singStep:Float = 0.0;
+    public var singLoop:Int = 4;
 
     public var globalOffset:DoidoPoint = {x: 0, y: 0};
     public var cameraOffset:DoidoPoint = {x: 0, y: 0};
@@ -74,6 +83,7 @@ class Character extends DoidoSprite
         deathChar = data.deathChar ?? deathChar;
 
         singLength = data.singLength ?? singLength;
+        singTypeFromString(data.singType);
 
         for(i in 0...idleAnims.length) {
 			if(!animExists(idleAnims[i]))
@@ -97,6 +107,14 @@ class Character extends DoidoSprite
         scaleOffset = {x: offset.x, y: offset.y};
 
         dance();
+    }
+
+    public function singTypeFromString(type:Null<String>) {
+        singType = switch((type ?? "").toUpperCase()) {
+			case "LOOP": LOOP;
+			case "FIRST": FIRST;
+            default: LAST;
+        }
     }
 
     private var curDance:Int = 0;
@@ -125,6 +143,7 @@ class Character extends DoidoSprite
     final DEFAULT:DoidoCharacter = {
         spritesheet: "face",
         spriteType: "ATLAS",
+        singType: "LOOP",
         anims: [
             {
                 name: "idle",

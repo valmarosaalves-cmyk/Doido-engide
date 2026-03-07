@@ -242,12 +242,13 @@ class PlayState extends MusicBeatState implements Playable
 			}
 		};
 		playField.onNoteHold = (note, strumline) -> {
-			if (playField.canPlayHoldAnims)
+			for(char in characters)
 			{
-				for(char in characters)
-				{
-					if (char.strumline == strumline)
+				if (char.strumline == strumline) {
+					if(char.singType == LAST)
 						char.resetSingStep();
+					else if(char.curAnimFrame == char.singLoop || char.singType == FIRST)
+						char.playSingAnim(note);
 				}
 			}
 
@@ -412,7 +413,7 @@ class PlayState extends MusicBeatState implements Playable
 			// dancing
 			for(char in characters)
 			{
-				if (char.char.singStep <= 0)
+				if (char.singStep <= 0)
 				{
 					if (char.isPlayer)
 					{

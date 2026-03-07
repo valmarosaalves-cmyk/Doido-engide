@@ -1,5 +1,6 @@
 package objects;
 
+import objects.Character.SingType;
 import flixel.math.FlxPoint;
 import doido.utils.NoteUtil;
 import objects.ui.notes.Note;
@@ -97,10 +98,26 @@ class CharGroup extends FlxTypedGroup<Character>
     public function get_curAnimName():String
         return char.curAnimName;
 
+    public var curAnimFrame(get, never):Int;
+    public function get_curAnimFrame():Int
+        return char.curAnimFrame;
+
     public function getMidpoint(?point:Null<FlxPoint>):FlxPoint
         return char.getMidpoint(point);
 
     public var cameraOffset(get, never):DoidoPoint;
     public function get_cameraOffset():DoidoPoint
         return char.cameraOffset;
+
+    public var singStep(get, never):Float;
+    public function get_singStep():Float
+        return char.singStep;
+
+    public var singType(get, never):SingType;
+    public function get_singType():SingType
+        return char.singType;
+
+    public var singLoop(get, never):Int;
+    public function get_singLoop():Int
+        return char.singLoop;
 }
