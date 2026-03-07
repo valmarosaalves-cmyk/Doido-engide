@@ -24,7 +24,7 @@ class ChartingState extends MusicBeatState
     public static var GRID_SIZE:Int = 40;
     public static var GRID_LANES:Int = 8;
     
-    var audio:AudioHandler;
+    public var audio:AudioHandler;
     public var playingSong:Bool = false;
 
     public var SONG:DoidoSong;
@@ -147,6 +147,21 @@ class ChartingState extends MusicBeatState
                 }
                 else
                     selectSquare.visible = true;
+            }
+
+            if (!playingSong)
+            {
+                var mouseMove:Int = 60;
+                if (FlxG.mouse.y < mouseMove
+                || FlxG.mouse.y > FlxG.height - mouseMove)
+                {
+                    var dir:Int = (FlxG.mouse.y < mouseMove) ? -1 : 1;
+                    if (FlxG.mouse.y < mouseMove / 2
+                    || FlxG.mouse.y > FlxG.height - mouseMove / 2)
+                        dir *= 4;
+                    
+                    Conductor.songPos += dir * 1000 * elapsed;
+                }
             }
         }
 
