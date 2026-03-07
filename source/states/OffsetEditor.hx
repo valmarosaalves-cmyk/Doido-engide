@@ -3,14 +3,12 @@ package states;
 import doido.utils.DoidoPoint;
 import objects.Character;
 import flixel.FlxSprite;
-import flixel.FlxCamera;
 import objects.Character;
 import flixel.text.FlxText;
 import flixel.FlxObject;
 import flixel.math.FlxMath;
+import doido.objects.DoidoCamera;
 import StringTools;
-
-using doido.utils.CameraUtil;
 
 class OffsetEditor extends MusicBeatState
 {
@@ -23,8 +21,8 @@ class OffsetEditor extends MusicBeatState
 		super();
 	}
 
-	var camChar:FlxCamera;
-    var camHUD:FlxCamera;
+	var camChar:DoidoCamera;
+    var camHUD:DoidoCamera;
 
     var char:Character;
     var ghost:Character;
@@ -37,8 +35,8 @@ class OffsetEditor extends MusicBeatState
 		super.create();
         DiscordIO.changePresence("In the Offset Editor");
 
-		camChar = new FlxCamera().createCam(false, true);
-        camHUD = new FlxCamera().createCam(true, false);
+		camChar = new DoidoCamera(false, true);
+        camHUD = new DoidoCamera(true, false);
 
         camFollow = new FlxObject();
 		camChar.follow(camFollow, LOCKON, 1);

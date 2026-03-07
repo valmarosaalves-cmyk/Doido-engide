@@ -1,7 +1,6 @@
 package states;
 
 import doido.utils.DoidoPoint;
-import flixel.FlxCamera;
 import flixel.math.FlxMath;
 import doido.song.*;
 import doido.song.chart.SongHandler;
@@ -18,12 +17,12 @@ import objects.ui.hud.*;
 import objects.ui.notes.*;
 import states.editors.ChartingState;
 import substates.PauseSubState;
+import doido.objects.DoidoCamera;
+import doido.utils.LerpUtil;
 
 #if TOUCH_CONTROLS
 import doido.objects.DoidoHitbox;
 #end
-
-using doido.utils.CameraUtil;
 
 class PlayState extends MusicBeatState implements Playable
 {
@@ -35,14 +34,18 @@ class PlayState extends MusicBeatState implements Playable
 	public var hudClass:BaseHud;
 	public var debugInfo:DebugInfo;
 
-	var camGame:FlxCamera;
-	var camHUD:FlxCamera;
-	var camStrum:FlxCamera;
-	var camOther:FlxCamera;
+	var camGame:DoidoCamera;
+	var camHUD:DoidoCamera;
+	var camStrum:DoidoCamera;
+	var camOther:DoidoCamera;
 
-	var camFollow:DoidoPoint = {x: 0, y: 0};
+	var camFollow:LerpPoint;
+	var camDisplace:LerpPoint;
 	var defaultCamZoom:Float = 1.0;
 	var defaultHudZoom:Float = 1.0;
+
+	public var curFocus:String = "";
+	public var maxDisplace:DoidoPoint = {x: 0, y: 0};
 
 	public var paused:Bool = false;
 	public var canPause:Bool = true;
@@ -95,10 +98,13 @@ class PlayState extends MusicBeatState implements Playable
 		
 		audio = new AudioHandler(SONG.song);
 
-		camGame = new FlxCamera().createCam(false, true);
-		camHUD = new FlxCamera().createCam(true, false);
-		camStrum = new FlxCamera().createCam(true, false);
-		camOther = new FlxCamera().createCam(true, false);
+		camGame = new DoidoCamera(false, true);
+		camHUD = new DoidoCamera(true, false);
+		camStrum = new DoidoCamera(true, false);
+		camOther = new DoidoCamera(true, false);
+
+		camFollow = new LerpPoint(true);
+		camDisplace = new LerpPoint(true);
 		
 		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
 		bg.scrollFactor.set();
@@ -264,43 +270,20 @@ class PlayState extends MusicBeatState implements Playable
 	}
 
 	var cameraSpeed:Float = 1.0;
-	var camTweening:Bool = false;
-	function followLerp(elapsed:Float):Float
-		return camTweening ? -1 : FlxMath.bound((cameraSpeed * 5 * elapsed), 0, 1);
-
-	public function followCamera(charStr:String = "", ?offset:DoidoPoint){
-		var char = strToChar(charStr);
-		camFollow = {x: 0,y: 0};
-
-		if(char != null) {
-			var playerMult:Int = (char.isPlayer ? -1 : 1);
-
-			camFollow = {x: char.getMidpoint().x + (200 * playerMult), y: char.getMidpoint().y - 20};
-
-			camFollow.x += char.cameraOffset.x * playerMult;
-			camFollow.y += char.cameraOffset.y;
-		}
-
-		if(offset != null) {
-			camFollow.x += offset.x;
-			camFollow.y += offset.y;
-		}
-	}
-
-	function strToChar(str:String, nullable:Bool = false):CharGroup {
-		return switch(str) {
-			default: nullable ? null : dad;
-			case 'dad': dad;
-			case 'bf'|'boyfriend': 	bf;
-			//case 'gf'|'girlfriend': gf; //she doesnt exist yet!
-		}
-	}
 	override function update(elapsed:Float)
 	{
 		callScript("update", [elapsed]);
 		super.update(elapsed);
 
-		camGame.moveCam(camFollow, followLerp(elapsed));
+		function followLerp():Float
+			return FlxMath.bound((cameraSpeed * 5 * elapsed), 0, 1);
+
+		updateDisplace();
+		camGame.moveCam([
+			camFollow.get(followLerp()),
+			camDisplace.get(followLerp()),
+			{x: -FlxG.width/2, y: -FlxG.height/2}
+		]);
 		
 		camGame.zoom = FlxMath.lerp(camGame.zoom, defaultCamZoom, elapsed * 12);
 		for(cam in [camHUD, camStrum])
@@ -334,6 +317,51 @@ class PlayState extends MusicBeatState implements Playable
 			
 		playField.updateNotes(curStepFloat);
 		callScript("updatePost", [elapsed]);
+	}
+
+	public function followCamera(charStr:String = "", ?offset:DoidoPoint){
+		var char = strToChar(charStr);
+		curFocus = charStr;
+		camFollow.point = {x: 0,y: 0};
+
+		if(char != null) {
+			var playerMult:Int = (char.isPlayer ? -1 : 1);
+
+			camFollow.point = {x: char.getMidpoint().x + (200 * playerMult), y: char.getMidpoint().y - 20};
+
+			camFollow.point.x += char.cameraOffset.x * playerMult;
+			camFollow.point.y += char.cameraOffset.y;
+		}
+
+		if(offset != null) {
+			camFollow.point.x += offset.x;
+			camFollow.point.y += offset.y;
+		}
+	}
+
+	function updateDisplace() {
+		if(maxDisplace == {x: 0, y: 0}) return;
+		switch (strToChar(curFocus).curAnimName) {
+			case 'singLEFT':
+				camDisplace.point = {x: -maxDisplace.x, y: 0};
+			case 'singRIGHT':
+				camDisplace.point = {x: maxDisplace.x, y: 0};
+			case 'singUP':
+				camDisplace.point = {x: 0, y: -maxDisplace.y};
+			case 'singDOWN':
+				camDisplace.point = {x: 0, y: maxDisplace.y};
+			default:
+				camDisplace.point = {x: 0, y: 0};
+		}
+	}
+
+	function strToChar(str:String, nullable:Bool = false):CharGroup {
+		return switch(str) {
+			default: nullable ? null : dad;
+			case 'dad': dad;
+			case 'bf'|'boyfriend': 	bf;
+			//case 'gf'|'girlfriend': gf; //she doesnt exist yet!
+		}
 	}
 
 	public function startSong()
