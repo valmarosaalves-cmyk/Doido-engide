@@ -208,6 +208,54 @@ class Conductor
         return totalSteps;
     }
 
+    public static function getTimeAtStep(step:Float):Float
+    {
+        var totalTime:Float = 0;
+        var lastStep:Float = 0;
+
+        if (bpmChangeMap.length > 0)
+        {
+            for (event in bpmChangeMap)
+            {
+                if (step < event.stepTime) break;
+
+                totalTime += (event.stepTime - lastStep) * calcStep(getBPMAtTime(totalTime));
+                lastStep = event.stepTime;
+
+                if (event.length > 0)
+                {
+                    if (step <= event.stepTime + event.length)
+                    {
+                        var percent = FlxMath.bound(
+                            (step - event.stepTime) / event.length,
+                            0, 1
+                        );
+
+                        var curBPM = FlxMath.lerp(
+                            event.startBPM,
+                            event.targetBPM,
+                            event.ease(percent)
+                        );
+
+                        totalTime += (step - lastStep) * calcStep(curBPM);
+                        return totalTime;
+                    }
+                    else
+                    {
+                        var rampDuration = getEventRampDuration(event);
+
+                        totalTime += rampDuration;
+                        lastStep += event.length;
+                    }
+                }
+            }
+        }
+
+        totalTime += (step - lastStep) * calcStep(getBPMAtTime(totalTime));
+
+        return totalTime;
+    }
+
     public static function getBeatAtTime(?time:Float):Float
 	{
 		if (time == null) time = songPos;

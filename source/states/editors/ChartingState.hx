@@ -124,11 +124,7 @@ class ChartingState extends MusicBeatState
         if (FlxG.keys.justPressed.A || FlxG.keys.justPressed.D)
         {
             var dir = (FlxG.keys.justPressed.A ? -1 : 1) * (FlxG.keys.pressed.SHIFT ? 4 : 1);
-            tweenSongPos(
-                getSectionStart(
-                    Conductor.songPos + 10 + (Conductor.crochet * 4 * dir)
-                )
-            );
+            tweenSongPos(getSectionStart(curStepFloat + 1 + (16 * dir)));
         }
 
         if (FlxG.keys.justPressed.R)
@@ -167,12 +163,11 @@ class ChartingState extends MusicBeatState
         grid.gridY = (timeBar.y + (timeBar.height / 2)) - (curStepFloat * GRID_SIZE);
     }
 
-    public function getSectionStart(?time:Float):Float
+    public function getSectionStart(?step:Float):Float
     {
-        if (time == null) time = Conductor.songPos;
+        if (step == null) step = curStepFloat;
 
-        var round:Float = (Conductor.crochet * 4);
-        return Math.floor(time / round) * round;
+        return Conductor.getTimeAtStep(Math.floor(step / 16) * 16);
     }
 
     public function stopTweenSongPos()
