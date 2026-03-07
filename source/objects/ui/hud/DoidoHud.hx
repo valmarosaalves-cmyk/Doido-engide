@@ -15,6 +15,7 @@ class DoidoHud extends BaseHud
     public function new(play:Playable)
     {
         super("doido", play);
+		add(numberGrp);
         add(ratingGrp);
 
         healthBar = new DoidoBar("hud/base/healthBar", "hud/base/healthBar-border");
@@ -39,10 +40,10 @@ class DoidoHud extends BaseHud
     override function popUpRating(ratingName:String = ""):RatingSprite
     {
         var rating = super.popUpRating(ratingName);
-        
-        rating.screenCenter();
+		rating.ratingScale = 0.7;
+        rating.screenCenter(X);
+		rating.y = ratingPos;
         rating.defaultAnim();
-
         return rating;
     }
 
@@ -50,13 +51,21 @@ class DoidoHud extends BaseHud
     {
         var numberArray = super.popUpCombo(comboNum);
         
-        for (number in numberArray)
-        {
-            number.y += 100;
+        for (number in numberArray) {
+            number.y = ratingPos + 70;
             number.defaultAnim();
         }
 
         return numberArray;
+    }
+
+	var ratingPos(get, never):Int;
+	function get_ratingPos():Int
+		return Save.data.downscroll ? FlxG.height - 150 : 150;
+
+	override function positionCombo(numberArray:Array<ComboSprite>) {
+		for(number in numberArray) number.numberScale = 0.7;
+        super.positionCombo(numberArray);
     }
 
     override function updatePositions() {

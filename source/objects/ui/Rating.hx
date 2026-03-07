@@ -34,11 +34,20 @@ class RatingSprite extends FlxSprite
     {
         acceleration.set(0, 0);
         velocity.set(0, 0);
-        scale.set(baseScale, baseScale);
+        ratingScale = 1;
         updateHitbox();
         alpha = 1.0;
 
         animation.play(animName);
+    }
+
+    //to use in the hud
+    public var ratingScale(default, set):Float;
+    public function set_ratingScale(v:Float):Float {
+        ratingScale = v;
+        scale.set(baseScale * ratingScale, baseScale * ratingScale);
+        updateHitbox();
+        return ratingScale;
     }
 
     public function defaultAnim()
@@ -88,13 +97,22 @@ class ComboSprite extends FlxSprite
     {
         acceleration.set(0, 0);
         velocity.set(0, 0);
-        scale.set(baseScale, baseScale);
+        numberScale = 1;
         updateHitbox();
         alpha = 1.0;
 
         color = 0xFFFFFFFF;
         
         animation.play(animName);
+    }
+
+    //to use in the hud
+    public var numberScale(default, set):Float;
+    public function set_numberScale(v:Float):Float {
+        numberScale = v;
+        scale.set(baseScale * numberScale, baseScale * numberScale);
+        updateHitbox();
+        return numberScale;
     }
 
     public function defaultAnim()
