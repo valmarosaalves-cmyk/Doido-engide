@@ -1,7 +1,8 @@
 package states.editors;
 
+import flixel.util.FlxTimer;
+import doido.utils.EditorUtil;
 import doido.song.chart.SongHandler.NoteData;
-import objects.ui.DebugInfo;
 import doido.song.AudioHandler;
 import doido.song.Conductor;
 import doido.song.chart.SongHandler.DoidoEvents;
@@ -14,7 +15,9 @@ import flixel.text.FlxBitmapText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxEase.EaseFunction;
 import flixel.tweens.FlxTween;
+import objects.ui.DebugInfo;
 import objects.ui.notes.Note;
+import shaders.MultiplyShader;
 
 class ChartingState extends MusicBeatState
 {
@@ -30,7 +33,20 @@ class ChartingState extends MusicBeatState
     public var grid:ChartingGrid;
     public var timeBar:FlxSprite;
     public var renderNotes:FlxTypedGroup<ChartingNote>;
+
+    public var selectedShader:MultiplyShader;
+
+    // editor stuff
+    public var selectedNotes:Array<NoteData> = [];
+    public var draggingSelectedNotes:Bool = false;
     public var hoverSquare:FlxSprite;
+    public var selectSquare:FlxSprite;
+
+    public var lastClicked:DoidoPoint = {x: 0, y: 0};
+    public var lastClickedOffset:Float = 0.0;
+    public var lastMouseStep:Null<Float>;
+    public var lastMouseLane:Null<Int>;
+    public var heldOnNote:Bool = false;
 
     public function new(SONG:DoidoSong, EVENTS:DoidoEvents)
     {
@@ -62,28 +78,32 @@ class ChartingState extends MusicBeatState
         renderNotes = new FlxTypedGroup<ChartingNote>();
         add(renderNotes);
 
-        hoverSquare = new FlxSprite().makeColor(GRID_SIZE, GRID_SIZE, 0xFFFFFFFF);
-        hoverSquare.visible = false;
-        hoverSquare.alpha = 0.7;
-        add(hoverSquare);
+        selectedShader = new MultiplyShader();
+        selectedShader.multiplyColor = 0xFF0078D4;
 
         timeBar = new FlxSprite(grid.gridX).makeColor(GRID_SIZE * GRID_LANES, 4, 0xFFFF0000);
         timeBar.screenCenter(Y);
         add(timeBar);
 
+        hoverSquare = new FlxSprite().makeColor(GRID_SIZE, GRID_SIZE, 0xFFFFFFFF);
+        hoverSquare.visible = false;
+        hoverSquare.alpha = 0.7;
+        add(hoverSquare);
+
+        selectSquare = new FlxSprite().makeColor(1, 1, 0xFF0078D4);
+        selectSquare.visible = false;
+        selectSquare.alpha = 0.5;
+        add(selectSquare);
+
         var debugInfo = new DebugInfo(this);
         debugInfo.visible = true;
         add(debugInfo);
-
-        redrawNotes();
     }
 
     var tweeningSongPos:Bool = false;
 
     override function update(elapsed:Float)
     {
-        super.update(elapsed);
-
         // debug camera lol
         if (FlxG.keys.justPressed.NINE || FlxG.keys.justPressed.NUMPADNINE)
             FlxG.camera.zoom = (FlxG.camera.zoom == 1.0 ? 0.8 : 1.0);
@@ -95,51 +115,233 @@ class ChartingState extends MusicBeatState
             if (FlxG.keys.justPressed.SPACE) playingSong = !playingSong;
         }
 
-        if (FlxG.mouse.x > grid.gridX && FlxG.mouse.x < grid.gridX + GRID_SIZE * GRID_LANES
-        && FlxG.mouse.y > grid.gridY && FlxG.mouse.y < grid.gridY + GRID_SIZE * grid.gridLength)
+        if (FlxG.mouse.justPressed)
         {
-            var mouseStep:Float = Math.floor((FlxG.mouse.y - grid.gridY) / GRID_SIZE);
-            var mouseLane:Int = Math.floor((FlxG.mouse.x - grid.gridX) / GRID_SIZE);
+            lastClicked = {x: FlxG.mouse.x, y: FlxG.mouse.y};
+            lastClickedOffset = grid.gridY;
+        }
 
-            hoverSquare.visible = true;
-            hoverSquare.setPosition(
-                grid.gridX + mouseLane * GRID_SIZE,
-                grid.gridY + mouseStep * GRID_SIZE
-            );
+        if (FlxG.mouse.justReleased)
+        {
+            heldOnNote = false;
+        }
 
-            if (FlxG.mouse.overlaps(renderNotes))
+        if (lastClickedOffset != grid.gridY)
+        {
+            lastClicked.y -= (lastClickedOffset - grid.gridY);
+            lastClickedOffset = grid.gridY;
+        }
+
+        if (FlxG.mouse.pressed)
+        {
+            // if you moved 10 pixels from it
+            if (Math.abs(FlxG.mouse.x - lastClicked.x) >= 10
+            || Math.abs(FlxG.mouse.y - lastClicked.y) >= 10)
             {
-                if (FlxG.mouse.pressedRight)
+                if (selectedNotes.length > 0)
                 {
-                    var removed:Bool = false;
-                    for(note in renderNotes.members)
-                    {
-                        if (FlxG.mouse.overlaps(note))
-                        {
-                            removed = true;
-                            SONG.notes.remove(note.data);
-                        }
-                    }
-                    if (removed) sortNotes();
+                    if (heldOnNote)
+                        draggingSelectedNotes = true;
+                    else
+                        selectSquare.visible = true;
                 }
+                else
+                    selectSquare.visible = true;
             }
+        }
 
-            if (FlxG.mouse.justReleased)
+        if (selectedNotes.length > 0)
+        {
+            selectedShader.multiplyOpacity = 0.8 + Math.sin(FlxG.game.ticks / 100) * 0.4;
+
+            if (FlxG.keys.justPressed.DELETE)
             {
-                var newNote:NoteData = {
-                    stepTime: mouseStep,
-                    lane: (mouseLane % 4),
-                    strumline: (mouseLane >= 4) ? 1 : 0,
-                    type: "none",
-                    length: 0.0,
-                };
-                //trace('added lane ${newNote.lane} to strumline ${newNote.strumline}');
-                SONG.notes.push(newNote);
+                for(note in selectedNotes)
+                {
+                    playSfx("editors/pop", FlxG.random.float(0.0, 0.4));
+                    SONG.notes.remove(note);
+                }
+                selectedNotes = [];
                 sortNotes();
             }
         }
-        else
+        
+        if (selectSquare.visible)
+        {
             hoverSquare.visible = false;
+
+            selectSquare.scale.set(
+                Math.abs(FlxG.mouse.x - lastClicked.x),
+                Math.abs(FlxG.mouse.y - lastClicked.y)
+            );
+            selectSquare.updateHitbox();
+            
+            if (FlxG.mouse.x < lastClicked.x)
+                selectSquare.x = lastClicked.x - selectSquare.width;
+            else
+                selectSquare.x = lastClicked.x;
+
+            if (FlxG.mouse.y < lastClicked.y)
+                selectSquare.y = lastClicked.y - selectSquare.height;
+            else
+                selectSquare.y = lastClicked.y;
+
+            if (FlxG.mouse.justReleased)
+            {
+                if (!FlxG.keys.pressed.SHIFT) selectedNotes = [];
+
+                var startY:Float = Math.floor((selectSquare.y - grid.gridY) / GRID_SIZE);
+                var endY:Float = startY + Math.floor(selectSquare.height / GRID_SIZE);
+                var startX:Float = Math.floor((selectSquare.x - grid.gridX) / GRID_SIZE);
+                var endX:Float = startX + Math.floor(selectSquare.width / GRID_SIZE);
+
+                for (note in SONG.notes)
+                {
+                    var rawLane:Int = note.lane + (4 * note.strumline);
+
+                    if(note.stepTime > startY - 1
+                    && note.stepTime < endY + 1
+                    && rawLane > startX - 1
+                    && rawLane < endX + 1)
+                    {
+                        if (!selectedNotes.contains(note))
+                            selectedNotes.push(note);
+                    }
+                }
+
+                selectSquare.visible = false;
+            }
+        }
+        else
+        {
+            if (FlxG.mouse.x > grid.gridX && FlxG.mouse.x < grid.gridX + GRID_SIZE * GRID_LANES
+            && FlxG.mouse.y > grid.gridY && FlxG.mouse.y < grid.gridY + GRID_SIZE * grid.gridLength)
+            {
+                var mouseStep:Float = Math.floor((FlxG.mouse.y - grid.gridY) / GRID_SIZE);
+                var mouseLane:Int = Math.floor((FlxG.mouse.x - grid.gridX) / GRID_SIZE);
+
+                hoverSquare.visible = true;
+                hoverSquare.setPosition(
+                    grid.gridX + mouseLane * GRID_SIZE,
+                    grid.gridY + mouseStep * GRID_SIZE
+                );
+
+                if (FlxG.mouse.justPressedRight)
+                    selectedNotes = [];
+                
+                if (FlxG.mouse.overlaps(renderNotes))
+                {
+                    EditorUtil.setCursor(POINTER);
+                    if (FlxG.mouse.pressedRight)
+                    {
+                        //EditorUtil.setCursor();
+                        var removed:Bool = false;
+                        for(note in renderNotes.members)
+                        {
+                            if (FlxG.mouse.overlaps(note))
+                            {
+                                removed = true;
+                                SONG.notes.remove(note.data);
+                            }
+                        }
+                        if (removed)
+                        {
+                            sortNotes();
+                            playSfx("editors/pop");
+                        }
+                    }
+                    if (FlxG.mouse.justPressed)
+                    {
+                        //selectedNotes = [];
+                        heldOnNote = true;
+                        var clearNote:NoteData = null;
+                        for(note in renderNotes.members)
+                        {
+                            if (FlxG.mouse.overlaps(note))
+                            {
+                                if (FlxG.keys.pressed.SHIFT)
+                                {
+                                    if (!selectedNotes.contains(note.data))
+                                        selectedNotes.push(note.data);
+                                }
+                                else
+                                {
+                                    if (!selectedNotes.contains(note.data))
+                                        clearNote = note.data;
+                                }
+                            }
+                        }
+
+                        lastMouseStep = mouseStep;
+                        lastMouseLane = mouseLane;
+
+                        if (clearNote != null)
+                            selectedNotes = [clearNote];
+
+                        sortNotes();
+                    }
+                }
+                else
+                {
+                    if (FlxG.mouse.justReleased)
+                    {
+                        if (!draggingSelectedNotes)
+                        {
+                            var newNote:NoteData = {
+                                stepTime: mouseStep,
+                                lane: (mouseLane % 4),
+                                strumline: (mouseLane >= 4) ? 1 : 0,
+                                type: "none",
+                                length: 0.0,
+                            };
+                            //trace('added lane ${newNote.lane} to strumline ${newNote.strumline}');
+                            SONG.notes.push(newNote);
+                            selectedNotes = [newNote];
+                            sortNotes();
+                        }
+                    }
+                }
+
+                // draggingSelectedNotes
+                if(draggingSelectedNotes)
+                {
+                    EditorUtil.setCursor(MOVE);
+                    if (FlxG.mouse.justReleased)
+                    {
+                        draggingSelectedNotes = false;
+                        playSfx("editors/click");
+                        for(note in selectedNotes)
+                        {
+                            note.stepTime -= (lastMouseStep - mouseStep);
+                            if(note.stepTime < 0 || note.stepTime > grid.gridLength)
+                            {
+                                SONG.notes.remove(note); // BE CAREFUL!!
+                                continue;
+                            }
+
+                            note.lane -= (lastMouseLane - mouseLane);
+                            while (note.lane < 0)
+                            {
+                                note.lane += 4;
+                                note.strumline -= 1;
+                                if (note.strumline < 0)
+                                    note.strumline = 1;
+                            }
+                            while (note.lane > 3)
+                            {
+                                note.lane %= 4;
+                                note.strumline += 1;
+                                if (note.strumline > 1)
+                                    note.strumline = 0;
+                            }
+                        }
+                        sortNotes();
+                    }
+                }
+            }
+            else
+                hoverSquare.visible = false;
+        }
 
         if (FlxG.mouse.wheel != 0)
         {
@@ -193,7 +395,7 @@ class ChartingState extends MusicBeatState
                     {
                         FlxTween.tween(FlxG.camera, {zoom: 1.3}, 1.6, {ease: FlxEase.cubeIn, startDelay: 0.4});
                         tweenSongPos(0, 2, FlxEase.cubeIn, (twn) -> {
-                            FlxG.sound.play(Assets.sound("editors/clank"));
+                            playSfx("editors/clank");
                             FlxTween.completeTweensOf(FlxG.camera);
                             FlxTween.tween(FlxG.camera, {zoom: 1.0}, 0.1, {ease: FlxEase.cubeOut});
                             FlxG.camera.shake(0.02, 0.15);
@@ -201,7 +403,10 @@ class ChartingState extends MusicBeatState
                     }
                 }
                 else
+                {
                     FlxTween.completeTweensOf(Conductor);
+                    //redrawNotes();
+                }
             }
             else
             {
@@ -211,7 +416,7 @@ class ChartingState extends MusicBeatState
 
         if (FlxG.mouse.pressedMiddle) {
             timeBar.y = FlxG.mouse.y;
-            redrawNotes();
+            //redrawNotes();
         }
 
         if (FlxG.keys.justPressed.ENTER)
@@ -222,6 +427,7 @@ class ChartingState extends MusicBeatState
         }
 
         grid.gridY = (timeBar.y + (timeBar.height / 2)) - (curStepFloat * GRID_SIZE);
+        super.update(elapsed);
     }
 
     public function getSectionStart(?step:Float):Float
@@ -266,41 +472,48 @@ class ChartingState extends MusicBeatState
     public function sortNotes()
     {
         SONG.notes.sort(NoteUtil.sortNotes);
-        redrawNotes();
+        //redrawNotes();
     }
-
-    public function redrawNotes()
+    
+    public function playSfx(key:String, pitchShift:Bool = true, startDelay:Float = 0.0)
     {
-        lastDraw = Math.NEGATIVE_INFINITY;
+        var sfx = FlxG.sound.load(Assets.sound(key));
+        if (pitchShift) sfx.pitch = FlxG.random.float(0.8, 1.2);
+        if (startDelay <= 0.0)
+            sfx.play();
+        else
+            new FlxTimer().start(startDelay, (tmr) -> {
+                sfx.play();
+            });
     }
 
-    var lastDraw:Float = 0.0;
     override function draw()
     {
-        if (lastDraw != Conductor.songPos)
+        for(note in renderNotes.members) {
+            renderNotes.remove(note, true);
+            note.kill();
+        }
+
+        for(noteData in SONG.notes)
         {
-            lastDraw = Conductor.songPos;
-            for(note in renderNotes.members) {
-                renderNotes.remove(note, true);
-                note.kill();
-            }
+            var noteY:Float = grid.gridY + (noteData.stepTime * GRID_SIZE);
+            if (noteY < -GRID_SIZE) continue;
+            if (noteY > FlxG.height) break;
+            
+            var note:ChartingNote = cast renderNotes.recycle(ChartingNote);
+            note.loadData(noteData);
+            note.reloadSprite();
 
-            for(noteData in SONG.notes)
-            {
-                var noteY:Float = grid.gridY + (noteData.stepTime * GRID_SIZE);
-                if (noteY < -GRID_SIZE) continue;
-                if (noteY > FlxG.height) break;
-                
-                var note:ChartingNote = cast renderNotes.recycle(ChartingNote);
-                note.loadData(noteData);
-                note.reloadSprite();
+            note.setGraphicSize(GRID_SIZE, GRID_SIZE);
+            note.updateHitbox();
 
-                note.setGraphicSize(GRID_SIZE, GRID_SIZE);
-                note.updateHitbox();
-                
-                //note.setZ(2);
-                renderNotes.add(note);
-            }
+            if (selectedNotes.contains(noteData))
+                note.shader = selectedShader;
+            else
+                note.shader = null;
+            
+            //note.setZ(2);
+            renderNotes.add(note);
         }
 
         for(note in renderNotes.members)
