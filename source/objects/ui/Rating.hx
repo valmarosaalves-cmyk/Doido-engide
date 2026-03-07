@@ -43,7 +43,6 @@ class RatingSprite extends FlxSprite
 
     public function defaultAnim()
     {
-        screenCenter();
         velocity.set(
             FlxG.random.int(-10, 10),
             FlxG.random.int(-140, -175)

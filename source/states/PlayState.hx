@@ -422,12 +422,12 @@ class PlayState extends MusicBeatState implements Playable
 			}
 		}
 
-		if (curBeat % 4 == 0 && curBeat > 0)
+		if (curBeat % 4 == 0)	
 		{
 			beatCamera(1.05, 1.02);
 		}
 
-		if(curBeat % 16 == 0) {
+		if(curBeat % 16 == 0 && curBeat > 0) {
 			followCamera(camSwitch ? "bf" : "dad");
 			camSwitch = !camSwitch;
 		}
