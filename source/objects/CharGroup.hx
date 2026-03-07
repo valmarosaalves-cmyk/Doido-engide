@@ -87,6 +87,10 @@ class CharGroup extends FlxTypedGroup<Character>
     public var curChar(get, never):String;
     public function get_curChar():String
         return char.curChar;
+    
+    public var curAnimName(get, never):String;
+    public function get_curAnimName():String
+        return char.curAnimName;
 
     public function getMidpoint(?point:Null<FlxPoint>):FlxPoint
         return char.getMidpoint(point);

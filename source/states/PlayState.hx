@@ -385,7 +385,7 @@ class PlayState extends MusicBeatState implements Playable
 		hudClass.stepHit(curStep);
 	}
 
-	var camSwitch:Bool = false; //remove later...
+	var camSwitch:Bool = true; //remove later...
 	override function beatHit()
 	{
 		super.beatHit();
@@ -422,7 +422,7 @@ class PlayState extends MusicBeatState implements Playable
 			}
 		}
 
-		if (curBeat % 4 == 0)
+		if (curBeat % 4 == 0 && curBeat > 0)
 		{
 			beatCamera(1.05, 1.02);
 		}
