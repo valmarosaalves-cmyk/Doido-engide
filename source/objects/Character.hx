@@ -44,7 +44,7 @@ class Character extends DoidoSprite
     var quickDancer:Bool = false;
     var deathChar:String = "bf-dead";
 
-    public var singLength:Float = 4.0;
+    public var singLength:Float = 0.7;
     public var singStep:Float = 0.0;
 
     public var globalOffset:DoidoPoint = {x: 0, y: 0};
@@ -73,7 +73,7 @@ class Character extends DoidoSprite
         quickDancer = data.quickDancer ?? quickDancer;
         deathChar = data.deathChar ?? deathChar;
 
-        singLength = data.singLength ?? 16;
+        singLength = data.singLength ?? singLength;
 
         for(i in 0...idleAnims.length) {
 			if(!animExists(idleAnims[i]))
@@ -113,7 +113,7 @@ class Character extends DoidoSprite
 			playAnim(curAnimName + '-loop');
 
         if(singStep > 0)
-            singStep -= Conductor.stepCrochet * elapsed;
+            singStep -= /*Conductor.stepCrochet **/ elapsed;
     }
 
     override public function updateOffset() {
