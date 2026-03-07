@@ -1,5 +1,6 @@
 package states.editors;
 
+import doido.song.chart.SongHandler.NoteData;
 import objects.ui.DebugInfo;
 import doido.song.AudioHandler;
 import doido.song.Conductor;
@@ -18,18 +19,18 @@ import objects.ui.notes.Note;
 class ChartingState extends MusicBeatState
 {
     public static var GRID_SIZE:Int = 40;
-    public static var GRID_X:Int = 358;
-
-    public var grid:ChartingGrid;
-    public var timeBar:FlxSprite;
-
+    public static var GRID_LANES:Int = 8;
+    
     var audio:AudioHandler;
     public var playingSong:Bool = false;
 
     public var SONG:DoidoSong;
     public var EVENTS:DoidoEvents;
 
+    public var grid:ChartingGrid;
+    public var timeBar:FlxSprite;
     public var renderNotes:FlxTypedGroup<ChartingNote>;
+    public var hoverSquare:FlxSprite;
 
     public function new(SONG:DoidoSong, EVENTS:DoidoEvents)
     {
@@ -55,19 +56,26 @@ class ChartingState extends MusicBeatState
 		bg.screenCenter();
 		add(bg);
 
-        grid = new ChartingGrid(GRID_X, audio.length);
+        grid = new ChartingGrid(358, audio.length);
         add(grid);
 
         renderNotes = new FlxTypedGroup<ChartingNote>();
         add(renderNotes);
 
-        timeBar = new FlxSprite(GRID_X).makeColor(GRID_SIZE * 8, 4, 0xFFFF0000);
+        hoverSquare = new FlxSprite().makeColor(GRID_SIZE, GRID_SIZE, 0xFFFFFFFF);
+        hoverSquare.visible = false;
+        hoverSquare.alpha = 0.7;
+        add(hoverSquare);
+
+        timeBar = new FlxSprite(grid.gridX).makeColor(GRID_SIZE * GRID_LANES, 4, 0xFFFF0000);
         timeBar.screenCenter(Y);
         add(timeBar);
 
         var debugInfo = new DebugInfo(this);
         debugInfo.visible = true;
         add(debugInfo);
+
+        redrawNotes();
     }
 
     var tweeningSongPos:Bool = false;
@@ -86,6 +94,52 @@ class ChartingState extends MusicBeatState
         {
             if (FlxG.keys.justPressed.SPACE) playingSong = !playingSong;
         }
+
+        if (FlxG.mouse.x > grid.gridX && FlxG.mouse.x < grid.gridX + GRID_SIZE * GRID_LANES
+        && FlxG.mouse.y > grid.gridY && FlxG.mouse.y < grid.gridY + GRID_SIZE * grid.gridLength)
+        {
+            var mouseStep:Float = Math.floor((FlxG.mouse.y - grid.gridY) / GRID_SIZE);
+            var mouseLane:Int = Math.floor((FlxG.mouse.x - grid.gridX) / GRID_SIZE);
+
+            hoverSquare.visible = true;
+            hoverSquare.setPosition(
+                grid.gridX + mouseLane * GRID_SIZE,
+                grid.gridY + mouseStep * GRID_SIZE
+            );
+
+            if (FlxG.mouse.overlaps(renderNotes))
+            {
+                if (FlxG.mouse.pressedRight)
+                {
+                    var removed:Bool = false;
+                    for(note in renderNotes.members)
+                    {
+                        if (FlxG.mouse.overlaps(note))
+                        {
+                            removed = true;
+                            SONG.notes.remove(note.data);
+                        }
+                    }
+                    if (removed) sortNotes();
+                }
+            }
+
+            if (FlxG.mouse.justReleased)
+            {
+                var newNote:NoteData = {
+                    stepTime: mouseStep,
+                    lane: (mouseLane % 4),
+                    strumline: (mouseLane >= 4) ? 1 : 0,
+                    type: "none",
+                    length: 0.0,
+                };
+                //trace('added lane ${newNote.lane} to strumline ${newNote.strumline}');
+                SONG.notes.push(newNote);
+                sortNotes();
+            }
+        }
+        else
+            hoverSquare.visible = false;
 
         if (FlxG.mouse.wheel != 0)
         {
@@ -157,7 +211,14 @@ class ChartingState extends MusicBeatState
 
         if (FlxG.mouse.pressedMiddle) {
             timeBar.y = FlxG.mouse.y;
-            lastDraw = Math.NEGATIVE_INFINITY;
+            redrawNotes();
+        }
+
+        if (FlxG.keys.justPressed.ENTER)
+        {
+            PlayState.SONG = SONG;
+            PlayState.EVENTS = EVENTS;
+            MusicBeat.switchState(new PlayState());
         }
 
         grid.gridY = (timeBar.y + (timeBar.height / 2)) - (curStepFloat * GRID_SIZE);
@@ -202,7 +263,18 @@ class ChartingState extends MusicBeatState
             );
     }
 
-    var lastDraw:Float = Math.NEGATIVE_INFINITY;
+    public function sortNotes()
+    {
+        SONG.notes.sort(NoteUtil.sortNotes);
+        redrawNotes();
+    }
+
+    public function redrawNotes()
+    {
+        lastDraw = Math.NEGATIVE_INFINITY;
+    }
+
+    var lastDraw:Float = 0.0;
     override function draw()
     {
         if (lastDraw != Conductor.songPos)
@@ -235,8 +307,8 @@ class ChartingState extends MusicBeatState
         {
             var noteY:Float = grid.gridY + (note.data.stepTime * GRID_SIZE);
             note.setPosition(
-                grid.gridX + (note.data.lane * GRID_SIZE) + (note.data.strumline * GRID_SIZE * 4),
-                noteY 
+                grid.gridX + (note.data.lane * GRID_SIZE) + (note.data.strumline * GRID_SIZE * GRID_LANES / 2),
+                noteY
             );
         }
 
@@ -255,6 +327,7 @@ class ChartingGrid extends FlxSprite
     public var GRID_SIZE:Float = 0.0;
     public var gridX:Float = 0.0;
     public var gridY:Float = 0.0;
+    public var gridLength:Int = 0;
 
     public var length:Float = 0.0;
 
@@ -288,7 +361,8 @@ class ChartingGrid extends FlxSprite
     override function draw()
     {
         border.draw();
-        for (_y in 0...Math.ceil(Conductor.getStepAtTime(length)))
+        gridLength = Math.ceil(Conductor.getStepAtTime(length));
+        for (_y in 0...gridLength)
         {
             var gridY:Float = gridY + (GRID_SIZE * _y);
             if (gridY < -GRID_SIZE) continue;

@@ -101,7 +101,7 @@ class PlayState extends MusicBeatState implements Playable
 		camOther = new FlxCamera().createCam(true, false);
 		
 		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
-		//bg.zIndex = 500;
+		bg.scrollFactor.set();
 		bg.screenCenter();
 		add(bg);
 		
