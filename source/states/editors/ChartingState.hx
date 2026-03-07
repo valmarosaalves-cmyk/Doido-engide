@@ -164,11 +164,7 @@ class ChartingState extends MusicBeatState
             lastDraw = Math.NEGATIVE_INFINITY;
         }
 
-        grid.gridY = (timeBar.y + (timeBar.height / 2)) - FlxMath.remapToRange(
-            Conductor.songPos,
-            0, Conductor.stepCrochet,
-            0, GRID_SIZE
-        );
+        grid.gridY = (timeBar.y + (timeBar.height / 2)) - (curStepFloat * GRID_SIZE);
     }
 
     public function getSectionStart(?time:Float):Float
