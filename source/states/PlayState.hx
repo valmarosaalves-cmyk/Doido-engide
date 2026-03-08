@@ -295,7 +295,7 @@ class PlayState extends MusicBeatState implements Playable
 
 		health = FlxMath.bound(health, 0, 2);
 		if(Controls.justPressed(RESET) || health <= 0) {
-			MusicBeat.skipClearCache = true;
+			MusicBeat.skip = true;
 			MusicBeat.switchState(new states.PlayState());
 		}
 
