@@ -23,6 +23,8 @@ class ChartingState extends MusicBeatState
 {
     public static var GRID_SIZE:Int = 40;
     public static var GRID_LANES:Int = 8;
+
+    public var noFunAllowed:Bool = false; // reduced animations
     
     public var audio:AudioHandler;
     public var playingSong:Bool = false;
@@ -83,6 +85,7 @@ class ChartingState extends MusicBeatState
 
         timeBar = new FlxSprite(grid.gridX).makeColor(GRID_SIZE * GRID_LANES, 4, 0xFFFF0000);
         timeBar.screenCenter(Y);
+        timeBar.offset.y = timeBar.height / 2;
         add(timeBar);
 
         hoverSquare = new FlxSprite().makeColor(GRID_SIZE, GRID_SIZE, 0xFFFFFFFF);
@@ -203,7 +206,7 @@ class ChartingState extends MusicBeatState
 
             if (FlxG.mouse.justReleased)
             {
-                if (!FlxG.keys.pressed.SHIFT) selectedNotes = [];
+                if (!FlxG.keys.pressed.CONTROL) selectedNotes = [];
 
                 var startY:Float = Math.floor((selectSquare.y - grid.gridY) / GRID_SIZE);
                 var endY:Float = startY + Math.floor(selectSquare.height / GRID_SIZE);
@@ -261,8 +264,8 @@ class ChartingState extends MusicBeatState
                         }
                         if (removed)
                         {
-                            sortNotes();
                             playSfx("editors/pop");
+                            sortNotes();
                         }
                     }
                     if (FlxG.mouse.justPressed)
@@ -274,10 +277,12 @@ class ChartingState extends MusicBeatState
                         {
                             if (FlxG.mouse.overlaps(note))
                             {
-                                if (FlxG.keys.pressed.SHIFT)
+                                if (FlxG.keys.pressed.CONTROL)
                                 {
                                     if (!selectedNotes.contains(note.data))
                                         selectedNotes.push(note.data);
+                                    else
+                                        selectedNotes.remove(note.data);
                                 }
                                 else
                                 {
@@ -302,6 +307,7 @@ class ChartingState extends MusicBeatState
                     {
                         if (!draggingSelectedNotes)
                         {
+                            playSfx("editors/click");
                             var newNote:NoteData = {
                                 stepTime: mouseStep,
                                 lane: (mouseLane % 4),
@@ -317,7 +323,6 @@ class ChartingState extends MusicBeatState
                     }
                 }
 
-                // draggingSelectedNotes
                 if(draggingSelectedNotes)
                 {
                     EditorUtil.setCursor(MOVE);
@@ -394,8 +399,18 @@ class ChartingState extends MusicBeatState
 
         if (FlxG.keys.justPressed.A || FlxG.keys.justPressed.D)
         {
-            var dir = (FlxG.keys.justPressed.A ? -1 : 1) * (FlxG.keys.pressed.SHIFT ? 4 : 1);
-            tweenSongPos(getSectionStart(curStepFloat + 1 + (16 * dir)));
+            var wasA:Bool = FlxG.keys.justPressed.A;
+            if (wasA && FlxG.keys.pressed.CONTROL)
+            {
+                selectedNotes = [];
+                for(note in SONG.notes)
+                    selectedNotes.push(note);
+            }
+            else
+            {
+                var dir = (wasA ? -1 : 1) * (FlxG.keys.pressed.SHIFT ? 4 : 1);
+                tweenSongPos(getSectionStart(curStepFloat + 1 + (16 * dir)));
+            }
         }
 
         if (FlxG.keys.justPressed.R)
@@ -404,7 +419,7 @@ class ChartingState extends MusicBeatState
             {
                 if (!tweeningSongPos)
                 {
-                    if (Conductor.songPos <= 10000)
+                    if (Conductor.songPos <= 10000 || noFunAllowed)
                         tweenSongPos(0, 0.25, FlxEase.cubeInOut);
                     else
                     {
@@ -420,7 +435,7 @@ class ChartingState extends MusicBeatState
                 else
                 {
                     FlxTween.completeTweensOf(Conductor);
-                    //redrawNotes();
+                    
                 }
             }
             else
@@ -431,7 +446,7 @@ class ChartingState extends MusicBeatState
 
         if (FlxG.mouse.pressedMiddle) {
             timeBar.y = FlxG.mouse.y;
-            //redrawNotes();
+            
         }
 
         if (FlxG.keys.justPressed.ENTER)
@@ -441,7 +456,10 @@ class ChartingState extends MusicBeatState
             MusicBeat.switchState(new PlayState());
         }
 
-        grid.gridY = (timeBar.y + (timeBar.height / 2)) - (curStepFloat * GRID_SIZE);
+        if (FlxG.keys.justPressed.EIGHT || FlxG.keys.justPressed.NUMPADEIGHT)
+            noFunAllowed = !noFunAllowed;
+
+        grid.gridY = timeBar.y - (curStepFloat * GRID_SIZE);
         super.update(elapsed);
     }
 
@@ -461,6 +479,7 @@ class ChartingState extends MusicBeatState
     public function tweenSongPos(target:Float, duration:Float = 0.1, ?ease:EaseFunction, ?onComplete:FlxTween->Void)
     {
         target = FlxMath.bound(target, 0, audio.length);
+        if (noFunAllowed) duration = 0;
 
         FlxTween.completeTweensOf(Conductor);
         tweeningSongPos = true;
@@ -487,7 +506,7 @@ class ChartingState extends MusicBeatState
     public function sortNotes()
     {
         SONG.notes.sort(NoteUtil.sortNotes);
-        //redrawNotes();
+        
     }
     
     public function playSfx(key:String, pitchShift:Bool = true, startDelay:Float = 0.0)
@@ -526,6 +545,8 @@ class ChartingState extends MusicBeatState
                 note.shader = selectedShader;
             else
                 note.shader = null;
+
+            note.alpha = (noteData.stepTime < curStepFloat) ? 0.4 : 1.0;
             
             //note.setZ(2);
             renderNotes.add(note);
