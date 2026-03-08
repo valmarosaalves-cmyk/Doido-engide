@@ -19,7 +19,7 @@ class DebugInfo extends FlxGroup
 
 		daText = new FlxBitmapText(10, 0, Assets.bitmapFont("vcr"));
         daText.alignment = LEFT;
-		daText.setOutline(0xFF000000, 1.5);
+		daText.setOutline(0xFF000000, 2);
 		daText.antialiasing = false;
 		add(daText);
 	}

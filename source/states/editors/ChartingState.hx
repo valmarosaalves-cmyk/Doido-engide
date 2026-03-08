@@ -18,6 +18,7 @@ import flixel.tweens.FlxTween;
 import objects.ui.DebugInfo;
 import objects.ui.notes.Note;
 import shaders.MultiplyShader;
+import haxe.Json;
 
 class ChartingState extends MusicBeatState
 {
@@ -235,7 +236,8 @@ class ChartingState extends MusicBeatState
             if (FlxG.mouse.x > grid.gridX && FlxG.mouse.x < grid.gridX + GRID_SIZE * GRID_LANES
             && FlxG.mouse.y > grid.gridY && FlxG.mouse.y < grid.gridY + GRID_SIZE * grid.gridLength)
             {
-                var mouseStep:Float = Math.floor((FlxG.mouse.y - grid.gridY) / GRID_SIZE);
+                var mouseStep:Float = (FlxG.mouse.y - grid.gridY) / GRID_SIZE;
+                if(!FlxG.keys.pressed.ALT) mouseStep = Math.floor(mouseStep);
                 var mouseLane:Int = Math.floor((FlxG.mouse.x - grid.gridX) / GRID_SIZE);
 
                 hoverSquare.visible = true;
@@ -459,8 +461,31 @@ class ChartingState extends MusicBeatState
         if (FlxG.keys.justPressed.EIGHT || FlxG.keys.justPressed.NUMPADEIGHT)
             noFunAllowed = !noFunAllowed;
 
+        if(FlxG.keys.justPressed.S && FlxG.keys.pressed.CONTROL)
+            save();
+
         grid.gridY = timeBar.y - (curStepFloat * GRID_SIZE);
         super.update(elapsed);
+    }
+
+    function save() {
+        var data:String = Json.stringify(SONG, "\t");
+        if(data != null && data.length > 0)
+        {
+            Assets.fileSave(
+                data.trim(),
+                '${SONG.song}.json'
+            );
+        }
+
+        var data:String = Json.stringify(EVENTS, "\t");
+        if(data != null && data.length > 0)
+        {
+            Assets.fileSave(
+                data.trim(),
+                '${SONG.song}-events.json'
+            );
+        }
     }
 
     public function getSectionStart(?step:Float):Float
