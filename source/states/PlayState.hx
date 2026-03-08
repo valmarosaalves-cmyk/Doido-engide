@@ -39,8 +39,8 @@ class PlayState extends MusicBeatState implements Playable
 	var camStrum:DoidoCamera;
 	var camOther:DoidoCamera;
 
-	var camFollow:LerpPoint;
-	var camDisplace:LerpPoint;
+	var camFollow:LerpPoint = new LerpPoint();
+	var camDisplace:LerpPoint = new LerpPoint();
 	var defaultCamZoom:Float = 1.0;
 	var defaultHudZoom:Float = 1.0;
 
@@ -102,9 +102,6 @@ class PlayState extends MusicBeatState implements Playable
 		camHUD = new DoidoCamera(true, false);
 		camStrum = new DoidoCamera(true, false);
 		camOther = new DoidoCamera(true, false);
-
-		camFollow = new LerpPoint(true);
-		camDisplace = new LerpPoint(true);
 		
 		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
 		bg.scrollFactor.set();
@@ -322,20 +319,20 @@ class PlayState extends MusicBeatState implements Playable
 	public function followCamera(charStr:String = "", ?offset:DoidoPoint){
 		var char = strToChar(charStr);
 		curFocus = charStr;
-		camFollow.point = {x: 0,y: 0};
+		camFollow.set({x: 0,y: 0});
 
 		if(char != null) {
 			var playerMult:Int = (char.isPlayer ? -1 : 1);
 
-			camFollow.point = {x: char.getMidpoint().x + (200 * playerMult), y: char.getMidpoint().y - 20};
+			camFollow.set({x: char.getMidpoint().x + (200 * playerMult), y: char.getMidpoint().y - 20});
 
-			camFollow.point.x += char.cameraOffset.x * playerMult;
-			camFollow.point.y += char.cameraOffset.y;
+			camFollow.x += char.cameraOffset.x * playerMult;
+			camFollow.y += char.cameraOffset.y;
 		}
 
 		if(offset != null) {
-			camFollow.point.x += offset.x;
-			camFollow.point.y += offset.y;
+			camFollow.x += offset.x;
+			camFollow.y += offset.y;
 		}
 	}
 
@@ -343,15 +340,15 @@ class PlayState extends MusicBeatState implements Playable
 		if(maxDisplace == {x: 0, y: 0}) return;
 		switch (strToChar(curFocus).curAnimName) {
 			case 'singLEFT':
-				camDisplace.point = {x: -maxDisplace.x, y: 0};
+				camDisplace.set({x: -maxDisplace.x, y: 0});
 			case 'singRIGHT':
-				camDisplace.point = {x: maxDisplace.x, y: 0};
+				camDisplace.set({x: maxDisplace.x, y: 0});
 			case 'singUP':
-				camDisplace.point = {x: 0, y: -maxDisplace.y};
+				camDisplace.set({x: 0, y: -maxDisplace.y});
 			case 'singDOWN':
-				camDisplace.point = {x: 0, y: maxDisplace.y};
+				camDisplace.set({x: 0, y: maxDisplace.y});
 			default:
-				camDisplace.point = {x: 0, y: 0};
+				camDisplace.set({x: 0, y: 0});
 		}
 	}
 
