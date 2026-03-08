@@ -50,6 +50,7 @@ class ChartingState extends MusicBeatState
     public var lastMouseStep:Null<Float>;
     public var lastMouseLane:Null<Int>;
     public var heldOnNote:Bool = false;
+    public var heldOnNoteHold:Bool = false;
 
     public function new(SONG:DoidoSong, EVENTS:DoidoEvents)
     {
@@ -128,6 +129,7 @@ class ChartingState extends MusicBeatState
         if (FlxG.mouse.justReleased)
         {
             heldOnNote = false;
+            //heldOnNoteHold = false;
         }
 
         if (lastClickedOffset != grid.gridY)
@@ -146,7 +148,7 @@ class ChartingState extends MusicBeatState
                 {
                     if (heldOnNote)
                         draggingSelectedNotes = true;
-                    else
+                    else if (!heldOnNoteHold)
                         selectSquare.visible = true;
                 }
                 else
@@ -172,6 +174,19 @@ class ChartingState extends MusicBeatState
         if (selectedNotes.length > 0)
         {
             selectedShader.multiplyOpacity = 0.8 + Math.sin(FlxG.game.ticks / 100) * 0.4;
+            
+            if (FlxG.keys.justPressed.Q || FlxG.keys.justPressed.E)
+            {
+                playSfx("editors/click");
+                var dir:Int = FlxG.keys.justPressed.Q ? -1 : 1;
+                if (FlxG.keys.pressed.SHIFT) dir *= 4;
+                for(note in selectedNotes)
+                {
+                    note.length += dir;
+                    if (note.length < 0)
+                        note.length = 0;
+                }
+            }
 
             if (FlxG.keys.justPressed.DELETE)
             {
@@ -236,9 +251,8 @@ class ChartingState extends MusicBeatState
             if (FlxG.mouse.x > grid.gridX && FlxG.mouse.x < grid.gridX + GRID_SIZE * GRID_LANES
             && FlxG.mouse.y > grid.gridY && FlxG.mouse.y < grid.gridY + GRID_SIZE * grid.gridLength)
             {
-                var mouseStep:Float = (FlxG.mouse.y - grid.gridY) / GRID_SIZE;
-                if(!FlxG.keys.pressed.ALT) mouseStep = Math.floor(mouseStep);
-                var mouseLane:Int = Math.floor((FlxG.mouse.x - grid.gridX) / GRID_SIZE);
+                var mouseStep:Float = getMouseStep();
+                var mouseLane:Int = getMouseLane();
 
                 hoverSquare.visible = true;
                 hoverSquare.setPosition(
@@ -251,7 +265,22 @@ class ChartingState extends MusicBeatState
                 
                 if (FlxG.mouse.overlaps(renderNotes))
                 {
+                    var mightBeHold:Bool = false;
+
                     EditorUtil.setCursor(POINTER);
+                    for(note in renderNotes.members)
+                    {
+                        if (FlxG.mouse.overlaps(note))
+                        {
+                            // hold hitbox
+                            if ((note.isHold && FlxG.mouse.y > note.y + GRID_SIZE / 2)
+                            || (!note.isHold && FlxG.mouse.y > note.y + GRID_SIZE * 0.75))
+                            {
+                                EditorUtil.setCursor(RESIZE_NS);
+                                mightBeHold = true;
+                            }
+                        }
+                    }
                     if (FlxG.mouse.pressedRight)
                     {
                         //EditorUtil.setCursor();
@@ -261,7 +290,10 @@ class ChartingState extends MusicBeatState
                             if (FlxG.mouse.overlaps(note))
                             {
                                 removed = true;
-                                SONG.notes.remove(note.data);
+                                if (note.isHold)
+                                    SONG.notes[SONG.notes.indexOf(note.data)].length = 0;
+                                else
+                                    SONG.notes.remove(note.data);
                             }
                         }
                         if (removed)
@@ -272,8 +304,11 @@ class ChartingState extends MusicBeatState
                     }
                     if (FlxG.mouse.justPressed)
                     {
-                        //selectedNotes = [];
-                        heldOnNote = true;
+                        if (mightBeHold)
+                            heldOnNoteHold = true;
+                        else
+                            heldOnNote = true;
+
                         var clearNote:NoteData = null;
                         for(note in renderNotes.members)
                         {
@@ -307,7 +342,7 @@ class ChartingState extends MusicBeatState
                 {
                     if (FlxG.mouse.justReleased)
                     {
-                        if (!draggingSelectedNotes)
+                        if (!draggingSelectedNotes && !heldOnNoteHold)
                         {
                             playSfx("editors/click");
                             var newNote:NoteData = {
@@ -325,13 +360,29 @@ class ChartingState extends MusicBeatState
                     }
                 }
 
+                if (heldOnNoteHold)
+                {
+                    EditorUtil.setCursor(RESIZE_NS);
+                    if (FlxG.mouse.justReleased)
+                    {
+                        playSfx("editors/click");
+                        heldOnNoteHold = false;
+                        for(note in selectedNotes)
+                        {
+                            note.length -= (lastMouseStep - mouseStep);
+                            if (note.length < 0)
+                                note.length = 0;
+                        }
+                    }
+                }
+
                 if(draggingSelectedNotes)
                 {
                     EditorUtil.setCursor(MOVE);
                     if (FlxG.mouse.justReleased)
                     {
-                        draggingSelectedNotes = false;
                         playSfx("editors/click");
+                        draggingSelectedNotes = false;
                         for(note in selectedNotes)
                         {
                             note.stepTime -= (lastMouseStep - mouseStep);
@@ -486,6 +537,18 @@ class ChartingState extends MusicBeatState
                 '${SONG.song}-events.json'
             );
         }
+    }
+
+    public function getMouseStep():Float
+    {
+        var mouseStep:Float = (FlxG.mouse.y - grid.gridY) / GRID_SIZE;
+        if(!FlxG.keys.pressed.ALT) mouseStep = Math.floor(mouseStep);
+        return mouseStep;
+    }
+
+    public function getMouseLane():Int
+    {
+        return Math.floor((FlxG.mouse.x - grid.gridX) / GRID_SIZE);
     }
 
     public function getSectionStart(?step:Float):Float
