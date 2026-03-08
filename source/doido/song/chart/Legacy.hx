@@ -142,6 +142,17 @@ class Legacy
 			});
 		}
 
+		var sectionTime:Int = 0;
+		for(section in legacySong.notes) {
+			EVENTS.events.push({
+				name: "Camera Focus",
+				stepTime: sectionTime,
+				data: [(section.mustHitSection ? "bf" : "dad")],
+			});
+			sectionTime += section.lengthInSteps;
+		}
+
+		trace(EVENTS);
 		return EVENTS;
 	}
 

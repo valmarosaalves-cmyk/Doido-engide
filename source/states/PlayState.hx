@@ -63,6 +63,9 @@ class PlayState extends MusicBeatState implements Playable
 	var pauseButton:DoidoHitbox;
 	#end
 
+	public var spawnEvents:Array<EventData> = [];
+	public var curEventCount:Int = 0;
+
 	public static var instance:PlayState;
 	public var loadedScripts:Array<Iris> = [];
 
@@ -95,6 +98,8 @@ class PlayState extends MusicBeatState implements Playable
 		Conductor.mapBPMChanges(EVENTS.events);
 		Conductor.songPos = -(Conductor.crochet * 5);
 		resetStatics();
+
+		spawnEvents = EVENTS.events;
 		
 		audio = new AudioHandler(SONG.song);
 
@@ -175,7 +180,6 @@ class PlayState extends MusicBeatState implements Playable
 		}
 
 		followCamera("dad");
-
 		callScript("createPost");
 	}
 
@@ -311,9 +315,31 @@ class PlayState extends MusicBeatState implements Playable
 		
 		if (!paused)
 			Conductor.songPos += elapsed * 1000 * audio.speed;
+
+		if (curEventCount < spawnEvents.length)
+		{
+			for(i in 0...spawnEvents.length)
+			{
+				if (i < curEventCount) continue;
+
+				var eventData = spawnEvents[curEventCount];
+				if ((eventData.stepTime - curStepFloat) <= 0) {
+					playEvent(eventData);
+					curEventCount++;
+				}
+					
+			}
+		}
 			
 		playField.updateNotes(curStepFloat);
 		callScript("updatePost", [elapsed]);
+	}
+
+	function playEvent(event:EventData) {
+		switch(event.name) {
+			case "Camera Focus":
+				followCamera(event.data[0]);
+		}
 	}
 
 	public function followCamera(charStr:String = "", ?offset:DoidoPoint){
@@ -326,13 +352,13 @@ class PlayState extends MusicBeatState implements Playable
 
 			camFollow.set({x: char.getMidpoint().x + (200 * playerMult), y: char.getMidpoint().y - 20});
 
-			camFollow.x += char.cameraOffset.x * playerMult;
-			camFollow.y += char.cameraOffset.y;
+			//camFollow.x += char.cameraOffset.x * playerMult;
+			//camFollow.y += char.cameraOffset.y;
 		}
 
 		if(offset != null) {
-			camFollow.x += offset.x;
-			camFollow.y += offset.y;
+			//camFollow.x += offset.x;
+			//camFollow.y += offset.y;
 		}
 	}
 
@@ -456,10 +482,10 @@ class PlayState extends MusicBeatState implements Playable
 			beatCamera(1.05, 1.02);
 		}
 
-		if(curBeat % 16 == 0 && curBeat > 0) {
+		/*if(curBeat % 16 == 0 && curBeat > 0) {
 			followCamera(camSwitch ? "bf" : "dad");
 			camSwitch = !camSwitch;
-		}
+		}*/
 
 		hudClass.beatHit(curBeat);
 	}
