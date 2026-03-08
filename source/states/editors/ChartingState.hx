@@ -524,14 +524,14 @@ class ChartingState extends MusicBeatState
     override function draw()
     {
         for(note in renderNotes.members) {
-            renderNotes.remove(note, true);
             note.kill();
         }
 
         for(noteData in SONG.notes)
         {
             var noteY:Float = grid.gridY + (noteData.stepTime * GRID_SIZE);
-            if (noteY < -GRID_SIZE) continue;
+            var noteHeight:Float = GRID_SIZE * (noteData.length + 1);
+            if (noteY < -noteHeight) continue;
             if (noteY > FlxG.height) break;
             
             var note:ChartingNote = cast renderNotes.recycle(ChartingNote);
@@ -546,20 +546,45 @@ class ChartingState extends MusicBeatState
             else
                 note.shader = null;
 
-            note.alpha = (noteData.stepTime < curStepFloat) ? 0.4 : 1.0;
+            if (noteData.stepTime < curStepFloat)
+                note.alpha = 0.4;
             
-            //note.setZ(2);
-            renderNotes.add(note);
-        }
-
-        for(note in renderNotes.members)
-        {
-            var noteY:Float = grid.gridY + (note.data.stepTime * GRID_SIZE);
+            note.setZ(2);
             note.setPosition(
                 grid.gridX + (note.data.lane * GRID_SIZE) + (note.data.strumline * GRID_SIZE * GRID_LANES / 2),
                 noteY
             );
+
+            if (!renderNotes.members.contains(note)) renderNotes.add(note);
+
+            if (noteData.length > 0)
+            {
+                var hold:ChartingNote = cast renderNotes.recycle(ChartingNote);
+				hold.loadData(noteData);
+                hold.isHold = true;
+                hold.reloadSprite();
+                
+                hold.setGraphicSize(
+                    GRID_SIZE * 0.25,
+                    GRID_SIZE * (noteData.length + 0.5)
+                );
+                hold.updateHitbox();
+                
+                hold.setPosition(
+                    note.x + (GRID_SIZE - hold.width) / 2,
+                    note.y + (GRID_SIZE / 2)
+                );
+                hold.alpha = note.alpha;
+                hold.shader = note.shader;
+
+				hold.holdParent = note; // idk you might need it
+				hold.setZ(1);
+
+                if (!renderNotes.members.contains(note)) renderNotes.add(hold);
+            }
         }
+
+        renderNotes.sort(ZIndex.sort);
 
         super.draw();
     }
