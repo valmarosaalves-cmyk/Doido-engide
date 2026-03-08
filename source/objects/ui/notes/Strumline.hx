@@ -156,6 +156,7 @@ class Strumline extends FlxGroup
 		cover.x = strums[note.data.lane].x;
 		cover.y = strums[note.data.lane].y;
 		cover.strum = strums[note.data.lane];
+		cover.isPlayer = isPlayer;
 		cover.reloadSplash();
 		if (!members.contains(cover)) add(cover);
 		sort(ZIndex.sort);

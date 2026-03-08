@@ -31,6 +31,7 @@ class Splash extends BaseSplash
 class Cover extends BaseSplash
 {
 	public var strum:StrumNote = null;
+	public var isPlayer:Bool = false;
 	override public function reloadSplash() {
         var direction:String = NoteUtil.intToString(note.data.lane);
         switch("la la la") {
@@ -58,7 +59,7 @@ class Cover extends BaseSplash
 
 		if(strum != null) {
 			setPosition(strum.x, strum.y);
-			if(strum.animation.curAnim.name != "confirm" || note.holdHitPercent >= 1.0) {
+			if((strum.animation.curAnim.name != "confirm" && isPlayer) || note.holdHitPercent >= 1.0) {
 				if(animation.curAnim.name != "splash") {
 					//trace(note.holdHitPercent);
 					if(note.holdHitPercent < Timings.timings.get("sick").hold)
