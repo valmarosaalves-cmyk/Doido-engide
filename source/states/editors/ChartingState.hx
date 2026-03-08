@@ -25,7 +25,7 @@ class ChartingState extends MusicBeatState
     public static var GRID_SIZE:Int = 40;
     public static var GRID_LANES:Int = 8;
 
-    public var noFunAllowed:Bool = false; // reduced animations
+    public static var noFunAllowed:Bool = false; // reduced animations
     
     public var audio:AudioHandler;
     public var playingSong:Bool = false;
@@ -76,7 +76,12 @@ class ChartingState extends MusicBeatState
 		bg.screenCenter();
 		add(bg);
 
-        grid = new ChartingGrid(358, audio.length);
+        hoverSquare = new FlxSprite().makeColor(GRID_SIZE, GRID_SIZE, 0xFFFFFFFF);
+        hoverSquare.visible = false;
+        hoverSquare.alpha = 0.7;
+        //add(hoverSquare);
+
+        grid = new ChartingGrid(358, audio.length, hoverSquare);
         add(grid);
 
         renderNotes = new FlxTypedGroup<ChartingNote>();
@@ -87,13 +92,7 @@ class ChartingState extends MusicBeatState
 
         timeBar = new FlxSprite(grid.gridX).makeColor(GRID_SIZE * GRID_LANES, 4, 0xFFFF0000);
         timeBar.screenCenter(Y);
-        timeBar.offset.y = timeBar.height / 2;
         add(timeBar);
-
-        hoverSquare = new FlxSprite().makeColor(GRID_SIZE, GRID_SIZE, 0xFFFFFFFF);
-        hoverSquare.visible = false;
-        hoverSquare.alpha = 0.7;
-        add(hoverSquare);
 
         selectSquare = new FlxSprite().makeColor(1, 1, 0xFF0078D4);
         selectSquare.visible = false;
@@ -500,7 +499,6 @@ class ChartingState extends MusicBeatState
 
         if (FlxG.mouse.pressedMiddle) {
             timeBar.y = FlxG.mouse.y;
-            
         }
 
         if (FlxG.keys.justPressed.ENTER)
@@ -516,8 +514,8 @@ class ChartingState extends MusicBeatState
         if(FlxG.keys.justPressed.S && FlxG.keys.pressed.CONTROL)
             save();
 
-        grid.gridY = timeBar.y - (curStepFloat * GRID_SIZE);
-        
+        grid.gridY = timeBar.y + (timeBar.height / 2) - (curStepFloat * GRID_SIZE);
+
         EditorUtil.setCursor(curCursor);
         super.update(elapsed);
     }
@@ -702,11 +700,14 @@ class ChartingGrid extends FlxSprite
     public var midLine:FlxSprite;
     public var beatLine:FlxSprite;
 
-    public function new(x:Float, length:Float)
+    private var hoverSquare:FlxSprite;
+
+    public function new(x:Float, length:Float, hoverSquare:FlxSprite)
     {
         super();
         gridX = x;
         this.length = length;
+        this.hoverSquare = hoverSquare;
         GRID_SIZE = ChartingState.GRID_SIZE;
         this.makeColor(GRID_SIZE, GRID_SIZE, 0xFFFFFFFF);
 
@@ -725,14 +726,24 @@ class ChartingGrid extends FlxSprite
 
     override function draw()
     {
+        var minGrid:Int = 0;
+        var maxGrid:Int = 0;
+
         border.draw();
         gridLength = Math.ceil(Conductor.getStepAtTime(length));
         for (_y in 0...gridLength)
         {
             var gridY:Float = gridY + (GRID_SIZE * _y);
-            if (gridY < -GRID_SIZE) continue;
-            if (gridY > FlxG.height) break;
+            if (gridY < -GRID_SIZE) {
+                minGrid++;
+                continue;
+            }
+            if (gridY > FlxG.height) {
+                maxGrid = _y;
+                break;
+            }
 
+            // grid squares
             for(_x in 0...8)
             {
                 color = (((_x + _y) % 2 == 0) ? 0xFFEBEFFE : 0xFFD7D9F6);
@@ -740,7 +751,15 @@ class ChartingGrid extends FlxSprite
                 y = gridY;
                 super.draw();
             }
+        }
 
+        // hover squares
+        if (hoverSquare.visible) hoverSquare.draw();
+
+        for (_y in minGrid...maxGrid)
+        {
+            var gridY:Float = gridY + (GRID_SIZE * _y);
+            // beat lines and section numbers
             if (_y % 4 == 0)
             {
                 beatLine.color = (_y % 16 == 0) ? 0xFF1C1A24 : 0xFFA5B1E4;
@@ -749,21 +768,21 @@ class ChartingGrid extends FlxSprite
                 
                 beatLine.y = gridY - (beatLine.height / 2);
                 beatLine.draw();
-
+                
+                // section numbers
                 if (_y % 16 == 0)
                 {
-                    // section number
                     sectText.text = '${Math.floor(_y / 16)}';
-                    sectText.x = (gridX + GRID_SIZE * 8);
-                    sectText.y = beatLine.y;
-
-                    sectBG.x = sectText.x;
-                    sectBG.y = sectText.y;
+                    
                     sectBG.scale.set(sectText.width + 12, sectText.height + 12);
                     sectBG.updateHitbox();
 
-                    sectText.x += (sectBG.width - sectText.width) / 2;
-                    sectText.y += (sectBG.height- sectText.height)/ 2;
+                    sectBG.setPosition(
+                        (gridX + GRID_SIZE * 8),
+                        gridY - (sectBG.height / 2)
+                    );
+                    sectText.x = sectBG.x + (12 / 2);
+                    sectText.y = sectBG.y + (12 / 2);
 
                     sectBG.draw();
                     sectText.draw();
