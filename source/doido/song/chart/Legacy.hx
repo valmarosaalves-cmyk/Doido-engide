@@ -20,7 +20,7 @@ typedef LegacySong =
 typedef LegacySection =
 {
 	var sectionNotes:Array<Dynamic>;
-	var lengthInSteps:Int;
+	var ?lengthInSteps:Int;
 	var mustHitSection:Bool;
 	var bpm:Float;
 	var changeBPM:Bool;
@@ -142,14 +142,19 @@ class Legacy
 			});
 		}
 
-		var sectionTime:Int = 0;
+		var sectionTime:Float = 0;
+		var lastSection:Bool = false;
 		for(section in legacySong.notes) {
-			EVENTS.events.push({
-				name: "Camera Focus",
-				stepTime: sectionTime,
-				data: [(section.mustHitSection ? "bf" : "dad")],
-			});
-			sectionTime += section.lengthInSteps;
+			if(section.mustHitSection != lastSection || sectionTime == 0) {
+				EVENTS.events.push({
+					name: "Camera Focus",
+					stepTime: sectionTime,
+					data: [(section.mustHitSection ? "bf" : "dad")],
+				});
+				lastSection = section.mustHitSection;
+			}
+			
+			sectionTime += section.lengthInSteps ?? (section.sectionBeats * 4) ?? 16;
 		}
 
 		trace(EVENTS);
