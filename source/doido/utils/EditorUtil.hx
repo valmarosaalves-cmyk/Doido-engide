@@ -22,6 +22,7 @@ class EditorUtil
     */
     public static function setCursor(newCursor:MouseCursor)
     {
-        Application.current.window.cursor = newCursor;
+        if (Application.current.window.cursor != newCursor)
+            Application.current.window.cursor = newCursor;
     }
 }

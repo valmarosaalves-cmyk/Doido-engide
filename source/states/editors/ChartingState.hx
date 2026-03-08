@@ -106,6 +106,7 @@ class ChartingState extends MusicBeatState
     }
 
     var tweeningSongPos:Bool = false;
+    var curCursor:lime.ui.MouseCursor = DEFAULT;
 
     override function update(elapsed:Float)
     {
@@ -113,6 +114,7 @@ class ChartingState extends MusicBeatState
         if (FlxG.keys.justPressed.NINE || FlxG.keys.justPressed.NUMPADNINE)
             FlxG.camera.zoom = (FlxG.camera.zoom == 1.0 ? 0.8 : 1.0);
 
+        curCursor = DEFAULT;
         if (tweeningSongPos)
             playingSong = false;
         else
@@ -267,7 +269,7 @@ class ChartingState extends MusicBeatState
                 {
                     var mightBeHold:Bool = false;
 
-                    EditorUtil.setCursor(POINTER);
+                    curCursor = POINTER;
                     for(note in renderNotes.members)
                     {
                         if (FlxG.mouse.overlaps(note))
@@ -276,14 +278,13 @@ class ChartingState extends MusicBeatState
                             if ((note.isHold && FlxG.mouse.y > note.y + GRID_SIZE / 2)
                             || (!note.isHold && FlxG.mouse.y > note.y + GRID_SIZE * 0.75))
                             {
-                                EditorUtil.setCursor(RESIZE_NS);
+                                curCursor = RESIZE_NS;
                                 mightBeHold = true;
                             }
                         }
                     }
                     if (FlxG.mouse.pressedRight)
                     {
-                        //EditorUtil.setCursor();
                         var removed:Bool = false;
                         for(note in renderNotes.members)
                         {
@@ -362,7 +363,7 @@ class ChartingState extends MusicBeatState
 
                 if (heldOnNoteHold)
                 {
-                    EditorUtil.setCursor(RESIZE_NS);
+                    curCursor = RESIZE_NS;
                     if (FlxG.mouse.justReleased)
                     {
                         playSfx("editors/click");
@@ -378,7 +379,7 @@ class ChartingState extends MusicBeatState
 
                 if(draggingSelectedNotes)
                 {
-                    EditorUtil.setCursor(MOVE);
+                    curCursor = MOVE;
                     if (FlxG.mouse.justReleased)
                     {
                         playSfx("editors/click");
@@ -516,6 +517,8 @@ class ChartingState extends MusicBeatState
             save();
 
         grid.gridY = timeBar.y - (curStepFloat * GRID_SIZE);
+        
+        EditorUtil.setCursor(curCursor);
         super.update(elapsed);
     }
 
