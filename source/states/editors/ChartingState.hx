@@ -738,10 +738,8 @@ class ChartingGrid extends FlxSprite
                 minGrid++;
                 continue;
             }
-            if (gridY > FlxG.height) {
-                maxGrid = _y;
-                break;
-            }
+            maxGrid = _y+1;
+            if (gridY > FlxG.height) break;
 
             // grid squares
             for(_x in 0...8)
