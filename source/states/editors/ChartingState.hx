@@ -1,5 +1,7 @@
 package states.editors;
 
+import doido.objects.DoidoBar;
+import flixel.util.FlxStringUtil;
 import flixel.util.FlxTimer;
 import doido.utils.EditorUtil;
 import doido.song.chart.SongHandler.NoteData;
@@ -9,7 +11,7 @@ import doido.song.chart.SongHandler.DoidoEvents;
 import doido.song.chart.SongHandler.DoidoSong;
 import doido.utils.NoteUtil;
 import flixel.FlxSprite;
-import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.group.FlxGroup;
 import flixel.math.FlxMath;
 import flixel.text.FlxBitmapText;
 import flixel.tweens.FlxEase;
@@ -20,6 +22,13 @@ import objects.ui.notes.Note;
 import shaders.MultiplyShader;
 import haxe.Json;
 
+class ChartingNote extends Note
+{
+    public function new()
+    {
+        super();
+    }
+}
 class ChartingState extends MusicBeatState
 {
     public static var GRID_SIZE:Int = 40;
@@ -36,7 +45,6 @@ class ChartingState extends MusicBeatState
     public var grid:ChartingGrid;
     public var timeBar:FlxSprite;
     public var renderNotes:FlxTypedGroup<ChartingNote>;
-
     public var selectedShader:MultiplyShader;
 
     // editor stuff
@@ -51,6 +59,9 @@ class ChartingState extends MusicBeatState
     public var lastMouseLane:Null<Int>;
     public var heldOnNote:Bool = false;
     public var heldOnNoteHold:Bool = false;
+
+    // windows!!
+    public var timeWindow:TimeWindow;
 
     public function new(SONG:DoidoSong, EVENTS:DoidoEvents)
     {
@@ -99,13 +110,18 @@ class ChartingState extends MusicBeatState
         selectSquare.alpha = 0.5;
         add(selectSquare);
 
+        timeWindow = new TimeWindow(this);
+        add(timeWindow);
+
         var debugInfo = new DebugInfo(this);
-        debugInfo.visible = true;
+        //debugInfo.visible = true;
         add(debugInfo);
     }
 
     var tweeningSongPos:Bool = false;
-    var curCursor:lime.ui.MouseCursor = DEFAULT;
+    public var curCursor:lime.ui.MouseCursor = DEFAULT;
+
+    var clickedOnWindow:Bool = false;
 
     override function update(elapsed:Float)
     {
@@ -121,314 +137,394 @@ class ChartingState extends MusicBeatState
             if (FlxG.keys.justPressed.SPACE) playingSong = !playingSong;
         }
 
-        if (FlxG.mouse.justPressed)
-        {
-            lastClicked = {x: FlxG.mouse.x, y: FlxG.mouse.y};
-            lastClickedOffset = grid.gridY;
-        }
+        var overlapsWindow:Bool = false;
 
-        if (FlxG.mouse.justReleased)
+        for(basic in members)
         {
-            heldOnNote = false;
-            //heldOnNoteHold = false;
-        }
-
-        if (lastClickedOffset != grid.gridY)
-        {
-            lastClicked.y -= (lastClickedOffset - grid.gridY);
-            lastClickedOffset = grid.gridY;
-        }
-
-        if (FlxG.mouse.pressed)
-        {
-            // if you moved 10 pixels from it
-            if (Math.abs(FlxG.mouse.x - lastClicked.x) >= 10
-            || Math.abs(FlxG.mouse.y - lastClicked.y) >= 10)
+            if (Std.isOfType(basic, BaseWindow))
             {
-                if (selectedNotes.length > 0)
-                {
-                    if (heldOnNote)
-                        draggingSelectedNotes = true;
-                    else if (!heldOnNoteHold)
-                        selectSquare.visible = true;
+                if (FlxG.mouse.overlaps(cast(basic, BaseWindow).bg)) {
+                    overlapsWindow = true;
+                    /*if (FlxG.mouse.justPressed)
+                        clickedOnWindow = true;*/
                 }
-                else
-                    selectSquare.visible = true;
-            }
-
-            if (!playingSong)
-            {
-                var mouseMove:Int = 60;
-                if (FlxG.mouse.y < mouseMove
-                || FlxG.mouse.y > FlxG.height - mouseMove)
-                {
-                    var dir:Int = (FlxG.mouse.y < mouseMove) ? -1 : 1;
-                    if (FlxG.mouse.y < mouseMove / 2
-                    || FlxG.mouse.y > FlxG.height - mouseMove / 2)
-                        dir *= 4;
-                    
-                    Conductor.songPos += dir * 1000 * elapsed;
-                }
-            }
-        }
-
-        if (selectedNotes.length > 0)
-        {
-            selectedShader.multiplyOpacity = 0.8 + Math.sin(FlxG.game.ticks / 100) * 0.4;
-            
-            if (FlxG.keys.justPressed.Q || FlxG.keys.justPressed.E)
-            {
-                playSfx("editors/click");
-                var dir:Int = FlxG.keys.justPressed.Q ? -1 : 1;
-                if (FlxG.keys.pressed.SHIFT) dir *= 4;
-                for(note in selectedNotes)
-                {
-                    note.length += dir;
-                    if (note.length < 0)
-                        note.length = 0;
-                }
-            }
-
-            if (FlxG.keys.justPressed.DELETE)
-            {
-                for(note in selectedNotes)
-                {
-                    playSfx("editors/pop", FlxG.random.float(0.0, 0.4));
-                    SONG.notes.remove(note);
-                }
-                selectedNotes = [];
-                sortNotes();
             }
         }
         
-        if (selectSquare.visible)
+        if (FlxG.mouse.justPressed)
+            clickedOnWindow = overlapsWindow;
+
+        if (!clickedOnWindow)
         {
-            hoverSquare.visible = false;
-
-            selectSquare.scale.set(
-                Math.abs(FlxG.mouse.x - lastClicked.x),
-                Math.abs(FlxG.mouse.y - lastClicked.y)
-            );
-            selectSquare.updateHitbox();
-            
-            if (FlxG.mouse.x < lastClicked.x)
-                selectSquare.x = lastClicked.x - selectSquare.width;
-            else
-                selectSquare.x = lastClicked.x;
-
-            if (FlxG.mouse.y < lastClicked.y)
-                selectSquare.y = lastClicked.y - selectSquare.height;
-            else
-                selectSquare.y = lastClicked.y;
+            if (FlxG.mouse.justPressed)
+            {
+                lastClicked = {x: FlxG.mouse.x, y: FlxG.mouse.y};
+                lastClickedOffset = grid.gridY;
+            }
 
             if (FlxG.mouse.justReleased)
             {
-                if (!FlxG.keys.pressed.CONTROL) selectedNotes = [];
+                heldOnNote = false;
+                //heldOnNoteHold = false;
+            }
 
-                var startY:Float = Math.floor((selectSquare.y - grid.gridY) / GRID_SIZE);
-                var endY:Float = startY + Math.floor(selectSquare.height / GRID_SIZE);
-                var startX:Float = Math.floor((selectSquare.x - grid.gridX) / GRID_SIZE);
-                var endX:Float = startX + Math.floor(selectSquare.width / GRID_SIZE);
+            if (lastClickedOffset != grid.gridY)
+            {
+                lastClicked.y -= (lastClickedOffset - grid.gridY);
+                lastClickedOffset = grid.gridY;
+            }
 
-                for (note in SONG.notes)
+            if (FlxG.mouse.pressed)
+            {
+                // if you moved 10 pixels from it
+                if (Math.abs(FlxG.mouse.x - lastClicked.x) >= 10
+                || Math.abs(FlxG.mouse.y - lastClicked.y) >= 10)
                 {
-                    var rawLane:Int = note.lane + (4 * note.strumline);
-
-                    if(note.stepTime > startY - 1
-                    && note.stepTime < endY + 1
-                    && rawLane > startX - 1
-                    && rawLane < endX + 1)
+                    if (selectedNotes.length > 0)
                     {
-                        if (!selectedNotes.contains(note))
-                            selectedNotes.push(note);
+                        if (heldOnNote)
+                            draggingSelectedNotes = true;
+                        else if (!heldOnNoteHold)
+                            selectSquare.visible = true;
+                    }
+                    else
+                        selectSquare.visible = true;
+                }
+
+                if (!playingSong)
+                {
+                    var mouseMove:Int = 60;
+                    if (FlxG.mouse.y < mouseMove
+                    || FlxG.mouse.y > FlxG.height - mouseMove)
+                    {
+                        var dir:Int = (FlxG.mouse.y < mouseMove) ? -1 : 1;
+                        if (FlxG.mouse.y < mouseMove / 2
+                        || FlxG.mouse.y > FlxG.height - mouseMove / 2)
+                            dir *= 4;
+                        
+                        Conductor.songPos += dir * 1000 * elapsed;
+                    }
+                }
+            }
+
+            if (selectedNotes.length > 0)
+            {
+                selectedShader.multiplyOpacity = 0.8 + Math.sin(FlxG.game.ticks / 100) * 0.4;
+                
+                if (FlxG.keys.justPressed.Q || FlxG.keys.justPressed.E)
+                {
+                    playSfx("editors/click");
+                    var dir:Int = FlxG.keys.justPressed.Q ? -1 : 1;
+                    if (FlxG.keys.pressed.SHIFT) dir *= 4;
+                    for(note in selectedNotes)
+                    {
+                        note.length += dir;
+                        if (note.length < 0)
+                            note.length = 0;
                     }
                 }
 
-                selectSquare.visible = false;
-            }
-        }
-        else
-        {
-            if (FlxG.mouse.x > grid.gridX && FlxG.mouse.x < grid.gridX + GRID_SIZE * GRID_LANES
-            && FlxG.mouse.y > grid.gridY && FlxG.mouse.y < grid.gridY + GRID_SIZE * grid.gridLength)
-            {
-                var mouseStep:Float = getMouseStep();
-                var mouseLane:Int = getMouseLane();
-
-                hoverSquare.visible = true;
-                hoverSquare.setPosition(
-                    grid.gridX + mouseLane * GRID_SIZE,
-                    grid.gridY + mouseStep * GRID_SIZE
-                );
-
-                if (FlxG.mouse.justPressedRight)
-                    selectedNotes = [];
-                
-                if (FlxG.mouse.overlaps(renderNotes))
+                if (FlxG.keys.justPressed.DELETE)
                 {
-                    var mightBeHold:Bool = false;
-
-                    curCursor = POINTER;
-                    for(note in renderNotes.members)
+                    for(note in selectedNotes)
                     {
-                        if (FlxG.mouse.overlaps(note))
+                        playSfx("editors/pop", FlxG.random.float(0.0, 0.4));
+                        SONG.notes.remove(note);
+                    }
+                    selectedNotes = [];
+                    sortNotes();
+                }
+            }
+            
+            if (selectSquare.visible)
+            {
+                hoverSquare.visible = false;
+
+                selectSquare.scale.set(
+                    Math.abs(FlxG.mouse.x - lastClicked.x),
+                    Math.abs(FlxG.mouse.y - lastClicked.y)
+                );
+                selectSquare.updateHitbox();
+                
+                if (FlxG.mouse.x < lastClicked.x)
+                    selectSquare.x = lastClicked.x - selectSquare.width;
+                else
+                    selectSquare.x = lastClicked.x;
+
+                if (FlxG.mouse.y < lastClicked.y)
+                    selectSquare.y = lastClicked.y - selectSquare.height;
+                else
+                    selectSquare.y = lastClicked.y;
+
+                if (FlxG.mouse.justReleased)
+                {
+                    if (!FlxG.keys.pressed.CONTROL) selectedNotes = [];
+
+                    var startY:Float = Math.floor((selectSquare.y - grid.gridY) / GRID_SIZE);
+                    var endY:Float = startY + Math.floor(selectSquare.height / GRID_SIZE);
+                    var startX:Float = Math.floor((selectSquare.x - grid.gridX) / GRID_SIZE);
+                    var endX:Float = startX + Math.floor(selectSquare.width / GRID_SIZE);
+
+                    for (note in SONG.notes)
+                    {
+                        var rawLane:Int = note.lane + (4 * note.strumline);
+
+                        if(note.stepTime > startY - 1
+                        && note.stepTime < endY + 1
+                        && rawLane > startX - 1
+                        && rawLane < endX + 1)
                         {
-                            // hold hitbox
-                            if ((note.isHold && FlxG.mouse.y > note.y + GRID_SIZE / 2)
-                            || (!note.isHold && FlxG.mouse.y > note.y + GRID_SIZE * 0.75))
-                            {
-                                curCursor = RESIZE_NS;
-                                mightBeHold = true;
-                            }
+                            if (!selectedNotes.contains(note))
+                                selectedNotes.push(note);
                         }
                     }
-                    if (FlxG.mouse.pressedRight)
+
+                    selectSquare.visible = false;
+                }
+            }
+            else
+            {
+                if (FlxG.mouse.x > grid.gridX && FlxG.mouse.x < grid.gridX + GRID_SIZE * GRID_LANES
+                && FlxG.mouse.y > grid.gridY && FlxG.mouse.y < grid.gridY + GRID_SIZE * grid.gridLength)
+                {
+                    var mouseStep:Float = getMouseStep();
+                    var mouseLane:Int = getMouseLane();
+
+                    hoverSquare.visible = true;
+                    hoverSquare.setPosition(
+                        grid.gridX + mouseLane * GRID_SIZE,
+                        grid.gridY + mouseStep * GRID_SIZE
+                    );
+
+                    if (FlxG.mouse.justPressedRight)
+                        selectedNotes = [];
+                    
+                    if (FlxG.mouse.overlaps(renderNotes))
                     {
-                        var removed:Bool = false;
+                        var mightBeHold:Bool = false;
+
+                        curCursor = POINTER;
                         for(note in renderNotes.members)
                         {
                             if (FlxG.mouse.overlaps(note))
                             {
-                                removed = true;
-                                if (note.isHold)
-                                    SONG.notes[SONG.notes.indexOf(note.data)].length = 0;
-                                else
-                                    SONG.notes.remove(note.data);
+                                // hold hitbox
+                                if ((note.isHold && FlxG.mouse.y > note.y + GRID_SIZE / 2)
+                                || (!note.isHold && FlxG.mouse.y > note.y + GRID_SIZE * 0.75))
+                                {
+                                    curCursor = RESIZE_NS;
+                                    mightBeHold = true;
+                                }
                             }
                         }
-                        if (removed)
+                        if (FlxG.mouse.pressedRight)
                         {
-                            playSfx("editors/pop");
+                            var removed:Bool = false;
+                            for(note in renderNotes.members)
+                            {
+                                if (FlxG.mouse.overlaps(note))
+                                {
+                                    removed = true;
+                                    if (note.isHold)
+                                        SONG.notes[SONG.notes.indexOf(note.data)].length = 0;
+                                    else
+                                        SONG.notes.remove(note.data);
+                                }
+                            }
+                            if (removed)
+                            {
+                                playSfx("editors/pop");
+                                sortNotes();
+                            }
+                        }
+                        if (FlxG.mouse.justPressed)
+                        {
+                            if (mightBeHold)
+                                heldOnNoteHold = true;
+                            else
+                                heldOnNote = true;
+
+                            var clearNote:NoteData = null;
+                            for(note in renderNotes.members)
+                            {
+                                if (FlxG.mouse.overlaps(note))
+                                {
+                                    if (FlxG.keys.pressed.CONTROL)
+                                    {
+                                        if (!selectedNotes.contains(note.data))
+                                            selectedNotes.push(note.data);
+                                        else
+                                            selectedNotes.remove(note.data);
+                                    }
+                                    else
+                                    {
+                                        if (!selectedNotes.contains(note.data))
+                                            clearNote = note.data;
+                                    }
+                                }
+                            }
+
+                            lastMouseStep = mouseStep;
+                            lastMouseLane = mouseLane;
+
+                            if (clearNote != null)
+                                selectedNotes = [clearNote];
+
                             sortNotes();
                         }
                     }
-                    if (FlxG.mouse.justPressed)
+                    else
                     {
-                        if (mightBeHold)
-                            heldOnNoteHold = true;
-                        else
-                            heldOnNote = true;
-
-                        var clearNote:NoteData = null;
-                        for(note in renderNotes.members)
+                        if (FlxG.mouse.justReleased)
                         {
-                            if (FlxG.mouse.overlaps(note))
+                            if (!draggingSelectedNotes && !heldOnNoteHold)
                             {
-                                if (FlxG.keys.pressed.CONTROL)
-                                {
-                                    if (!selectedNotes.contains(note.data))
-                                        selectedNotes.push(note.data);
-                                    else
-                                        selectedNotes.remove(note.data);
-                                }
-                                else
-                                {
-                                    if (!selectedNotes.contains(note.data))
-                                        clearNote = note.data;
-                                }
+                                playSfx("editors/click");
+                                var newNote:NoteData = {
+                                    stepTime: mouseStep,
+                                    lane: (mouseLane % 4),
+                                    strumline: (mouseLane >= 4) ? 1 : 0,
+                                    type: "none",
+                                    length: 0.0,
+                                };
+                                //trace('added lane ${newNote.lane} to strumline ${newNote.strumline}');
+                                SONG.notes.push(newNote);
+                                selectedNotes = [newNote];
+                                sortNotes();
                             }
                         }
+                    }
 
-                        lastMouseStep = mouseStep;
-                        lastMouseLane = mouseLane;
+                    if (heldOnNoteHold)
+                    {
+                        curCursor = RESIZE_NS;
+                        if (FlxG.mouse.justReleased)
+                        {
+                            playSfx("editors/click");
+                            heldOnNoteHold = false;
+                            for(note in selectedNotes)
+                            {
+                                note.length -= (lastMouseStep - mouseStep);
+                                if (note.length < 0)
+                                    note.length = 0;
+                            }
+                        }
+                    }
 
-                        if (clearNote != null)
-                            selectedNotes = [clearNote];
+                    if(draggingSelectedNotes)
+                    {
+                        curCursor = MOVE;
+                        if (FlxG.mouse.justReleased)
+                        {
+                            playSfx("editors/click");
+                            draggingSelectedNotes = false;
+                            for(note in selectedNotes)
+                            {
+                                note.stepTime -= (lastMouseStep - mouseStep);
+                                if(note.stepTime < 0 || note.stepTime > grid.gridLength)
+                                {
+                                    SONG.notes.remove(note); // BE CAREFUL!!
+                                    continue;
+                                }
 
-                        sortNotes();
+                                note.lane -= (lastMouseLane - mouseLane);
+                                while (note.lane < 0)
+                                {
+                                    note.lane += 4;
+                                    note.strumline -= 1;
+                                    if (note.strumline < 0)
+                                        note.strumline = 1;
+                                }
+                                while (note.lane > 3)
+                                {
+                                    note.lane %= 4;
+                                    note.strumline += 1;
+                                    if (note.strumline > 1)
+                                        note.strumline = 0;
+                                }
+                            }
+                            sortNotes();
+                        }
+                    }
+                }
+                else
+                    hoverSquare.visible = false;
+            }
+
+            if (FlxG.mouse.wheel != 0)
+            {
+                playingSong = false;
+                stopTweenSongPos();
+                Conductor.songPos += -FlxG.mouse.wheel * 10000 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1);
+            }
+
+            if (FlxG.keys.pressed.W || FlxG.keys.pressed.S)
+            {
+                playingSong = false;
+                stopTweenSongPos();
+                var dir:Int = (FlxG.keys.pressed.S ? 1 : 0) - (FlxG.keys.pressed.W ? 1 : 0);
+                Conductor.songPos += dir * 1000 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1);
+            }
+
+            if (FlxG.keys.justPressed.A || FlxG.keys.justPressed.D)
+            {
+                var wasA:Bool = FlxG.keys.justPressed.A;
+                if (wasA && FlxG.keys.pressed.CONTROL)
+                {
+                    selectedNotes = [];
+                    for(note in SONG.notes)
+                        selectedNotes.push(note);
+                }
+                else
+                {
+                    var dir = (wasA ? -1 : 1) * (FlxG.keys.pressed.SHIFT ? 4 : 1);
+                    tweenSongPos(getSectionStart(curStepFloat + 1 + (16 * dir)));
+                }
+            }
+
+            if (FlxG.keys.justPressed.R)
+            {
+                if (FlxG.keys.pressed.SHIFT)
+                {
+                    if (!tweeningSongPos)
+                    {
+                        if (Conductor.songPos <= 10000 || noFunAllowed)
+                            tweenSongPos(0, 0.25, FlxEase.cubeInOut);
+                        else
+                        {
+                            FlxTween.tween(FlxG.camera, {zoom: 1.3}, 1.6, {ease: FlxEase.cubeIn, startDelay: 0.4});
+                            tweenSongPos(0, 2, FlxEase.cubeIn, (twn) -> {
+                                playSfx("editors/clank");
+                                FlxTween.completeTweensOf(FlxG.camera);
+                                FlxTween.tween(FlxG.camera, {zoom: 1.0}, 0.1, {ease: FlxEase.cubeOut});
+                                FlxG.camera.shake(0.02, 0.15);
+                            });
+                        }
+                    }
+                    else
+                    {
+                        FlxTween.completeTweensOf(Conductor);
+                        
                     }
                 }
                 else
                 {
-                    if (FlxG.mouse.justReleased)
-                    {
-                        if (!draggingSelectedNotes && !heldOnNoteHold)
-                        {
-                            playSfx("editors/click");
-                            var newNote:NoteData = {
-                                stepTime: mouseStep,
-                                lane: (mouseLane % 4),
-                                strumline: (mouseLane >= 4) ? 1 : 0,
-                                type: "none",
-                                length: 0.0,
-                            };
-                            //trace('added lane ${newNote.lane} to strumline ${newNote.strumline}');
-                            SONG.notes.push(newNote);
-                            selectedNotes = [newNote];
-                            sortNotes();
-                        }
-                    }
-                }
-
-                if (heldOnNoteHold)
-                {
-                    curCursor = RESIZE_NS;
-                    if (FlxG.mouse.justReleased)
-                    {
-                        playSfx("editors/click");
-                        heldOnNoteHold = false;
-                        for(note in selectedNotes)
-                        {
-                            note.length -= (lastMouseStep - mouseStep);
-                            if (note.length < 0)
-                                note.length = 0;
-                        }
-                    }
-                }
-
-                if(draggingSelectedNotes)
-                {
-                    curCursor = MOVE;
-                    if (FlxG.mouse.justReleased)
-                    {
-                        playSfx("editors/click");
-                        draggingSelectedNotes = false;
-                        for(note in selectedNotes)
-                        {
-                            note.stepTime -= (lastMouseStep - mouseStep);
-                            if(note.stepTime < 0 || note.stepTime > grid.gridLength)
-                            {
-                                SONG.notes.remove(note); // BE CAREFUL!!
-                                continue;
-                            }
-
-                            note.lane -= (lastMouseLane - mouseLane);
-                            while (note.lane < 0)
-                            {
-                                note.lane += 4;
-                                note.strumline -= 1;
-                                if (note.strumline < 0)
-                                    note.strumline = 1;
-                            }
-                            while (note.lane > 3)
-                            {
-                                note.lane %= 4;
-                                note.strumline += 1;
-                                if (note.strumline > 1)
-                                    note.strumline = 0;
-                            }
-                        }
-                        sortNotes();
-                    }
+                    tweenSongPos(getSectionStart());
                 }
             }
-            else
-                hoverSquare.visible = false;
-        }
 
-        if (FlxG.mouse.wheel != 0)
-        {
-            playingSong = false;
-            stopTweenSongPos();
-            Conductor.songPos += -FlxG.mouse.wheel * 10000 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1);
-        }
+            if (FlxG.keys.justPressed.ENTER)
+            {
+                PlayState.SONG = SONG;
+                PlayState.EVENTS = EVENTS;
+                MusicBeat.switchState(new PlayState());
+            }
 
-        if (FlxG.keys.pressed.W || FlxG.keys.pressed.S)
-        {
-            playingSong = false;
-            stopTweenSongPos();
-            var dir:Int = (FlxG.keys.pressed.S ? 1 : 0) - (FlxG.keys.pressed.W ? 1 : 0);
-            Conductor.songPos += dir * 1000 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1);
+            if (FlxG.keys.justPressed.EIGHT || FlxG.keys.justPressed.NUMPADEIGHT)
+                noFunAllowed = !noFunAllowed;
+
+            if(FlxG.keys.justPressed.S && FlxG.keys.pressed.CONTROL)
+                save();
         }
 
         if (playingSong)
@@ -450,74 +546,14 @@ class ChartingState extends MusicBeatState
             playingSong = false;
         }
 
-        if (FlxG.keys.justPressed.A || FlxG.keys.justPressed.D)
-        {
-            var wasA:Bool = FlxG.keys.justPressed.A;
-            if (wasA && FlxG.keys.pressed.CONTROL)
-            {
-                selectedNotes = [];
-                for(note in SONG.notes)
-                    selectedNotes.push(note);
-            }
-            else
-            {
-                var dir = (wasA ? -1 : 1) * (FlxG.keys.pressed.SHIFT ? 4 : 1);
-                tweenSongPos(getSectionStart(curStepFloat + 1 + (16 * dir)));
-            }
-        }
-
-        if (FlxG.keys.justPressed.R)
-        {
-            if (FlxG.keys.pressed.SHIFT)
-            {
-                if (!tweeningSongPos)
-                {
-                    if (Conductor.songPos <= 10000 || noFunAllowed)
-                        tweenSongPos(0, 0.25, FlxEase.cubeInOut);
-                    else
-                    {
-                        FlxTween.tween(FlxG.camera, {zoom: 1.3}, 1.6, {ease: FlxEase.cubeIn, startDelay: 0.4});
-                        tweenSongPos(0, 2, FlxEase.cubeIn, (twn) -> {
-                            playSfx("editors/clank");
-                            FlxTween.completeTweensOf(FlxG.camera);
-                            FlxTween.tween(FlxG.camera, {zoom: 1.0}, 0.1, {ease: FlxEase.cubeOut});
-                            FlxG.camera.shake(0.02, 0.15);
-                        });
-                    }
-                }
-                else
-                {
-                    FlxTween.completeTweensOf(Conductor);
-                    
-                }
-            }
-            else
-            {
-                tweenSongPos(getSectionStart());
-            }
-        }
-
         if (FlxG.mouse.pressedMiddle) {
             timeBar.y = FlxG.mouse.y;
         }
 
-        if (FlxG.keys.justPressed.ENTER)
-        {
-            PlayState.SONG = SONG;
-            PlayState.EVENTS = EVENTS;
-            MusicBeat.switchState(new PlayState());
-        }
-
-        if (FlxG.keys.justPressed.EIGHT || FlxG.keys.justPressed.NUMPADEIGHT)
-            noFunAllowed = !noFunAllowed;
-
-        if(FlxG.keys.justPressed.S && FlxG.keys.pressed.CONTROL)
-            save();
-
         grid.gridY = timeBar.y + (timeBar.height / 2) - (curStepFloat * GRID_SIZE);
 
-        EditorUtil.setCursor(curCursor);
         super.update(elapsed);
+        EditorUtil.setCursor(curCursor);
     }
 
     function save() {
@@ -790,10 +826,124 @@ class ChartingGrid extends FlxSprite
         midLine.draw();
     }
 }
-class ChartingNote extends Note
+
+class TimeWindow extends BaseWindow
 {
-    public function new()
+    public var timeTxt:FlxBitmapText;
+    public var infoTxt:FlxBitmapText;
+    public var timeBar:DoidoBar;
+    public var timeBall:FlxSprite;
+
+    public function new(chartState:ChartingState)
+    {
+        super(chartState);
+        bg.scale.set(458, 138);
+        bg.updateHitbox();
+        bg.setPosition(
+            FlxG.width - bg.width - 18,
+            FlxG.height- bg.height- 18
+        );
+
+        timeTxt = new FlxBitmapText(bg.x + 8, bg.y + 8, Assets.bitmapFont("phantommuff"));
+        timeTxt.alignment = LEFT;
+		add(timeTxt);
+
+        infoTxt = new FlxBitmapText(bg.x + 8, timeTxt.y + 32, Assets.bitmapFont("phantommuff"));
+        infoTxt.color = 0xFFD8DAF6;
+        infoTxt.alignment = LEFT;
+        infoTxt.scale.set(0.625, 0.625);
+        infoTxt.updateHitbox();
+		add(infoTxt);
+
+        timeBar = new DoidoBar("editors/charting/timeBar", "editors/charting/timeBar-border");
+        timeBar.setPosition(bg.x + (bg.width - timeBar.width) / 2, bg.y + bg.height - timeBar.height - 12);
+        timeBar.sideR.color = 0xFF2A2C44;
+		add(timeBar);
+
+        timeBall = new FlxSprite(0, timeBar.y).loadImage("editors/charting/timeBall");
+        timeBall.y += (timeBar.height - timeBall.height) / 2;
+        add(timeBall);
+    }
+
+    override function draw()
+    {
+        var timeText:String = "Time: " + getTime(Conductor.songPos) + " / " + getTime(chartState.audio.length);
+        if (timeTxt.text != timeText)
+            timeTxt.text = timeText;
+
+        var infoText:String = "";
+		infoText += "Step: " + Math.floor(chartState.curStepFloat * 100) / 100;
+		infoText += "\nBeat: " + Math.floor(chartState.curStepFloat / 4 * 100) / 100;
+		infoText += "\nBPM: " + Math.floor(Conductor.bpm * 1000) / 1000;
+		if (infoTxt.text != infoText)
+			infoTxt.text = infoText;
+
+        timeBar.percent = (1.0 - (Conductor.songPos / chartState.audio.length)) * 100;
+        timeBall.x = FlxMath.lerp(
+            timeBar.x,
+            timeBar.x + timeBar.width,
+            1 - (timeBar.percent / 100)
+        ) - (timeBall.width / 2);
+        
+        super.draw();
+    }
+
+    var scrubbing:Bool = false;
+
+    override function update(elapsed:Float)
+    {
+        super.update(elapsed);
+
+        if (FlxG.mouse.overlaps(timeBar.border)
+        || FlxG.mouse.overlaps(timeBall))
+        {
+            chartState.curCursor = POINTER;
+            if (FlxG.mouse.justPressed)
+                scrubbing = true;
+        }
+
+        if (scrubbing)
+        {
+            chartState.curCursor = POINTER;
+            chartState.playingSong = false;
+            
+            Conductor.songPos = FlxMath.bound(
+                FlxMath.remapToRange(
+                    FlxG.mouse.x,
+                    timeBar.x, timeBar.x + timeBar.width,
+                    0, chartState.audio.length
+                ),
+                0, chartState.audio.length
+            );
+            
+            if (!FlxG.mouse.pressed)
+                scrubbing = false;
+        }
+    }
+
+    public function getTime(time:Float):String
+    {
+        time /= 1000;
+        if (true) // new timer
+            return FlxStringUtil.formatTime(time, true);
+        else // old timer
+            return '${Math.floor(time * 100) / 100}';
+    }
+}
+
+class BaseWindow extends FlxGroup
+{
+    public var chartState:ChartingState;
+
+    public var bg:FlxSprite;
+
+    public function new(chartState:ChartingState)
     {
         super();
+        this.chartState = chartState;
+    
+        bg = new FlxSprite().makeColor(100, 100, 0xFF000000);
+        bg.alpha = 0.5;
+        add(bg);
     }
 }
