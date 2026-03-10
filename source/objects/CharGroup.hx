@@ -120,4 +120,8 @@ class CharGroup extends FlxTypedGroup<Character>
     public var singLoop(get, never):Int;
     public function get_singLoop():Int
         return char.singLoop;
+
+    public var quickDancer(get, never):Bool;
+    public function get_quickDancer():Bool
+        return char.quickDancer;
 }

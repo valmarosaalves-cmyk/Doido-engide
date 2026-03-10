@@ -48,7 +48,7 @@ class Character extends DoidoSprite
     }
 
     var idleAnims:Array<String> = ["idle"];
-    var quickDancer:Bool = false;
+    public var quickDancer:Bool = false;
     var deathChar:String = "bf-dead";
 
     public var singType:SingType = LAST;

@@ -41,7 +41,7 @@ class PlayState extends MusicBeatState implements Playable
 
 	var camFollow:LerpPoint;
 	var camDisplace:LerpPoint;
-	var defaultCamZoom:Float = 1.0;
+	var defaultCamZoom:Float = 0.9;
 	var defaultHudZoom:Float = 1.0;
 
 	public var curFocus:String = "";
@@ -57,6 +57,7 @@ class PlayState extends MusicBeatState implements Playable
 
 	var dad:CharGroup;
 	var bf:CharGroup;
+	var gf:CharGroup;
 	var characters:Array<CharGroup> = [];
 
 	public var health:Float = 1;
@@ -120,7 +121,7 @@ class PlayState extends MusicBeatState implements Playable
 		bf = new CharGroup(true);
 		bf.addChar("bf", true);
 		bf.setPos(
-			(FlxG.width / 2) + (FlxG.width / 4),
+			FlxG.width - 200,
 			FlxG.height - 50
 		);
 		bf.setZ(10);
@@ -128,11 +129,20 @@ class PlayState extends MusicBeatState implements Playable
 		dad = new CharGroup(false);
 		dad.addChar("face", true);
 		dad.setPos(
-			(FlxG.width / 2) - (FlxG.width / 4),
+			200,
 			FlxG.height - 50
 		);
 		dad.setZ(10);
+
+		gf = new CharGroup(false);
+		gf.addChar("gf", true);
+		gf.setPos(
+			(FlxG.width / 2),
+			FlxG.height - 150
+		);
+		gf.setZ(10);
 		
+		characters.push(gf);
 		characters.push(dad);
 		characters.push(bf);
 
@@ -489,23 +499,21 @@ class PlayState extends MusicBeatState implements Playable
 			}
 		}
 
-		if (curBeat % 2 == 0)
+		for(char in characters)
 		{
-			// dancing
-			for(char in characters)
+			if ((curBeat % 2 == 0 || char.quickDancer) && (char.singStep <= 0))
 			{
-				if (char.singStep <= 0)
+				if (char.isPlayer)
 				{
-					if (char.isPlayer)
-					{
-						if (!playField.playerHolding)
-							char.dance();
-					}
-					else
+					if (!playField.playerHolding)
 						char.dance();
 				}
+				else
+					char.dance();
 			}
 		}
+
+		
 
 		if (curBeat % 4 == 0)	
 		{

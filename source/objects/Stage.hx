@@ -1,5 +1,6 @@
 package objects;
 
+import flixel.FlxObject;
 import states.PlayState;
 import flixel.FlxSprite;
 import hscript.iris.Iris;
@@ -14,7 +15,7 @@ class Stage
     }
 
     public var curStage:String = "";
-    public var stageItems:Array<FlxSprite> = [];
+    public var stageItems:Array<FlxObject> = [];
     public function reloadStage(curStage:String)
     {
         stageItems = [];
@@ -37,12 +38,14 @@ class Stage
         {
             default:
                 var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+                bg.scale.set(1.15,1.15);
+                bg.updateHitbox();
                 bg.scrollFactor.set();
                 bg.screenCenter();
                 bg.setZ(0);
-                
-                stageItems = [bg];
-            }
+                add(bg);
+                //stageItems = [bg];
+        }
     }
 
     public function add(obj:FlxSprite)
