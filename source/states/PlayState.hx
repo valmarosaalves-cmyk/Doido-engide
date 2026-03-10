@@ -532,6 +532,9 @@ class PlayState extends MusicBeatState implements Playable
 				}
 			}
 		}
+		if(stageBuild.loadedScript != null) {
+			stageBuild.callScript(fun, args);
+		}
 	}
 	
 	public function setScript(name:String, value:Dynamic, allowOverride:Bool = true) {

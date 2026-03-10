@@ -1,0 +1,7 @@
+import doido.Assets;
+
+function create() {
+    var bg = new FlxSprite().loadGraphic(Assets.image('stages/debug/fat'));
+    bg.screenCenter();
+    add(bg);
+}

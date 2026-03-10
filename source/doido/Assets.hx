@@ -39,7 +39,7 @@ class Assets
         TEXT => ["txt"],
         JSON => ["json"],
         XML => ["xml"],
-        SCRIPT => ["hx", "hxc", "hscript"],
+        SCRIPT => ["hx", "hxs", "hxc", "hscript"],
         BINARY => [""],
         OTHER => [""] //?
     ];
