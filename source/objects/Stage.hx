@@ -23,17 +23,14 @@ class Stage
         
         loadedScript = null;
         
-        var scriptPath:String = "";
-        for(file in Assets.list('data/stages/$curStage', SCRIPT)) {
-            trace("trying: " + file);
-            scriptPath = file;
-        }
-
-        if (scriptPath != "")
+        curStage = "debug"; //temp
+        var scriptPath:String = 'images/stages/data/$curStage';
+        if (Assets.fileExists(scriptPath, SCRIPT))
         {
-            loadedScript = new Iris(scriptPath, this, {name: scriptPath, autoRun: true, autoPreset: true});
+            loadedScript = new Iris(Assets.getAsset(scriptPath, SCRIPT), this, {name: scriptPath, autoRun: true, autoPreset: true});
             loadedScript.set("Paths", Paths);
             loadedScript.set("Assets", Assets);
+            loadedScript.set("FlxSprite", FlxSprite);
             callScript("create");
             return;
         }
