@@ -53,6 +53,8 @@ class PlayState extends MusicBeatState implements Playable
 	var audio:AudioHandler;
 	var defaultSongSpeed:Float = 1.0;
 
+	var stageBuild:Stage;
+
 	var dad:CharGroup;
 	var bf:CharGroup;
 	var characters:Array<CharGroup> = [];
@@ -110,11 +112,10 @@ class PlayState extends MusicBeatState implements Playable
 
 		camFollow = new LerpPoint(true);
 		camDisplace = new LerpPoint(true);
-		
-		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
-		bg.scrollFactor.set();
-		bg.screenCenter();
-		add(bg);
+
+		stageBuild = new Stage(this);
+
+		// gf.setZ(9);
 		
 		bf = new CharGroup(true);
 		bf.addChar("bf", true);
@@ -122,18 +123,24 @@ class PlayState extends MusicBeatState implements Playable
 			(FlxG.width / 2) + (FlxG.width / 4),
 			FlxG.height - 50
 		);
-		add(bf);
-
+		bf.setZ(10);
+		
 		dad = new CharGroup(false);
 		dad.addChar("face", true);
 		dad.setPos(
 			(FlxG.width / 2) - (FlxG.width / 4),
 			FlxG.height - 50
 		);
-		add(dad);
+		dad.setZ(10);
 		
 		characters.push(dad);
 		characters.push(bf);
+
+		for(char in characters) {
+			add(char);
+		}
+
+		reloadStage("debug");
 
 		//temporary caching
 		Assets.image("hud/base/numbers");
@@ -272,6 +279,25 @@ class PlayState extends MusicBeatState implements Playable
 			//Logs.print("GHOST TAPPED " + direction.toUpperCase(), WARNING);
 			hudClass.updateScoreTxt();
 		};
+	}
+
+	public function reloadStage(curStage:String)
+	{
+		if (curStage != stageBuild.curStage)
+		{
+			for(item in stageBuild.stageItems)
+				remove(item);
+			
+			stageBuild.reloadStage(curStage);
+			for(item in stageBuild.stageItems)
+				add(item);
+		}
+	}
+
+	override function draw()
+	{
+		members.sort(ZIndex.sortAscending);
+		super.draw();
 	}
 
 	var cameraSpeed:Float = 1.0;
