@@ -1,5 +1,6 @@
 package objects;
 
+import flixel.FlxObject;
 import states.PlayState;
 import flixel.FlxSprite;
 
@@ -13,7 +14,7 @@ class Stage
     }
 
     public var curStage:String = "";
-    public var stageItems:Array<FlxSprite> = [];
+    public var stageItems:Array<FlxObject> = [];
     public function reloadStage(curStage:String)
     {
         stageItems = [];
@@ -26,8 +27,10 @@ class Stage
                 bg.scrollFactor.set();
                 bg.screenCenter();
                 bg.setZ(0);
-                
-                stageItems = [bg];
+                add(bg);
             }
     }
+
+    public function add(obj:FlxObject)
+        stageItems.push(obj);
 }
