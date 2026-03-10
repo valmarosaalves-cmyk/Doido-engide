@@ -24,11 +24,14 @@ class Stage
         {
             default:
                 var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+                bg.scale.set(1.15,1.15);
+                bg.updateHitbox();
                 bg.scrollFactor.set();
                 bg.screenCenter();
                 bg.setZ(0);
                 add(bg);
-            }
+                //stageItems = [bg];
+        }
     }
 
     public function add(obj:FlxObject)
