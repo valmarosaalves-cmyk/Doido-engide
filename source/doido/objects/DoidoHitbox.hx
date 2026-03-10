@@ -39,7 +39,7 @@ class DoidoHitbox extends FlxSprite implements IFlxInput
             _color = color;
 
         this.makeColor(width, height, _color);
-        this.alpha = _alpha;
+        this.alpha = 0.5;
 
         currentState = RELEASED;
         lastState = RELEASED;
@@ -78,8 +78,9 @@ class DoidoHitbox extends FlxSprite implements IFlxInput
 
         if(FlxG.mouse.pressed) {
             for (camera in cameras) {
-                var pos:FlxPoint = FlxG.mouse.getWorldPosition(camera);
+                var pos:FlxPoint = FlxG.mouse.getViewPosition(camera);
                 var overlap = overlapsPoint(pos);
+                trace(pos);
                 pos.put();
                 if (overlap) return true;
             }
@@ -94,7 +95,7 @@ class DoidoHitbox extends FlxSprite implements IFlxInput
         if(touches != null && touches.length != 0) {
             for (camera in cameras) {
                 for(touch in touches) {
-                    var pos:FlxPoint = touch.getWorldPosition(camera);
+                    var pos:FlxPoint = touch.getViewPosition(camera);
                     var overlap = overlapsPoint(pos);
                     pos.put();
                     if(overlap) return true;

@@ -167,6 +167,7 @@ class PlayState extends MusicBeatState implements Playable
 
 		#if TOUCH_CONTROLS
 		pauseButton = new DoidoHitbox(0,0,100,100,0.4);
+		pauseButton.cameras = [camOther];
 		add(pauseButton);
 		#end
 
