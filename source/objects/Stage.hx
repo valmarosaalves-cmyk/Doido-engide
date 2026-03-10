@@ -18,18 +18,22 @@ class Stage
     public var stageItems:Array<FlxObject> = [];
     public function reloadStage(curStage:String)
     {
-        stageItems = [];
-
         this.curStage = curStage;
-
+        stageItems = [];
+        
         loadedScript = null;
         
+        var scriptPath:String = "";
         for(file in Assets.list('data/stages/$curStage', SCRIPT)) {
             trace("trying: " + file);
-            loadedScript = new Iris(file, this, {name: file, autoRun: true, autoPreset: true});
+            scriptPath = file;
         }
 
-        if(loadedScript != null) {
+        if (scriptPath != "")
+        {
+            loadedScript = new Iris(scriptPath, this, {name: scriptPath, autoRun: true, autoPreset: true});
+            loadedScript.set("Paths", Paths);
+            loadedScript.set("Assets", Assets);
             callScript("create");
             return;
         }
@@ -48,8 +52,7 @@ class Stage
         }
     }
 
-    public function add(obj:FlxSprite)
-    {
+    public function add(obj:FlxSprite) {
         stageItems.push(obj);
     }
 
