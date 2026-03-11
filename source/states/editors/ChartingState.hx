@@ -768,6 +768,7 @@ class ChartingGrid extends FlxSprite
 
     public var border:FlxSprite;
     public var sectBG:FlxSprite;
+    public var sectCap:FlxSprite;
     public var sectText:FlxBitmapText;
     public var midLine:FlxSprite;
     public var beatLine:FlxSprite;
@@ -786,9 +787,12 @@ class ChartingGrid extends FlxSprite
         border = new FlxSprite(gridX - GRID_SIZE * 0.25).makeColor(GRID_SIZE * 8.5, FlxG.height, 0xFF1C1A24);
 
         sectBG = new FlxSprite().makeColor(1, 1, 0xFF1C1A24);
+        sectCap = new FlxSprite().loadImage("editors/charting/sectionCap");
 
         sectText = new FlxBitmapText(0, 0, Assets.bitmapFont("phantommuff"));
-        sectText.alignment = LEFT;
+        sectText.alignment = CENTER;
+        sectText.scale.set(0.8, 0.8);
+        sectText.updateHitbox();
         
         midLine = new FlxSprite(gridX + GRID_SIZE * 4).makeColor(4, FlxG.height, 0xFF1C1A24);
         midLine.x -= midLine.width / 2;
@@ -842,18 +846,27 @@ class ChartingGrid extends FlxSprite
                 // section numbers
                 if (_y % 16 == 0)
                 {
-                    sectText.text = '${Math.floor(_y / 16)}';
+                    sectText.text = '${Math.floor(_y / 16)}'.lpad("0", 2);
                     
                     sectBG.scale.set(sectText.width + 12, sectText.height + 12);
                     sectBG.updateHitbox();
 
+                    sectCap.scale.y = (sectBG.height / sectCap.frameHeight);
+                    sectCap.updateHitbox();
+
                     sectBG.setPosition(
-                        (gridX + GRID_SIZE * 8),
+                        border.x + border.width,
                         gridY - (sectBG.height / 2)
                     );
-                    sectText.x = sectBG.x + (12 / 2);
-                    sectText.y = sectBG.y + (12 / 2);
-
+                    sectCap.setPosition(
+                        sectBG.x + sectBG.width - (sectCap.width / 2),
+                        sectBG.y
+                    );
+                    sectText.setPosition(
+                        sectBG.x + (12 / 2),
+                        sectBG.y + (12 / 2)
+                    );
+                    sectCap.draw();
                     sectBG.draw();
                     sectText.draw();
                 }
