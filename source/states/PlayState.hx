@@ -40,8 +40,8 @@ class PlayState extends MusicBeatState implements Playable
 
 	var camFollow:LerpPoint;
 	var camDisplace:LerpPoint;
-	var defaultCamZoom:Float = 0.9;
 	var defaultHudZoom:Float = 1.0;
+	public static var defaultCamZoom:Float = 0.9;
 
 	public var curFocus:String = "";
 	public var maxDisplace:DoidoPoint = {x: 0, y: 0};
@@ -79,6 +79,7 @@ class PlayState extends MusicBeatState implements Playable
 
 	public function resetStatics()
 	{
+		defaultCamZoom = 0.9;
 		Timings.init();	
 	}
 	

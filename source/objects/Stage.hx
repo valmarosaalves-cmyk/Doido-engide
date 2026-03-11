@@ -4,6 +4,7 @@ import flixel.FlxObject;
 import states.PlayState;
 import flixel.FlxSprite;
 import hscript.iris.Iris;
+import doido.utils.MathUtil;
 
 class Stage
 {
@@ -23,14 +24,18 @@ class Stage
         
         loadedScript = null;
         
-        curStage = "debug"; //temp
+        curStage = "stage"; //temp
         var scriptPath:String = 'images/stages/data/$curStage';
         if (Assets.fileExists(scriptPath, SCRIPT))
         {
             loadedScript = new Iris(Assets.getAsset(scriptPath, SCRIPT), this, {name: scriptPath, autoRun: true, autoPreset: true});
             loadedScript.set("Paths", Assets);
             loadedScript.set("Assets", Assets);
+            loadedScript.set("PlayState", PlayState);
             loadedScript.set("FlxSprite", FlxSprite);
+            loadedScript.set("MathUtil", MathUtil);
+            loadedScript.set("camZoom", PlayState.defaultCamZoom); //Nao ta indo n sei porq da silva
+            
             callScript("create");
             return;
         }
@@ -57,7 +62,6 @@ class Stage
     public var loadedScript:Iris;
 	public function callScript(fun:String, ?args:Array<Dynamic>) {
         if(loadedScript == null) return;
-
         @:privateAccess {
             var ny: Dynamic = loadedScript.interp.variables.get(fun);
             try {

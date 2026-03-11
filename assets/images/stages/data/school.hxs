@@ -1,0 +1,67 @@
+var bgGirls:FlxSprite;
+
+function create() {
+    var bgSky = new FlxSprite().loadGraphic(Assets.image('stages/school/weebSky'));
+    bgSky.scrollFactor.set(0.1, 0.1);
+    add(bgSky);
+    
+    var bgSchool:FlxSprite = new FlxSprite(-200, 0).loadGraphic(Assets.image('stages/school/weebSchool'));
+    bgSchool.scrollFactor.set(0.6, 0.90);
+    add(bgSchool);
+    
+    var bgStreet:FlxSprite = new FlxSprite(-200).loadGraphic(Assets.image('stages/school/weebStreet'));
+    bgStreet.scrollFactor.set(0.95, 0.95);
+    add(bgStreet);
+    
+    var fgTrees:FlxSprite = new FlxSprite(-200 + 170, 130).loadGraphic(Assets.image('stages/school/weebTreesBack'));
+    fgTrees.scrollFactor.set(0.9, 0.9);
+    add(fgTrees);
+    
+    var bgTrees:FlxSprite = new FlxSprite(-200 - 380, -1100);
+    bgTrees.frames = Assets.packer('stages/school/weebTrees');
+    bgTrees.animation.add('treeLoop', MathUtil.intArray(18), 12);
+    bgTrees.animation.play('treeLoop');
+    bgTrees.scrollFactor.set(0.85, 0.85);
+    add(bgTrees);
+
+    var treeLeaves:FlxSprite = new FlxSprite(-200, -40);
+    treeLeaves.frames = Assets.sparrow('stages/school/petals');
+    treeLeaves.animation.addByPrefix('leaves', 'PETALS ALL', 24, true);
+    treeLeaves.animation.play('leaves');
+    treeLeaves.scrollFactor.set(0.85, 0.85);
+    add(treeLeaves);
+    
+    bgGirls = new FlxSprite(-100, 175); // 190
+    bgGirls.frames = Assets.sparrow('stages/school/bgFreaks');
+    bgGirls.scrollFactor.set(0.9, 0.9);
+    
+    var girlAnim:String = "girls group";
+    if(PlayState.SONG.song == 'roses')
+        girlAnim = 'fangirls dissuaded';
+    
+    bgGirls.animation.addByIndices('danceLeft',  'BG $girlAnim', MathUtil.intArray(14),		"", 24, false);
+    bgGirls.animation.addByIndices('danceRight', 'BG $girlAnim', MathUtil.intArray(30, 15), "", 24, false);
+    bgGirls.animation.play('danceLeft');
+    add(bgGirls);
+    
+    // easier to manage
+    for(item in stageItems)
+    {
+        item.antialiasing = false;
+        item.scale.set(6,6);
+        item.updateHitbox();
+        item.x -= 170;
+        item.y -= 145;
+    }
+}
+
+function stepHit(curStep)
+{
+    if(curStep % 4 == 0)
+    {
+        if(bgGirls.animation.curAnim.name == 'danceLeft')
+            bgGirls.animation.play('danceRight', true);
+        else
+            bgGirls.animation.play('danceLeft', true);
+    }
+}
