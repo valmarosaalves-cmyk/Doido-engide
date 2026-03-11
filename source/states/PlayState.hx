@@ -206,7 +206,7 @@ class PlayState extends MusicBeatState implements Playable
 		camGame.zoom = defaultCamZoom;
 		for(cam in [camHUD, camStrum])
 			cam.zoom = defaultHudZoom;
-		
+
 		callScript("createPost");
 	}
 
@@ -262,6 +262,11 @@ class PlayState extends MusicBeatState implements Playable
 		playField.onNoteMiss = (note, strumline) ->
 		{
 			if (note.isHold && !note.isHoldEnd) return;
+
+			if(gf != null) {
+				gf.resetSingStep();
+				gf.playAnim("sad");
+			}
 
 			for(char in characters)
 			{

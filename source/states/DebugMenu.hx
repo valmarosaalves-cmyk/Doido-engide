@@ -196,7 +196,7 @@ class Credits extends MusicBeatState
 
 class OffsetSel extends MusicBeatState
 {
-    var options:Array<String> = ["bf", "face"];
+    var options:Array<String> = ["bf", "face", "gf"];
     var text:FlxText;
     var ver:FlxText;
     var title:FlxText;
