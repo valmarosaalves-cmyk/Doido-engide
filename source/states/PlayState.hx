@@ -391,7 +391,7 @@ class PlayState extends MusicBeatState implements Playable
 
 				var eventData = spawnEvents[curEventCount];
 				if ((eventData.stepTime - curStepFloat) <= 0) {
-					playEvent(eventData);
+					playEvent(eventData.name, eventData.data);
 					curEventCount++;
 				}
 					
@@ -402,10 +402,13 @@ class PlayState extends MusicBeatState implements Playable
 		callScript("updatePost", [elapsed]);
 	}
 
-	function playEvent(event:EventData) {
-		switch(event.name) {
+	function playEvent(name:String, data:Array<Dynamic>)
+	{
+		callScript("playEvent", [data]);
+		switch(name)
+		{
 			case "Camera Focus":
-				followCamera(event.data[0]);
+				followCamera(data[0]);
 		}
 	}
 
