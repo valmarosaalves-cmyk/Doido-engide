@@ -16,16 +16,16 @@ class SpriteUtil
 		return spr;
 	}
 	
-	/*public static function makeGradient(width:Float, height:Float, colors:Array<FlxColor>, chunkSize:UInt = 1, rotation:Int = 90, interpolate:Bool = true):FlxSprite
+	public static function makeGradient(spr:FlxSprite, width:Float, height:Float, colors:Array<FlxColor>, chunkSize:UInt = 1, rotation:Int = 90, interpolate:Bool = true):FlxSprite
 	{
 		if (colors.length == 0) colors = [FlxColor.WHITE];
-		if (colors.length == 1) return makeGraphic(width, height, colors[0]);
+		if (colors.length == 1) return makeColor(spr, width, height, colors[0]);
 		
 		spr = FlxGradient.createGradientFlxSprite(
 			Math.floor(width), Math.floor(height), colors, chunkSize, rotation, interpolate
 		);
 		return spr;
-	}*/
+	}
 	
 	public static function loadImage(spr:FlxSprite, key:String, animated:Bool = false, frameWidth:Int = 0, frameHeight:Int = 0):FlxSprite
 	{
@@ -39,7 +39,23 @@ class SpriteUtil
 		return spr;
 	}
 	
-	//public static function loadMultiSparrow(spr:FlxSprite, )
+	public static function loadMultiSparrow(spr:FlxSprite, key:String, extraSheets:Array<String>):FlxSprite
+	{
+		spr.frames = Assets.multiSparrow(key, extraSheets);
+		return spr;
+	}
+
+	public static function loadPacker(spr:FlxSprite, key:String):FlxSprite
+	{
+		spr.frames = Assets.packer(key);
+		return spr;
+	}
+
+	public static function loadAseprite(spr:FlxSprite, key:String):FlxSprite
+	{
+		spr.frames = Assets.aseprite(key);
+		return spr;
+	}
 	
 	public static function spriteCenter(spr:FlxSprite):FlxSprite
 	{

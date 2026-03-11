@@ -1,17 +1,17 @@
 package doido;
 
+import animate.FlxAnimateFrames;
+import doido.Cache;
+import doido.objects.DoidoSprite.SpriteType;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.text.FlxBitmapFont;
-import animate.FlxAnimateFrames;
+import haxe.Json;
 import openfl.Assets as OpenFLAssets;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
 import openfl.media.Sound;
-import haxe.Json;
-import doido.Cache;
-import doido.objects.DoidoSprite.SpriteType;
 
 //am i gonna do something with this?
 enum Asset
@@ -220,7 +220,16 @@ class Assets
 
     public static inline function sparrow(key:String):FlxFramesCollection
 		return framesCollection(key, SPARROW);
+
+    public static inline function multiSparrow(key:String, extrasheets:Array<String>):FlxFramesCollection
+		return framesCollection(key, extrasheets, MULTISPARROW);
 	
+    public static inline function packer(key:String):FlxFramesCollection
+		return framesCollection(key, PACKER);
+
+    public static inline function aseprite(key:String):FlxFramesCollection
+		return framesCollection(key, ASEPRITE);
+
 	public static inline function animate(key:String):FlxAnimateFrames
 		return cast framesCollection(key, ATLAS);
 

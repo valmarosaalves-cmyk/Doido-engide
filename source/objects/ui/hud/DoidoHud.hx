@@ -1,6 +1,5 @@
 package objects.ui.hud;
 
-import doido.utils.DoidoPoint;
 import flixel.math.FlxMath;
 import objects.ui.hud.BaseHud.IconChange;
 

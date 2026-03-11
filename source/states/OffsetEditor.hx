@@ -1,14 +1,12 @@
 package states;
 
-import doido.utils.DoidoPoint;
-import objects.Character;
+import doido.objects.DoidoCamera;
 import flixel.FlxSprite;
-import objects.Character;
 import flixel.text.FlxText;
 import flixel.FlxObject;
 import flixel.math.FlxMath;
-import doido.objects.DoidoCamera;
-import StringTools;
+import objects.Character;
+import objects.Character;
 
 class OffsetEditor extends MusicBeatState
 {

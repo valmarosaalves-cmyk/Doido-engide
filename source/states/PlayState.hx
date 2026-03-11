@@ -1,6 +1,5 @@
 package states;
 
-import doido.utils.DoidoPoint;
 import flixel.math.FlxMath;
 import doido.song.*;
 import doido.song.chart.SongHandler;

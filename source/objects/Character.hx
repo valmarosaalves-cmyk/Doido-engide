@@ -1,6 +1,5 @@
 package objects;
 
-import doido.utils.DoidoPoint;
 import doido.song.Conductor;
 import doido.objects.DoidoSprite;
 
