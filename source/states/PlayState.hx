@@ -201,6 +201,12 @@ class PlayState extends MusicBeatState implements Playable
 		}
 
 		followCamera("dad");
+		camFollow.get(1);
+
+		camGame.zoom = defaultCamZoom;
+		for(cam in [camHUD, camStrum])
+			cam.zoom = defaultHudZoom;
+		
 		callScript("createPost");
 	}
 
@@ -485,6 +491,9 @@ class PlayState extends MusicBeatState implements Playable
 	{
 		super.beatHit();
 		callScript("beatHit", [curBeat]);
+
+		if(curBeat < -4)
+			return;
 
 		// COUNTDOWN AND SONG START
 		if (curBeat <= 0)
