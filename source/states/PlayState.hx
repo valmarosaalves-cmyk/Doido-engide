@@ -404,7 +404,7 @@ class PlayState extends MusicBeatState implements Playable
 
 	function playEvent(name:String, data:Array<Dynamic>)
 	{
-		callScript("playEvent", [data]);
+		callScript("playEvent", [name, data]);
 		switch(name)
 		{
 			case "Camera Focus":
