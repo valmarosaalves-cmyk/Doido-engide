@@ -106,7 +106,7 @@ class Character extends DoidoSprite
 		updateHitbox();
         scaleOffset = {x: offset.x, y: offset.y};
 
-        dance();
+        playAnim(idleAnims[0], true, anim.curAnim.numFrames);
     }
 
     public function singTypeFromString(type:Null<String>) {
