@@ -124,4 +124,7 @@ class CharGroup extends FlxTypedGroup<Character>
     public var quickDancer(get, never):Bool;
     public function get_quickDancer():Bool
         return char.quickDancer;
+
+    public function animExists(animName:String):Bool
+        return char.animExists(animName);
 }

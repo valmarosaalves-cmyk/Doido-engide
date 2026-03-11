@@ -263,7 +263,7 @@ class PlayState extends MusicBeatState implements Playable
 		{
 			if (note.isHold && !note.isHoldEnd) return;
 
-			if(gf != null) {
+			if(gf != null && gf.animExists("sad")) {
 				gf.resetSingStep();
 				gf.playAnim("sad");
 			}
