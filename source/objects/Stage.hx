@@ -28,7 +28,7 @@ class Stage
         if (Assets.fileExists(scriptPath, SCRIPT))
         {
             loadedScript = new Iris(Assets.getAsset(scriptPath, SCRIPT), this, {name: scriptPath, autoRun: true, autoPreset: true});
-            loadedScript.set("Paths", Paths);
+            loadedScript.set("Paths", Assets);
             loadedScript.set("Assets", Assets);
             loadedScript.set("FlxSprite", FlxSprite);
             callScript("create");

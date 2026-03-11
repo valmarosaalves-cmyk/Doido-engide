@@ -42,6 +42,8 @@ class ChartingState extends MusicBeatState
     public var SONG:DoidoSong;
     public var EVENTS:DoidoEvents;
 
+    public var cursorTxt:FlxBitmapText;
+
     public var grid:ChartingGrid;
     public var timeBar:FlxSprite;
     public var renderNotes:FlxTypedGroup<ChartingNote>;
@@ -116,9 +118,15 @@ class ChartingState extends MusicBeatState
         var debugInfo = new DebugInfo(this);
         //debugInfo.visible = true;
         add(debugInfo);
+
+        cursorTxt = new FlxBitmapText(0, 0, Assets.bitmapFont("phantommuff"));
+        cursorTxt.setOutline(0xFF000000, 2);
+        cursorTxt.alignment = LEFT;
+        cursorTxt.scale.set(0.7, 0.7);
+        cursorTxt.updateHitbox();
     }
 
-    var tweeningSongPos:Bool = false;
+    public var tweeningSongPos:Bool = false;
     public var curCursor:lime.ui.MouseCursor = DEFAULT;
 
     var clickedOnWindow:Bool = false;
@@ -153,9 +161,16 @@ class ChartingState extends MusicBeatState
         
         if (FlxG.mouse.justPressed)
             clickedOnWindow = overlapsWindow;
+        
+        var cursorText:String = "";
+        if (FlxG.keys.pressed.SHIFT)
+            cursorText = "4x";
 
         if (!clickedOnWindow)
         {
+            if (FlxG.mouse.pressedRight)
+                cursorText = "X";
+
             if (FlxG.mouse.justPressed)
             {
                 lastClicked = {x: FlxG.mouse.x, y: FlxG.mouse.y};
@@ -477,41 +492,11 @@ class ChartingState extends MusicBeatState
                 }
                 else
                 {
-                    var dir = (wasA ? -1 : 1) * (FlxG.keys.pressed.SHIFT ? 4 : 1);
-                    tweenSongPos(getSectionStart(curStepFloat + 1 + (16 * dir)));
+                    changeSection(wasA ? -1 : 1);
                 }
             }
 
-            if (FlxG.keys.justPressed.R)
-            {
-                if (FlxG.keys.pressed.SHIFT)
-                {
-                    if (!tweeningSongPos)
-                    {
-                        if (Conductor.songPos <= 10000 || noFunAllowed)
-                            tweenSongPos(0, 0.25, FlxEase.cubeInOut);
-                        else
-                        {
-                            FlxTween.tween(FlxG.camera, {zoom: 1.3}, 1.6, {ease: FlxEase.cubeIn, startDelay: 0.4});
-                            tweenSongPos(0, 2, FlxEase.cubeIn, (twn) -> {
-                                playSfx("editors/clank");
-                                FlxTween.completeTweensOf(FlxG.camera);
-                                FlxTween.tween(FlxG.camera, {zoom: 1.0}, 0.1, {ease: FlxEase.cubeOut});
-                                FlxG.camera.shake(0.02, 0.15);
-                            });
-                        }
-                    }
-                    else
-                    {
-                        FlxTween.completeTweensOf(Conductor);
-                        
-                    }
-                }
-                else
-                {
-                    tweenSongPos(getSectionStart());
-                }
-            }
+            if (FlxG.keys.justPressed.R) resetSection();
 
             if (FlxG.keys.justPressed.ENTER)
             {
@@ -554,6 +539,11 @@ class ChartingState extends MusicBeatState
 
         super.update(elapsed);
         EditorUtil.setCursor(curCursor);
+        if (cursorTxt.text != cursorText)
+        {
+            cursorTxt.text = cursorText;
+            cursorTxt.color = (cursorText == "X" ? 0xFFFF0000 : 0xFFFFFFFF);       
+        }
     }
 
     function save() {
@@ -599,6 +589,43 @@ class ChartingState extends MusicBeatState
     {
         if (tweeningSongPos)
             tweenSongPos(getSectionStart());
+    }
+
+    public function changeSection(dir:Int)
+    {
+        dir *= (FlxG.keys.pressed.SHIFT ? 4 : 1);
+        tweenSongPos(getSectionStart(curStepFloat + 1 + (16 * dir)));
+    }
+
+    public function resetSection()
+    {
+        if (FlxG.keys.pressed.SHIFT)
+        {
+            if (!tweeningSongPos)
+            {
+                if (Conductor.songPos <= 10000 || noFunAllowed)
+                    tweenSongPos(0, 0.25, FlxEase.cubeInOut);
+                else
+                {
+                    FlxTween.tween(FlxG.camera, {zoom: 1.3}, 1.6, {ease: FlxEase.cubeIn, startDelay: 0.4});
+                    tweenSongPos(0, 2, FlxEase.cubeIn, (twn) -> {
+                        playSfx("editors/clank");
+                        FlxTween.completeTweensOf(FlxG.camera);
+                        FlxTween.tween(FlxG.camera, {zoom: 1.0}, 0.1, {ease: FlxEase.cubeOut});
+                        FlxG.camera.shake(0.02, 0.15);
+                    });
+                }
+            }
+            else
+            {
+                FlxTween.completeTweensOf(Conductor);
+                
+            }
+        }
+        else
+        {
+            tweenSongPos(getSectionStart());
+        }
     }
 
     public function tweenSongPos(target:Float, duration:Float = 0.1, ?ease:EaseFunction, ?onComplete:FlxTween->Void)
@@ -712,6 +739,15 @@ class ChartingState extends MusicBeatState
         renderNotes.sort(ZIndex.sort);
 
         super.draw();
+
+        if (cursorTxt.text != "")
+        {
+            cursorTxt.setPosition(
+                FlxG.mouse.x + 18,
+                FlxG.mouse.y + 18
+            );
+            cursorTxt.draw();
+        }
     }
 
     override function stepHit()
@@ -751,7 +787,7 @@ class ChartingGrid extends FlxSprite
 
         sectBG = new FlxSprite().makeColor(1, 1, 0xFF1C1A24);
 
-        sectText = new FlxBitmapText(0, 0, Assets.bitmapFont("vcr"));
+        sectText = new FlxBitmapText(0, 0, Assets.bitmapFont("phantommuff"));
         sectText.alignment = LEFT;
         
         midLine = new FlxSprite(gridX + GRID_SIZE * 4).makeColor(4, FlxG.height, 0xFF1C1A24);
@@ -834,6 +870,8 @@ class TimeWindow extends BaseWindow
     public var timeBar:DoidoBar;
     public var timeBall:FlxSprite;
 
+    public var buttons:Array<FlxSprite> = [];
+
     public function new(chartState:ChartingState)
     {
         super(chartState);
@@ -863,6 +901,31 @@ class TimeWindow extends BaseWindow
         timeBall = new FlxSprite(0, timeBar.y).loadImage("editors/charting/timeBall");
         timeBall.y += (timeBar.height - timeBall.height) / 2;
         add(timeBall);
+        
+        // play button
+        addButton(0, 0, (btn) -> {
+            if (!chartState.tweeningSongPos)
+                chartState.playingSong = !chartState.playingSong;
+            else
+            {
+                FlxTween.completeTweensOf(btn);
+                FlxTween.color(btn, 0.4, 0xFFFF0000, 0xFFFFFFFF);
+                FlxTween.shake(btn, 0.05, 0.4);
+            }
+        });
+
+        // section buttons
+        addButton(-32, 3, (btn) -> {
+            chartState.changeSection(-1);
+        });
+        addButton(32, 2, (btn) -> {
+            chartState.changeSection(1);
+        });
+        
+        // reset button
+        addButton(64, 4, (btn) -> {
+            chartState.resetSection();
+        });
     }
 
     override function draw()
@@ -884,8 +947,24 @@ class TimeWindow extends BaseWindow
             timeBar.x + timeBar.width,
             1 - (timeBar.percent / 100)
         ) - (timeBall.width / 2);
+
+        // time button!!
+        buttons[0].animation.curAnim.curFrame = (chartState.playingSong ? 1 : 0);
         
         super.draw();
+    }
+
+    public function addButton(xOffset:Float, frame:Int, func:QuickButton->Void)
+    {
+        var newBtn = new QuickButton(func);
+        newBtn.loadSparrow("editors/charting/timeButtons");
+        newBtn.animation.addByPrefix("btn", "timeButtons", 0, false);
+        newBtn.animation.play("btn", true, false, frame);
+        buttons.push(newBtn);
+        add(newBtn);
+
+        newBtn.x = (bg.x + (bg.width - newBtn.width) / 2) + xOffset;
+        newBtn.y = timeBar.y - newBtn.height - 12;
     }
 
     var scrubbing:Bool = false;
@@ -934,7 +1013,6 @@ class TimeWindow extends BaseWindow
 class BaseWindow extends FlxGroup
 {
     public var chartState:ChartingState;
-
     public var bg:FlxSprite;
 
     public function new(chartState:ChartingState)
@@ -945,5 +1023,32 @@ class BaseWindow extends FlxGroup
         bg = new FlxSprite().makeColor(100, 100, 0xFF000000);
         bg.alpha = 0.5;
         add(bg);
+    }
+}
+
+class QuickButton extends FlxSprite
+{
+    public var onClick:QuickButton->Void;
+    public function new(onClick:QuickButton->Void)
+    {
+        super();
+        this.onClick = onClick;
+    }
+
+    override function update(elapsed:Float)
+    {
+        super.update(elapsed);
+        var daScale:Float = 1.0;
+        if (FlxG.mouse.overlaps(this))
+        {
+            daScale = 1.15;
+            if (FlxG.mouse.pressed) daScale = 0.9;
+            if (FlxG.mouse.justReleased) onClick(this);
+        }
+
+        scale.set(
+            FlxMath.lerp(scale.x, daScale, elapsed * 8),
+            FlxMath.lerp(scale.y, daScale, elapsed * 8)
+        );
     }
 }

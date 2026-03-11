@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="timebuttons.png">
+	<!-- Created with Adobe Animate version 24.0.3.19 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="timeButtons0000" x="3" y="3" width="27" height="27"/>
+	<SubTexture name="timeButtons0001" x="33" y="3" width="27" height="27"/>
+	<SubTexture name="timeButtons0002" x="63" y="3" width="27" height="27"/>
+	<SubTexture name="timeButtons0003" x="93" y="3" width="27" height="27"/>
+	<SubTexture name="timeButtons0004" x="123" y="3" width="27" height="27"/>
+</TextureAtlas>
