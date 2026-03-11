@@ -13,6 +13,7 @@ class Splash extends BaseSplash
 				animation.addByPrefix("splash1", '$direction splash 1', 24, false);
 				animation.addByPrefix("splash2", '$direction splash 2', 24, false);
 				splashScale = 0.8;
+				startAlpha = 0.8;
 		}
 
         alpha = startAlpha;
