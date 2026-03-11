@@ -33,14 +33,14 @@ class PlayState extends MusicBeatState implements Playable
 	public var hudClass:BaseHud;
 	public var debugInfo:DebugInfo;
 
-	var camGame:DoidoCamera;
-	var camHUD:DoidoCamera;
-	var camStrum:DoidoCamera;
-	var camOther:DoidoCamera;
+	public var camGame:DoidoCamera;
+	public var camHUD:DoidoCamera;
+	public var camStrum:DoidoCamera;
+	public var camOther:DoidoCamera;
 
-	var camFollow:LerpPoint;
-	var camDisplace:LerpPoint;
-	var defaultHudZoom:Float = 1.0;
+	public var camFollow:LerpPoint;
+	public var camDisplace:LerpPoint;
+	public var defaultHudZoom:Float = 1.0;
 	public static var defaultCamZoom:Float = 0.9;
 
 	public var curFocus:String = "";
@@ -49,15 +49,15 @@ class PlayState extends MusicBeatState implements Playable
 	public var paused:Bool = false;
 	public var canPause:Bool = true;
 
-	var audio:AudioHandler;
-	var defaultSongSpeed:Float = 1.0;
+	public var audio:AudioHandler;
+	public var defaultSongSpeed:Float = 1.0;
 
-	var stageBuild:Stage;
+	public var stageBuild:Stage;
 
-	var dad:CharGroup;
-	var bf:CharGroup;
-	var gf:CharGroup;
-	var characters:Array<CharGroup> = [];
+	public var dad:CharGroup;
+	public var bf:CharGroup;
+	public var gf:CharGroup;
+	public var characters:Array<CharGroup> = [];
 
 	public var health:Float = 1;
 
@@ -79,8 +79,7 @@ class PlayState extends MusicBeatState implements Playable
 
 	public function resetStatics()
 	{
-		defaultCamZoom = 0.9;
-		Timings.init();	
+		Timings.init();
 	}
 	
 	override function create()
@@ -120,26 +119,14 @@ class PlayState extends MusicBeatState implements Playable
 		
 		bf = new CharGroup(true);
 		bf.addChar("bf", true);
-		bf.setPos(
-			FlxG.width - 200,
-			FlxG.height - 50
-		);
 		bf.setZ(10);
 		
 		dad = new CharGroup(false);
 		dad.addChar("face", true);
-		dad.setPos(
-			200,
-			FlxG.height - 50
-		);
 		dad.setZ(10);
 
 		gf = new CharGroup(false);
 		gf.addChar("gf", true);
-		gf.setPos(
-			(FlxG.width / 2),
-			FlxG.height - 150
-		);
 		gf.setZ(10);
 		
 		characters.push(gf);
@@ -149,8 +136,6 @@ class PlayState extends MusicBeatState implements Playable
 		for(char in characters) {
 			add(char);
 		}
-
-		reloadStage("debug");
 
 		//temporary caching
 		Assets.image("hud/base/numbers");
@@ -166,6 +151,7 @@ class PlayState extends MusicBeatState implements Playable
 		add(hudClass);
 
 		callScript("create");
+		changeStage("stage");
 		
 		playField = new PlayField(SONG.notes, SONG.speed, Save.data.downscroll, Save.data.middlescroll);
 		playField.cameras = [camStrum];
@@ -199,7 +185,7 @@ class PlayState extends MusicBeatState implements Playable
 					playField.curSpawnNote++;
 			}
 		}
-
+		
 		followCamera("dad");
 		camFollow.get(1);
 
@@ -253,6 +239,25 @@ class PlayState extends MusicBeatState implements Playable
 			{
 				audio.muteVoices = false;
 				updateScore(note, playField.noteDiff(note.data));
+
+				if (gf != null)
+				{
+					// cool thingy
+					if (Timings.combo > 0 && Timings.combo % 50 == 0)
+					{
+						// nene weekend 1 support
+						if (Timings.combo % 200 == 0 && gf.animExists("horny"))
+						{
+							gf.resetSingStep();
+							gf.playAnim("horny");
+						}
+						else if(gf.animExists("cheer")) // gf cheer
+						{
+							gf.resetSingStep();
+							gf.playAnim("cheer");
+						}
+					}
+				}
 			}
 			else
 			{
@@ -263,14 +268,6 @@ class PlayState extends MusicBeatState implements Playable
 		{
 			if (note.isHold && !note.isHoldEnd) return;
 
-			if (strumline.isPlayer && Timings.combo >= 10)
-			{
-				if(gf != null && gf.animExists("sad")) {
-					gf.resetSingStep();
-					gf.playAnim("sad");
-				}
-			}
-
 			for(char in characters)
 			{
 				if (char.strumline == strumline)
@@ -279,6 +276,17 @@ class PlayState extends MusicBeatState implements Playable
 			
 			if (strumline.isPlayer)
 			{
+				if (gf != null)
+				{
+					if (Timings.combo >= 10)
+					{
+						if(gf.animExists("sad")) {
+							gf.resetSingStep();
+							gf.playAnim("sad");
+						}
+					}
+				}
+
 				audio.muteVoices = true;
 				updateScore(note, Timings.getTiming("miss").diff);
 			}
@@ -305,7 +313,7 @@ class PlayState extends MusicBeatState implements Playable
 		};
 	}
 
-	public function reloadStage(curStage:String)
+	public function changeStage(curStage:String)
 	{
 		if (curStage != stageBuild.curStage)
 		{
@@ -316,6 +324,8 @@ class PlayState extends MusicBeatState implements Playable
 			for(item in stageBuild.stageItems)
 				add(item);
 		}
+		
+		defaultCamZoom = stageBuild.camZoom;
 	}
 
 	override function draw()
@@ -352,6 +362,9 @@ class PlayState extends MusicBeatState implements Playable
 
 		if (FlxG.keys.justPressed.SEVEN)
 			MusicBeat.switchState(new ChartingState(SONG, EVENTS));
+
+		if (FlxG.keys.justPressed.ONE)
+			changeStage(stageBuild.curStage == "stage" ? "school" : "stage");
 		
 		#if debug
 		if (FlxG.keys.justPressed.F9)
@@ -557,9 +570,7 @@ class PlayState extends MusicBeatState implements Playable
 				}
 			}
 		}
-		if(stageBuild.loadedScript != null) {
-			stageBuild.callScript(fun, args);
-		}
+		stageBuild.callScript(fun, args);
 	}
 	
 	public function setScript(name:String, value:Dynamic, allowOverride:Bool = true) {

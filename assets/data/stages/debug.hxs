@@ -1,7 +1,7 @@
 function create() {
     var bg = new FlxSprite().loadGraphic(Assets.image('stages/debug/fat'));
     bg.screenCenter();
-    bg.scale.set(2, 2);
+    bg.scale.set(2.5, 2.5);
     bg.scrollFactor.set(0.7, 0.7);
     add(bg);
 }

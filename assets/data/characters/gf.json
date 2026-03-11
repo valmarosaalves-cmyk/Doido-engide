@@ -28,6 +28,11 @@
             "indices": [14,15,16,17,18,19,20,21],
             "loop": true,
             "offset": {"x": -2, "y": -18}
+        },
+        {
+            "name": "cheer",
+            "prefix": "GF Cheer",
+            "offset": {"x": -2, "y": -18}
         }
     ]
 }

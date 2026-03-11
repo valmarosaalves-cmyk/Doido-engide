@@ -1,4 +1,5 @@
-function create() {
+function create()
+{
     var bg = new FlxSprite(-600, -600).loadGraphic(Assets.image("stages/stage/stageback"));
     bg.scrollFactor.set(0.6, 0.6);
     add(bg);

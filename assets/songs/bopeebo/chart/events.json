@@ -1,0 +1,11 @@
+{
+    "events": [
+        {
+            "name": "Stage Change",
+            "stepTime": 32,
+            "data": [
+                "school"
+            ]
+        }
+    ]
+}

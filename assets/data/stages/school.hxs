@@ -1,6 +1,10 @@
 var bgGirls:FlxSprite;
 
-function create() {
+function create()
+{
+    camZoom = 0.8;
+    playState.gf.y += 80;
+
     var bgSky = new FlxSprite().loadGraphic(Assets.image('stages/school/weebSky'));
     bgSky.scrollFactor.set(0.1, 0.1);
     add(bgSky);
