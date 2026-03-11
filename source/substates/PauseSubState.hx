@@ -50,10 +50,9 @@ class PauseSubState extends MusicBeatSubState
 
         if (Controls.justPressed(ACCEPT))
         {
-            close();
             switch(options[cur].toLowerCase()) {
                 case 'resume':
-                    PlayState.instance.unpauseSong();
+                    close();
                 case 'restart song':
                     MusicBeat.skip = true;
 			        MusicBeat.switchState(new states.PlayState());
@@ -63,9 +62,13 @@ class PauseSubState extends MusicBeatSubState
             }
         }
 
-        if(Controls.justPressed(BACK)) {
-			MusicBeat.switchState(new states.DebugMenu());
-		}
+        if(Controls.justPressed(BACK))
+			close();
+    }
+
+    override function close() {
+        PlayState.instance.unpauseSong();
+        super.close();
     }
 
     public function changeSelection(change:Int = 0)
