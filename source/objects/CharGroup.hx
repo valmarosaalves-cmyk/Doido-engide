@@ -81,8 +81,7 @@ class CharGroup extends FlxTypedGroup<Character>
 		);
     }
 
-    public function resetSingStep()
-    {
+    public function resetSingStep() {
         char.singStep = char.singLength;
     }
 
@@ -91,6 +90,22 @@ class CharGroup extends FlxTypedGroup<Character>
 
     public function dance(forced:Bool = false)
         char.dance(forced);
+
+    public var width(get, never):Float;
+    public function get_width():Float
+        return char.width;
+
+    public var height(get, never):Float;
+    public function get_height():Float
+        return char.height;
+
+    public var frameWidth(get, never):Float;
+    public function get_frameWidth():Float
+        return char.frameWidth;
+
+    public var frameHeight(get, never):Float;
+    public function get_frameHeight():Float
+        return char.frameHeight;
 
     public var curChar(get, never):String;
     public function get_curChar():String

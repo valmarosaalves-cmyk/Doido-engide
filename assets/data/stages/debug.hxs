@@ -1,7 +1,54 @@
-function create() {
+var bandu:FlxSprite;
+
+function create()
+{
     var bg = new FlxSprite().loadGraphic(Assets.image('stages/debug/fat'));
     bg.screenCenter();
     bg.scale.set(2.5, 2.5);
     bg.scrollFactor.set(0.7, 0.7);
     add(bg);
+
+    bandu = new FlxSprite().loadGraphic(Assets.image('stages/debug/bandu'), true, (678 / 6), 162);
+    bandu.animation.add("idle", [0,1,2,3,4], 12, true);
+    bandu.animation.add("sad", [5], 0, true);
+    bandu.animation.play("idle");
+    bandu.antialiasing = false;
+    setZ(bandu, 17);
+    add(bandu);
+
+    setZ(playState.bf, 16);
+}
+
+var elapsedtime:Float = 0.0;
+var sadTimer:Float = 0.0;
+
+function update(elapsed)
+{
+    if (sadTimer <= 0.0)
+    {
+        elapsedtime += elapsed * 1.5;
+        bandu.setPosition(
+            playState.bf.x - (bandu.width / 2),
+            playState.bf.y - playState.bf.height * 0.8
+        );
+
+        bandu.y += Math.cos(elapsedtime / 4) * 80;
+        bandu.x += Math.sin(elapsedtime) * playState.bf.width * 0.6;
+
+        bandu.scale.x = bandu.scale.y = 1.0 + Math.cos(elapsedtime) * 0.3;
+
+        setZ(bandu, bandu.scale.x < 1.0 ? 15 : 17);
+    }
+    else
+    {
+        sadTimer -= elapsed;
+        if (sadTimer <= 0.0)
+            bandu.animation.play("idle");
+    }
+}
+
+function onNoteMiss(note, strumline)
+{
+    sadTimer = 1.2;
+    bandu.animation.play("sad");
 }

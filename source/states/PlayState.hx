@@ -268,6 +268,7 @@ class PlayState extends MusicBeatState implements Playable
 			{
 				if (audio.voicesOpp == null) audio.muteVoices = false;
 			}
+			callScript("onNoteHit", [note, strumline]);
 		};
 		playField.onNoteMiss = (note, strumline) ->
 		{
@@ -295,6 +296,7 @@ class PlayState extends MusicBeatState implements Playable
 				audio.muteVoices = true;
 				updateScore(note, Timings.getTiming("miss").diff);
 			}
+			callScript("onNoteMiss", [note, strumline]);
 		};
 		playField.onNoteHold = (note, strumline) -> {
 			for(char in characters)
@@ -309,12 +311,15 @@ class PlayState extends MusicBeatState implements Playable
 
 			if (strumline.isPlayer)
 				health += FlxG.elapsed * 0.08;
+
+			callScript("onNoteHold", [note, strumline]);
 		};
 		
 		playField.onGhostTap = (lane, direction) ->
 		{
 			//Logs.print("GHOST TAPPED " + direction.toUpperCase(), WARNING);
 			hudClass.updateScoreTxt();
+			callScript("onGhostTap", [lane, direction]);
 		};
 	}
 

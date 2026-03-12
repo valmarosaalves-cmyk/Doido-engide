@@ -1,13 +1,6 @@
 {
 	"events": [
 		{
-			"stepTime": 64,
-			"data": [
-				"mugen"
-			],
-			"name": "Change Stage"
-		},
-		{
 			"stepTime": 0,
 			"data": [
 				"dad"
