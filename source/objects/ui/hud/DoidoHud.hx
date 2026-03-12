@@ -51,7 +51,7 @@ class DoidoHud extends BaseHud
         var numberArray = super.popUpCombo(comboNum);
         
         for (number in numberArray) {
-            number.y = ratingPos + 70;
+            number.y = ratingPos + 75;
             number.defaultAnim();
         }
 
@@ -60,7 +60,7 @@ class DoidoHud extends BaseHud
 
 	var ratingPos(get, never):Int;
 	function get_ratingPos():Int
-		return Save.data.downscroll ? FlxG.height - 150 : 150;
+		return Save.data.downscroll ? FlxG.height - 150 : 65;
 
 	override function positionCombo(numberArray:Array<ComboSprite>) {
 		for(number in numberArray) number.numberScale = 0.7;

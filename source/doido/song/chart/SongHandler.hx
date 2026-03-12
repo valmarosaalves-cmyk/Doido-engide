@@ -86,7 +86,7 @@ class SongHandler
 		var meta:DoidoMeta = {
 			player1: "bf",
 			player2: "face",
-			gf: "stage-set",
+			gf: "gf",
 			stage: "stage",
 			//difficulties: ["normal"]
 		};
