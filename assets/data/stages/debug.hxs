@@ -14,6 +14,9 @@ function create()
     bg.scrollFactor.set(0.7, 0.7);
     add(bg);
 
+    gfScrollFactor.x = 0.85;
+    gfScrollFactor.y = 0.85;
+
     bandu = new FlxSprite().loadGraphic(Assets.image('stages/debug/bandu'), true, (678 / 6), 162);
     bandu.animation.add("idle", [0,1,2,3,4], 12, true);
     bandu.animation.add("sad", [5], 0, true);

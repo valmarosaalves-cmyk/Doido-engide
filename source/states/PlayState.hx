@@ -245,22 +245,19 @@ class PlayState extends MusicBeatState implements Playable
 				audio.muteVoices = false;
 				updateScore(note, playField.noteDiff(note.data));
 
-				if (gf != null)
+				// cool thingy
+				if (Timings.combo > 0 && Timings.combo % 50 == 0)
 				{
-					// cool thingy
-					if (Timings.combo > 0 && Timings.combo % 50 == 0)
+					// nene weekend 1 support
+					if (Timings.combo % 200 == 0 && gf.animExists("horny"))
 					{
-						// nene weekend 1 support
-						if (Timings.combo % 200 == 0 && gf.animExists("horny"))
-						{
-							gf.resetSingStep();
-							gf.playAnim("horny");
-						}
-						else if(gf.animExists("cheer")) // gf cheer
-						{
-							gf.resetSingStep();
-							gf.playAnim("cheer");
-						}
+						gf.resetSingStep();
+						gf.playAnim("horny");
+					}
+					else if(gf.animExists("cheer")) // gf cheer
+					{
+						gf.resetSingStep();
+						gf.playAnim("cheer");
 					}
 				}
 			}
@@ -282,14 +279,11 @@ class PlayState extends MusicBeatState implements Playable
 			
 			if (strumline.isPlayer)
 			{
-				if (gf != null)
+				if (Timings.combo >= 10)
 				{
-					if (Timings.combo >= 10)
-					{
-						if(gf.animExists("sad")) {
-							gf.resetSingStep();
-							gf.playAnim("sad");
-						}
+					if(gf.animExists("sad")) {
+						gf.resetSingStep();
+						gf.playAnim("sad");
 					}
 				}
 
@@ -342,6 +336,19 @@ class PlayState extends MusicBeatState implements Playable
 		dad.setPos(stageBuild.dadPos.x, stageBuild.dadPos.y);
 		bf.setPos(stageBuild.bfPos.x, stageBuild.bfPos.y);
         gf.setPos(stageBuild.gfPos.x, stageBuild.gfPos.y);
+
+		dad.setScrollFactor(
+			stageBuild.dadScrollFactor.x,
+			stageBuild.dadScrollFactor.y
+		);
+		bf.setScrollFactor(
+			stageBuild.bfScrollFactor.x,
+			stageBuild.bfScrollFactor.y
+		);
+		gf.setScrollFactor(
+			stageBuild.gfScrollFactor.x,
+			stageBuild.gfScrollFactor.y
+		);
 	}
 
 	override function draw()

@@ -32,6 +32,10 @@ class Stage
     public var dadPos:DoidoPoint;
     public var gfPos:DoidoPoint;
 
+    public var bfScrollFactor:DoidoPoint;
+    public var dadScrollFactor:DoidoPoint;
+    public var gfScrollFactor:DoidoPoint;
+
     public function reloadStage(curStage:String)
     {
         this.curStage = curStage;
@@ -48,6 +52,10 @@ class Stage
         dadCam = {x: 0, y: 0};
         bfCam = {x: 0, y: 0};
         gfCam = {x: 0, y: 0};
+
+        bfScrollFactor = {x: 1.0, y: 1.0};
+        dadScrollFactor = {x: 1.0, y: 1.0};
+        gfScrollFactor = {x: 1.0, y: 1.0};
         
         // loading the script
         var scriptPath:String = 'data/stages/$curStage';

@@ -50,6 +50,7 @@ class CharGroup extends FlxTypedGroup<Character>
     {
         char.x = x - char.width / 2 + char.globalOffset.x;
         char.y = y - char.height + char.globalOffset.y;
+        char.scrollFactor.set(scrollFactorX, scrollFactorY);
     }
 
     public var x(default, set):Float = 0.0;
@@ -70,6 +71,26 @@ class CharGroup extends FlxTypedGroup<Character>
     {
         this.x = x;
         this.y = y;
+    }
+
+    public var scrollFactorX(default, set):Float = 1.0;
+    public function set_scrollFactorX(v:Float):Float
+    {
+        scrollFactorX = v;
+        updateChar();
+        return scrollFactorX;
+    }
+    public var scrollFactorY(default, set):Float = 1.0;
+    public function set_scrollFactorY(v:Float):Float
+    {
+        scrollFactorY = v;
+        updateChar();
+        return scrollFactorY;
+    }
+    public function setScrollFactor(x:Float = 0, y:Float = 0)
+    {
+        scrollFactorX = x;
+        scrollFactorY = y;
     }
 
     public function playSingAnim(note:Note, miss:Bool = false)
