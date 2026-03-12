@@ -19,11 +19,11 @@ class ZIndex
         zMap.remove(bas);
 
     public static inline function sort(a:Int, bas1:FlxBasic, bas2:FlxBasic):Int
-		return FlxSort.byValues(a, bas1.getZ(), bas2.getZ());
+		    return FlxSort.byValues(a, bas1.getZ(), bas2.getZ());
 
     public static inline function sortAscending(bas1:FlxBasic, bas2:FlxBasic):Int
-		return sort(-1, bas1, bas2);
+		    return sort(-1, bas1, bas2);
 
     public static inline function sortDescending(bas1:FlxBasic, bas2:FlxBasic):Int
-		return sort(1, bas1, bas2);
+		    return sort(1, bas1, bas2);
 }

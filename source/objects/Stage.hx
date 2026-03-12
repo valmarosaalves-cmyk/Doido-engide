@@ -1,6 +1,7 @@
 package objects;
 
 import flixel.FlxObject;
+import flixel.FlxBasic;
 import states.PlayState;
 import flixel.FlxSprite;
 import hscript.iris.Iris;
@@ -84,6 +85,15 @@ class Stage
     public function add(obj:FlxSprite) {
         stageItems.push(obj);
     }
+
+    inline function getZ(bas:FlxBasic)
+        ZIndex.getZ(bas);
+
+    inline function setZ(bas:FlxBasic, val:Int)
+        ZIndex.setZ(bas, val);
+
+    inline function removeZ(bas:FlxBasic)
+        ZIndex.removeZ(bas);
 
     //Scripts
     public var loadedScript:Iris = null;
