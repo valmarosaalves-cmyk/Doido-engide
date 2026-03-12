@@ -65,6 +65,7 @@ class Stage
         loadedScript.set("Assets", Assets);
         loadedScript.set("FlxSprite", FlxSprite);
         loadedScript.set("MathUtil", MathUtil);
+        loadedScript.set("PlayState", PlayState);
         loadedScript.execute();
         callScript("create");
     }
