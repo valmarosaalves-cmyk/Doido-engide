@@ -27,6 +27,7 @@ class PlayState extends MusicBeatState implements Playable
 {
 	public static var SONG:DoidoSong;
 	public static var EVENTS:DoidoEvents;
+	public static var META:DoidoMeta;
 	public static var skip:Bool = false;
 
 	public var playField:PlayField;
@@ -75,6 +76,7 @@ class PlayState extends MusicBeatState implements Playable
 	{
 		SONG = SongHandler.loadSong(jsonInput, diff);
 		EVENTS = SongHandler.loadEvents(jsonInput, diff);
+		META = SongHandler.loadMeta(jsonInput, diff);
 	}
 
 	public function resetStatics()
@@ -118,15 +120,15 @@ class PlayState extends MusicBeatState implements Playable
 		// gf.setZ(9);
 		
 		bf = new CharGroup(true);
-		bf.addChar("bf", true);
+		bf.addChar(META.player1, true);
 		bf.setZ(10);
 		
 		dad = new CharGroup(false);
-		dad.addChar("face", true);
+		dad.addChar(META.player2, true);
 		dad.setZ(10);
 
 		gf = new CharGroup(false);
-		gf.addChar("gf", true);
+		gf.addChar(META.gf, true);
 		gf.setZ(10);
 		
 		characters.push(gf);
@@ -154,7 +156,7 @@ class PlayState extends MusicBeatState implements Playable
 			preloadEvent(event.name, event.data);
 
 		callScript("create");
-		changeStage("stage");
+		changeStage(META.stage);
 		
 		playField = new PlayField(SONG.notes, SONG.speed, Save.data.downscroll, Save.data.middlescroll);
 		playField.cameras = [camStrum];
@@ -330,6 +332,7 @@ class PlayState extends MusicBeatState implements Playable
 		
 		defaultCamZoom = stageBuild.camZoom;
 		if(stageBuild.gfVersion != "") gf.setActive(stageBuild.gfVersion);
+		else gf.setActive(META.gf);
 
 		dad.setPos(stageBuild.dadPos.x, stageBuild.dadPos.y);
 		bf.setPos(stageBuild.bfPos.x, stageBuild.bfPos.y);

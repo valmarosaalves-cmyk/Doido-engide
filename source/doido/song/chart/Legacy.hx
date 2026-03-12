@@ -46,8 +46,8 @@ class Legacy
             bpm: legacySong.bpm,
             speed: legacySong.speed,
 
-            player1: legacySong.player1,
-            player2: legacySong.player2,
+            //player1: legacySong.player1,
+            //player2: legacySong.player2,
         };
 
         var unspawnNotes:Array<NoteData> = [];

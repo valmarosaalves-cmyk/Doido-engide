@@ -3,6 +3,15 @@ package doido.song.chart;
 import doido.utils.NoteUtil;
 import doido.song.chart.Legacy;
 
+typedef DoidoMeta =
+{
+    var ?player1:String;
+    var ?player2:String;
+    var ?gf:String;
+    var ?stage:String;
+    //var ?difficulties:Array<String>; // im not sure how im going to implement this...
+}
+
 typedef DoidoSong =
 {
 	var song:String;
@@ -10,8 +19,10 @@ typedef DoidoSong =
 	var bpm:Float;
 	var speed:Float;
 
+	/* deprecated
 	var player1:String;
 	var player2:String;
+	*/
 }
 
 typedef NoteData = {
@@ -70,6 +81,25 @@ class SongHandler
 		return formatEvents(cast Assets.json(eventPath));
 	}
 
+	inline public static function loadMeta(jsonInput:String, ?diff:String = "normal"):DoidoMeta
+	{
+		var meta:DoidoMeta = {
+			player1: "bf",
+			player2: "face",
+			gf: "stage-set",
+			stage: "stage",
+			//difficulties: ["normal"]
+		};
+
+		var metaPath:String = 'songs/$jsonInput/meta';
+		if(Assets.fileExists('$metaPath.json'))
+			meta = mergeMetas(meta, cast Assets.json(metaPath));
+		if(Assets.fileExists('$metaPath-$diff.json'))
+			meta = mergeMetas(meta, cast Assets.json('$metaPath-$diff'));
+			
+		return meta;
+	}
+
 	inline public static function parseSong(content:Dynamic):DoidoSong
 	{
 		var rawSong:Dynamic = cast content;
@@ -123,4 +153,14 @@ class SongHandler
 		EVENTS.events.sort(NoteUtil.sortEvents);
 		return EVENTS;
 	}
+
+	static function mergeMetas(a:DoidoMeta, b:DoidoMeta):DoidoMeta {
+        var meta:DoidoMeta = {};
+        meta.player1 = (b.player1 ?? a.player1);
+        meta.player2 = (b.player2 ?? a.player2);
+        meta.gf = (b.gf ?? a.gf);
+        meta.stage = (b.stage ?? a.stage);
+        //meta.difficulties = (b.difficulties ?? a.difficulties);
+        return meta;
+    }
 }
