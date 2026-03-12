@@ -16,6 +16,7 @@ class SaveVariables
 	public var fps:Int = 60;
 	public var gpuCaching:Bool = false;
 	public var antialiasing:Bool = true;
+	public var lowQuality:Bool = false;
 	// mobile
 	public var invertX:Bool = false;
 	public var invertY:Bool = false;

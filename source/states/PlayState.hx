@@ -150,6 +150,9 @@ class PlayState extends MusicBeatState implements Playable
 		}
 		add(hudClass);
 
+		for (event in spawnEvents)
+			preloadEvent(event.name, event.data);
+
 		callScript("create");
 		changeStage("stage");
 		
@@ -326,6 +329,11 @@ class PlayState extends MusicBeatState implements Playable
 		}
 		
 		defaultCamZoom = stageBuild.camZoom;
+		if(stageBuild.gfVersion != "") gf.setActive(stageBuild.gfVersion);
+
+		dad.setPos(stageBuild.dadPos.x, stageBuild.dadPos.y);
+		bf.setPos(stageBuild.bfPos.x, stageBuild.bfPos.y);
+        gf.setPos(stageBuild.gfPos.x, stageBuild.gfPos.y);
 	}
 
 	override function draw()
@@ -402,17 +410,38 @@ class PlayState extends MusicBeatState implements Playable
 		callScript("updatePost", [elapsed]);
 	}
 
+	function preloadEvent(name:String, data:Array<Dynamic>) {
+		switch(name) {
+			case 'Change Character':
+				strToChar(data[0]).addChar(data[1]);
+			case 'Change Stage':
+				stageBuild.reloadStage(data[0]);
+				if(stageBuild.gfVersion != "") gf.addChar(stageBuild.gfVersion, false);
+		}
+	}
+
 	function playEvent(name:String, data:Array<Dynamic>)
 	{
 		callScript("playEvent", [name, data]);
 		switch(name)
 		{
+			case "Change Stage":
+				changeStage(data[0]);
 			case "Camera Focus":
 				followCamera(data[0]);
 		}
 	}
 
-	public function followCamera(charStr:String = "", ?offset:DoidoPoint){
+	public function followCamera(charStr:String = "", ?offset:DoidoPoint) {
+		offset = MathUtil.addPoint(offset ?? {x: 0, y: 0},
+			switch (charStr) {
+				case "dad": stageBuild.dadCam;
+				case "bf": stageBuild.bfCam;
+				case "gf": stageBuild.gfCam;
+				default: {x:0, y:0};
+			}
+		);
+
 		var char = strToChar(charStr);
 		curFocus = charStr;
 		camFollow.point = {x: 0,y: 0};
@@ -420,16 +449,13 @@ class PlayState extends MusicBeatState implements Playable
 		if(char != null) {
 			var playerMult:Int = (char.isPlayer ? -1 : 1);
 
-			camFollow.point = {x: char.getMidpoint().x + (200 * playerMult), y: char.getMidpoint().y - 20};
-
-			camFollow.point.x += char.cameraOffset.x * playerMult;
-			camFollow.point.y += char.cameraOffset.y;
+			camFollow.point = {
+				x: char.getMidpoint().x + ((200 + char.cameraOffset.x) * playerMult),
+				y: char.getMidpoint().y - 20 + char.cameraOffset.y
+			};
 		}
 
-		if(offset != null) {
-			camFollow.point.x += offset.x;
-			camFollow.point.y += offset.y;
-		}
+		camFollow.point = MathUtil.addPoint(camFollow.point, offset);
 	}
 
 	function updateDisplace() {

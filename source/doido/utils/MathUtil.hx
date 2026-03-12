@@ -20,4 +20,7 @@ class MathUtil
 
 		return result;
 	}
+
+	inline public static function addPoint(a:DoidoPoint, b:DoidoPoint):DoidoPoint
+		return {x: a.x+b.x, y: a.y+b.y};
 }

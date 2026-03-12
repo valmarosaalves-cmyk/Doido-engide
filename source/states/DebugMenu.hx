@@ -797,6 +797,11 @@ class DebugOptions extends MusicBeatState
                 get: () -> Save.data.middlescroll,
                 set: (b:Bool) -> Save.data.middlescroll = b
             },
+            {
+                name: "Low Quality",
+                get: () -> Save.data.lowQuality,
+                set: (b:Bool) -> Save.data.lowQuality = b
+            },
             #if desktop
             {
                 name: "FPS Counter",

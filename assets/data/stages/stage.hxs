@@ -1,5 +1,9 @@
 function create()
 {
+    dadPos = {x: 260, y: 700};
+    bfPos = {x: 1100, y: 700};
+    gfPos = {x: 660, y: 580};
+
     var bg = new FlxSprite(-600, -600).loadGraphic(Assets.image("stages/stage/stageback"));
     bg.scrollFactor.set(0.6, 0.6);
     add(bg);
@@ -8,8 +12,10 @@ function create()
     front.loadGraphic(Assets.image("stages/stage/stagefront"));
     add(front);
 
-    var curtains = new FlxSprite(-600, -400).loadGraphic(Assets.image("stages/stage/stagecurtains"));
-    curtains.scrollFactor.set(1.4,1.4);
-    curtains.setZ(11);
-    add(curtains);
+    if(!lowQuality) {
+        var curtains = new FlxSprite(-600, -400).loadGraphic(Assets.image("stages/stage/stagecurtains"));
+        curtains.scrollFactor.set(1.4,1.4);
+        curtains.setZ(11);
+        add(curtains);
+    }
 }

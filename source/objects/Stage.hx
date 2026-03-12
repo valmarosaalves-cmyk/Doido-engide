@@ -9,19 +9,27 @@ import doido.utils.MathUtil;
 class Stage
 {
     public var playState:PlayState;
+    final lowQuality:Bool;
 
     public function new(playState:PlayState)
     {
         this.playState = playState;
+        lowQuality = Save.data.lowQuality;
     }
 
     public var curStage:String = "";
     public var stageItems:Array<FlxObject> = [];
-    
-    public var bfCamOffset:DoidoPoint;
-    public var dadCamOffset:DoidoPoint;
 
     public var camZoom:Float = 0.9;
+    public var gfVersion:String = "";
+    
+    public var bfCam:DoidoPoint;
+    public var dadCam:DoidoPoint;
+    public var gfCam:DoidoPoint;
+
+    public var bfPos:DoidoPoint;
+    public var dadPos:DoidoPoint;
+    public var gfPos:DoidoPoint;
 
     public function reloadStage(curStage:String)
     {
@@ -30,55 +38,46 @@ class Stage
 
         // default data values
         camZoom = 0.9;
-        playState.bf.setPos(
-            FlxG.width - 200,
-            FlxG.height - 50
-        );
-        playState.dad.setPos(
-            200,
-            FlxG.height - 50
-        );
-        playState.gf.setPos(
-            FlxG.width / 2,
-            FlxG.height - 150
-        );
+        gfVersion = "";
 
-        dadCamOffset = {x: 0, y: 0};
-        bfCamOffset = {x: 0, y: 0};
+        dadPos = {x: 200, y: FlxG.height - 50};
+        bfPos = {x: FlxG.width - 200, y: FlxG.height - 50};
+        gfPos = {x: FlxG.width / 2, y: FlxG.height - 150};
+
+        dadCam = {x: 0, y: 0};
+        bfCam = {x: 0, y: 0};
+        gfCam = {x: 0, y: 0};
         
         // loading the script
         var scriptPath:String = 'data/stages/$curStage';
         if (Assets.fileExists(scriptPath, SCRIPT))
-        {
-            loadedScript = new Iris(Assets.getAsset(scriptPath, SCRIPT), this, {name: scriptPath, autoRun: true, autoPreset: true});
-            loadedScript.set("Paths", Assets);
-            loadedScript.set("Assets", Assets);
-            loadedScript.set("PlayState", PlayState);
-            loadedScript.set("FlxSprite", FlxSprite);
-            loadedScript.set("MathUtil", MathUtil);
-            
-            callScript("create");
-        }
-        else
+            loadScript(scriptPath);
+        else {
             loadedScript = null;
+            loadCode(curStage);
+        }
+    }
 
-        /*
-            wanna hardcode your stage?
-            alright
-        */
-        if (loadedScript == null)
-        {
-            switch(curStage)
-            {
-                default:
-                    var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
-                    bg.scale.set(1.15,1.15);
-                    bg.updateHitbox();
-                    bg.scrollFactor.set();
-                    bg.screenCenter();
-                    bg.setZ(0);
-                    add(bg);
-            }
+    function loadScript(path:String) {
+        loadedScript = new Iris(Assets.getAsset(path, SCRIPT), this, {name: path, autoRun: false, autoPreset: true});
+        loadedScript.set("Paths", Assets);
+        loadedScript.set("Assets", Assets);
+        loadedScript.set("FlxSprite", FlxSprite);
+        loadedScript.set("MathUtil", MathUtil);
+        loadedScript.execute();
+        callScript("create");
+    }
+
+    function loadCode(cur:String) {
+        switch(cur) {
+            default:
+                var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+                bg.scale.set(1.15,1.15);
+                bg.updateHitbox();
+                bg.scrollFactor.set();
+                bg.screenCenter();
+                bg.setZ(0);
+                add(bg);
         }
     }
 
@@ -87,7 +86,7 @@ class Stage
     }
 
     //Scripts
-    public var loadedScript:Iris;
+    public var loadedScript:Iris = null;
 	public function callScript(fun:String, ?args:Array<Dynamic>) {
         if(loadedScript == null) return;
         @:privateAccess {

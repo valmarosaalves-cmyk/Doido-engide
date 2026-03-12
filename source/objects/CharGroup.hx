@@ -36,9 +36,11 @@ class CharGroup extends FlxTypedGroup<Character>
             if (char.curChar == charName)
                 this.char = char;
         }
-        if (char == null) { 
-            char = members[0];
-            Logs.print(charName + "DOESN'T EXIST", WARNING);
+        if (char == null) {
+            //char = members[0];
+            addChar(charName, true);
+            Logs.print(charName + " DOESN'T EXIST, ADDING", WARNING);
+            return;
         }
         char.alpha = 1.0;
         updateChar();
