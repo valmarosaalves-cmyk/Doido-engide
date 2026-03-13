@@ -3,6 +3,14 @@ package doido.song.chart;
 import doido.utils.NoteUtil;
 import doido.song.chart.Legacy;
 
+typedef DoidoSong = 
+{
+	var song:String;
+	var CHART:DoidoChart;
+	var EVENTS:DoidoEvents;
+	var META:DoidoMeta;
+}
+
 typedef DoidoMeta =
 {
     var ?player1:String;
@@ -12,17 +20,12 @@ typedef DoidoMeta =
     //var ?difficulties:Array<String>; // im not sure how im going to implement this...
 }
 
-typedef DoidoSong =
+typedef DoidoChart =
 {
-	var song:String;
+	var song:String; //you stay, for now...
 	var notes:Array<NoteData>;
 	var bpm:Float;
 	var speed:Float;
-
-	/* deprecated
-	var player1:String;
-	var player2:String;
-	*/
 }
 
 typedef NoteData = {
@@ -54,14 +57,49 @@ class SongHandler
 
 	];*/
 
-    inline public static function loadSong(jsonInput:String, ?diff:String = "normal"):DoidoSong
+	public static function loadSong(jsonInput:String, ?diff:String = "normal"):DoidoSong
+		return parseSong(getChart(jsonInput, diff), loadEvents(jsonInput, diff), loadMeta(jsonInput, diff));
+
+	public static function parseSong(rawChart:Dynamic, EVENTS:DoidoEvents, META:DoidoMeta):DoidoSong
+	{
+		var CHART:DoidoChart = null;
+        if (!Std.isOfType(rawChart.song, String)) {
+			CHART = Legacy.getChartFromLegacy(rawChart.song);
+			EVENTS = mergeEvents(EVENTS, Legacy.getEventsFromLegacy(rawChart.song));
+			META = mergeMetas(META, Legacy.getMetaFromLegacy(rawChart.song));
+		}
+		else
+        	CHART = cast rawChart;
+
+		return {
+			song: CHART.song,
+			CHART: formatChart(CHART),
+			EVENTS: EVENTS,
+			META: META
+		};
+	}
+
+	inline public static function loadChart(jsonInput:String, ?diff:String = "normal"):DoidoChart
+	{
+		var rawChart:Dynamic = cast getChart(jsonInput, diff);
+		var CHART:DoidoChart = null;
+		
+        if (!Std.isOfType(rawChart.song, String))
+            CHART = Legacy.getChartFromLegacy(rawChart.song);
+		else
+        	CHART = cast rawChart;
+
+        return formatChart(CHART);
+	}
+
+    inline public static function getChart(jsonInput:String, ?diff:String = "normal"):Dynamic
 	{		
 		Logs.print('Chart Loaded: ' + '$jsonInput/$diff');
 
 		if(!Assets.fileExists('songs/$jsonInput/chart/$diff.json'))
 			diff = "normal";
 
-		return parseSong(Assets.json('songs/$jsonInput/chart/$diff'));
+		return Assets.json('songs/$jsonInput/chart/$diff');
 	}
 
 	inline public static function loadEvents(jsonInput:String, ?diff:String = "normal"):DoidoEvents
@@ -100,39 +138,26 @@ class SongHandler
 		return meta;
 	}
 
-	inline public static function parseSong(content:Dynamic):DoidoSong
-	{
-		var rawSong:Dynamic = cast content;
-		var SONG:DoidoSong = null;
-		
-        if (!Std.isOfType(rawSong.song, String))
-            SONG = Legacy.getSongFromLegacy(rawSong.song);
-		else
-        	SONG = cast rawSong;
-
-        return formatSong(SONG);
-	}
-
     // Removes duplicated notes from a chart.
-	inline private static function formatSong(SONG:DoidoSong):DoidoSong
+	inline private static function formatChart(CHART:DoidoChart):DoidoChart
 	{
 		// Normalize song name to use only lowercases and no spaces
-		SONG.song = SONG.song.toLowerCase();
-		if(SONG.song.contains(' '))
-			SONG.song = SONG.song.replace(' ', '-');
+		CHART.song = CHART.song.toLowerCase();
+		if(CHART.song.contains(' '))
+			CHART.song = CHART.song.replace(' ', '-');
 
 		// cleaning multiple notes at the same place
 		var removed:Int = 0;
-		for(note in SONG.notes)
+		for(note in CHART.notes)
 		{
-			for(doubleNote in SONG.notes)
+			for(doubleNote in CHART.notes)
 			{
 				if(note != doubleNote
 				&& note.strumline == doubleNote.strumline
                 && note.stepTime == doubleNote.stepTime
                 && note.lane == doubleNote.lane)
 				{
-					SONG.notes.remove(doubleNote);
+					CHART.notes.remove(doubleNote);
 					removed++;
 				}
 			}
@@ -143,9 +168,9 @@ class SongHandler
 		/*if(SONG.gfVersion == null)
 			SONG.gfVersion = "stage-set";*/
 
-		SONG.notes.sort(NoteUtil.sortNotes);
+		CHART.notes.sort(NoteUtil.sortNotes);
 		
-		return SONG;
+		return CHART;
 	}
 
 	inline private static function formatEvents(EVENTS:DoidoEvents):DoidoEvents
@@ -153,6 +178,9 @@ class SongHandler
 		EVENTS.events.sort(NoteUtil.sortEvents);
 		return EVENTS;
 	}
+
+	static function mergeEvents(a:DoidoEvents, b:DoidoEvents):DoidoEvents
+		return {events: a.events.concat(b.events)};
 
 	static function mergeMetas(a:DoidoMeta, b:DoidoMeta):DoidoMeta {
         var meta:DoidoMeta = {};

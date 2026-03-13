@@ -27,8 +27,6 @@ import doido.objects.DoidoHitbox;
 class PlayState extends MusicBeatState implements Playable
 {
 	public static var SONG:DoidoSong;
-	public static var EVENTS:DoidoEvents;
-	public static var META:DoidoMeta;
 	public static var skip:Bool = false;
 
 	public var playField:PlayField;
@@ -77,11 +75,7 @@ class PlayState extends MusicBeatState implements Playable
 	public var loadedScripts:Array<Iris> = [];
 
 	public static function loadSong(jsonInput:String, ?diff:String = "normal")
-	{
 		SONG = SongHandler.loadSong(jsonInput, diff);
-		EVENTS = SongHandler.loadEvents(jsonInput, diff);
-		META = SongHandler.loadMeta(jsonInput, diff);
-	}
 
 	public function resetStatics()
 	{
@@ -102,13 +96,14 @@ class PlayState extends MusicBeatState implements Playable
 			loadedScripts.push(newScript);
 		}
 
-		Conductor.initialBPM = SONG.bpm;
+		Conductor.initialBPM = CHART.bpm;
 		Conductor.mapBPMChanges(EVENTS.events);
 		Conductor.songPos = -(Conductor.crochet * 5);
 		resetStatics();
 
 		spawnEvents = EVENTS.events;
 		
+		trace(SONG.song);
 		audio = new AudioHandler(SONG.song);
 
 		camGame = new DoidoCamera(false, true);
@@ -166,7 +161,7 @@ class PlayState extends MusicBeatState implements Playable
 		callScript("create");
 		changeStage(META.stage);
 		
-		playField = new PlayField(SONG.notes, SONG.speed, Save.data.downscroll, Save.data.middlescroll);
+		playField = new PlayField(CHART.notes, CHART.speed, Save.data.downscroll, Save.data.middlescroll);
 		playField.cameras = [camStrum];
 		add(playField);
 
@@ -192,7 +187,7 @@ class PlayState extends MusicBeatState implements Playable
 			audio.pause();
 			audio.time = 50000;
 			updateStep();
-			for(note in SONG.notes)
+			for(note in CHART.notes)
 			{
 				if (note.stepTime <= curStepFloat)
 					playField.curSpawnNote++;
@@ -392,7 +387,7 @@ class PlayState extends MusicBeatState implements Playable
 		}
 
 		if (FlxG.keys.justPressed.SEVEN)
-			MusicBeat.switchState(new ChartingState(SONG, EVENTS));
+			MusicBeat.switchState(new ChartingState(SONG));
 
 		if (FlxG.keys.justPressed.ONE)
 			changeStage(stageBuild.curStage == "stage" ? "school" : "stage");
@@ -651,6 +646,13 @@ class PlayState extends MusicBeatState implements Playable
 	public var player2(get, never):String;
 	public function get_player2():String
 		return dad.curChar;
+
+	public var CHART(get, never):DoidoChart;
+	public function get_CHART():DoidoChart return SONG.CHART;
+	public var EVENTS(get, never):DoidoEvents;
+	public function get_EVENTS():DoidoEvents return SONG.EVENTS;
+	public var META(get, never):DoidoMeta;
+	public function get_META():DoidoMeta return SONG.META;
 }
 
 interface Playable {

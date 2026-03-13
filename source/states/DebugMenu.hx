@@ -327,7 +327,7 @@ class Freeplay extends MusicBeatState
                     if (FlxG.keys.justPressed.SEVEN)
                     {
                         MusicBeat.switchState(
-                            new ChartingState(PlayState.SONG, PlayState.EVENTS)
+                            new ChartingState(PlayState.SONG)
                         );
                     }
                     else
@@ -451,9 +451,8 @@ class LoadOther extends MusicBeatState
             (fr) -> {
                 var bytes = fr.data;
                 var text = bytes.readUTFBytes(bytes.length);
-                var legacySong:LegacySong = cast Json.parse(text).song;
-                PlayState.SONG = Legacy.getSongFromLegacy(legacySong);
-                PlayState.EVENTS = Legacy.getEventsFromLegacy(legacySong);
+                var legacySong:Dynamic = Json.parse(text).song;
+                PlayState.SONG = SongHandler.parseSong(legacySong, {events: []}, {});
                 chartLoaded = true;
 
                 fileNames[0] = fr.name;
@@ -567,7 +566,7 @@ class ChartConverter extends MusicBeatState
                 var text = bytes.readUTFBytes(bytes.length);
 
                 var legacySong:LegacySong = cast Json.parse(text).song;
-                var SONG = Legacy.getSongFromLegacy(legacySong);
+                var CHART = Legacy.getChartFromLegacy(legacySong);
                 var EVENTS = Legacy.getEventsFromLegacy(legacySong);
 
                 var data:String = Json.stringify(EVENTS, "\t");
@@ -579,7 +578,7 @@ class ChartConverter extends MusicBeatState
                     );
                 }
 
-                var data:String = Json.stringify(SONG, "\t");
+                var data:String = Json.stringify(CHART, "\t");
                 if(data != null && data.length > 0)
                 {
                     Assets.fileSave(

@@ -9,6 +9,8 @@ import doido.song.AudioHandler;
 import doido.song.Conductor;
 import doido.song.chart.SongHandler.DoidoEvents;
 import doido.song.chart.SongHandler.DoidoSong;
+import doido.song.chart.SongHandler.DoidoChart;
+import doido.song.chart.SongHandler.DoidoMeta;
 import doido.utils.NoteUtil;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
@@ -40,7 +42,6 @@ class ChartingState extends MusicBeatState
     public var playingSong:Bool = false;
 
     public var SONG:DoidoSong;
-    public var EVENTS:DoidoEvents;
 
     public var cursorTxt:FlxBitmapText;
 
@@ -65,18 +66,17 @@ class ChartingState extends MusicBeatState
     // windows!!
     public var timeWindow:TimeWindow;
 
-    public function new(SONG:DoidoSong, EVENTS:DoidoEvents)
+    public function new(SONG:DoidoSong)
     {
         super();
         this.SONG = SONG;
-        this.EVENTS = EVENTS;
     }
 
     override function create()
     {
         super.create();
         FlxG.mouse.visible = true;
-        Conductor.initialBPM = SONG.bpm;
+        Conductor.initialBPM = CHART.bpm;
 		Conductor.mapBPMChanges(EVENTS.events);
 		Conductor.songPos = 0;
 
@@ -244,7 +244,7 @@ class ChartingState extends MusicBeatState
                     for(note in selectedNotes)
                     {
                         playSfx("editors/pop", FlxG.random.float(0.0, 0.4));
-                        SONG.notes.remove(note);
+                        CHART.notes.remove(note);
                     }
                     selectedNotes = [];
                     sortNotes();
@@ -280,7 +280,7 @@ class ChartingState extends MusicBeatState
                     var startX:Float = Math.floor((selectSquare.x - grid.gridX) / GRID_SIZE);
                     var endX:Float = startX + Math.floor(selectSquare.width / GRID_SIZE);
 
-                    for (note in SONG.notes)
+                    for (note in CHART.notes)
                     {
                         var rawLane:Int = note.lane + (4 * note.strumline);
 
@@ -341,9 +341,9 @@ class ChartingState extends MusicBeatState
                                 {
                                     removed = true;
                                     if (note.isHold)
-                                        SONG.notes[SONG.notes.indexOf(note.data)].length = 0;
+                                        CHART.notes[CHART.notes.indexOf(note.data)].length = 0;
                                     else
-                                        SONG.notes.remove(note.data);
+                                        CHART.notes.remove(note.data);
                                 }
                             }
                             if (removed)
@@ -403,7 +403,7 @@ class ChartingState extends MusicBeatState
                                     length: 0.0,
                                 };
                                 //trace('added lane ${newNote.lane} to strumline ${newNote.strumline}');
-                                SONG.notes.push(newNote);
+                                CHART.notes.push(newNote);
                                 selectedNotes = [newNote];
                                 sortNotes();
                             }
@@ -438,7 +438,7 @@ class ChartingState extends MusicBeatState
                                 note.stepTime -= (lastMouseStep - mouseStep);
                                 if(note.stepTime < 0 || note.stepTime > grid.gridLength)
                                 {
-                                    SONG.notes.remove(note); // BE CAREFUL!!
+                                    CHART.notes.remove(note); // BE CAREFUL!!
                                     continue;
                                 }
 
@@ -487,7 +487,7 @@ class ChartingState extends MusicBeatState
                 if (wasA && FlxG.keys.pressed.CONTROL)
                 {
                     selectedNotes = [];
-                    for(note in SONG.notes)
+                    for(note in CHART.notes)
                         selectedNotes.push(note);
                 }
                 else
@@ -501,7 +501,6 @@ class ChartingState extends MusicBeatState
             if (FlxG.keys.justPressed.ENTER)
             {
                 PlayState.SONG = SONG;
-                PlayState.EVENTS = EVENTS;
                 MusicBeat.switchState(new PlayState());
             }
 
@@ -657,7 +656,7 @@ class ChartingState extends MusicBeatState
 
     public function sortNotes()
     {
-        SONG.notes.sort(NoteUtil.sortNotes);
+        CHART.notes.sort(NoteUtil.sortNotes);
         
     }
     
@@ -679,7 +678,7 @@ class ChartingState extends MusicBeatState
             note.kill();
         }
 
-        for(noteData in SONG.notes)
+        for(noteData in CHART.notes)
         {
             var noteY:Float = grid.gridY + (noteData.stepTime * GRID_SIZE);
             var noteHeight:Float = GRID_SIZE * (noteData.length + 1);
@@ -756,6 +755,13 @@ class ChartingState extends MusicBeatState
         if (audio.playing && Conductor.songPos >= 0)
             audio.sync();
     }
+
+    public var CHART(get, never):DoidoChart;
+	public function get_CHART():DoidoChart return SONG.CHART;
+	public var EVENTS(get, never):DoidoEvents;
+	public function get_EVENTS():DoidoEvents return SONG.EVENTS;
+	public var META(get, never):DoidoMeta;
+	public function get_META():DoidoMeta return SONG.META;
 }
 class ChartingGrid extends FlxSprite
 {
