@@ -77,11 +77,12 @@ class DoidoHud extends BaseHud
 
     override function updateScoreTxt()
     {
-        scoreTxt.text = "";
-        scoreTxt.text += 'Score: ' + FlxStringUtil.formatMoney(Timings.score, false, true) + separator;
-		scoreTxt.text += 'Accuracy: ' + Timings.accuracy + "%" + ' [${Timings.getRank()}]' + separator;
-		scoreTxt.text += 'Misses: ' + Timings.misses;
+        var scoreText:String = "";
+		scoreText += 'Misses: ' + Timings.misses + separator;
+		scoreText += 'Accuracy: ' + Timings.accuracy + "%" + ' [${Timings.getRank()}]' + separator;
+		scoreText += 'Score: ' + FlxStringUtil.formatMoney(Timings.score, false, true);
 
+		scoreTxt.text = scoreText;
         scoreTxt.screenCenter(X);
     }
 

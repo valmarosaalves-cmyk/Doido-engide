@@ -117,19 +117,17 @@ class PlayState extends MusicBeatState implements Playable
 
 		stageBuild = new Stage(this);
 
-		// gf.setZ(9);
-		
 		bf = new CharGroup(true);
 		bf.addChar(META.player1, true);
 		bf.setZ(10);
 		
 		dad = new CharGroup(false);
 		dad.addChar(META.player2, true);
-		dad.setZ(10);
+		dad.setZ(9);
 
 		gf = new CharGroup(false);
 		gf.addChar(META.gf, true);
-		gf.setZ(10);
+		gf.setZ(8);
 		
 		characters.push(gf);
 		characters.push(dad);

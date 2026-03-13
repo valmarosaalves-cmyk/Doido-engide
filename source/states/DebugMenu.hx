@@ -196,7 +196,7 @@ class Credits extends MusicBeatState
 
 class OffsetSel extends MusicBeatState
 {
-    var options:Array<String> = ["bf", "face", "gf"];
+    var options:Array<String> = [];
     var text:FlxText;
     var ver:FlxText;
     var title:FlxText;
@@ -205,6 +205,10 @@ class OffsetSel extends MusicBeatState
     override function create()
     {
         super.create();
+        for(i in Assets.list("data/characters/", JSON))
+        {
+            options.push(i.replace("assets/data/characters/", "").replace(".json", ""));
+        }
         DiscordIO.changePresence("In the Offset Editor");
 
         var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));

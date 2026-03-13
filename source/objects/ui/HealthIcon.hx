@@ -28,9 +28,11 @@ class HealthIcon extends FlxSprite
         this.isPlayer = isPlayer;
         this.curIcon = curIcon;
 
-        if(Assets.fileExists('data/icons/$curIcon.json')) data = cast(Assets.json('data/icons/$curIcon'));
-        else data = DEFAULT_DATA;
-
+        if(Assets.fileExists('data/icons/$curIcon.json'))
+            data = cast(Assets.json('data/icons/$curIcon'));
+        else
+            data = DEFAULT_DATA;
+        
         var iconGraphic = Assets.image('icons/${data.image ?? curIcon}');
         gridFrames = data.gridFrames ?? (Math.floor(iconGraphic.width / (data.gridWidth ?? DEFAULT_DATA.gridWidth)));
         loadGraphic(iconGraphic, true, Math.floor(iconGraphic.width / gridFrames), iconGraphic.height);
@@ -65,6 +67,7 @@ class HealthIcon extends FlxSprite
 	}
 
     final DEFAULT_DATA:IconData = {
+        image: "face",
         color: "0xFFA1A1A1",
         scale: 1,
         pixel: flixel.FlxSprite.defaultAntialiasing,

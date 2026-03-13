@@ -46,6 +46,8 @@ class Character extends DoidoSprite
         loadCharacter();
     }
 
+    public var debugMode:Bool = false;
+
     var idleAnims:Array<String> = ["idle"];
     public var quickDancer:Bool = false;
     var deathChar:String = "bf-dead";
@@ -126,11 +128,14 @@ class Character extends DoidoSprite
 
     override public function update(elapsed:Float) {
         super.update(elapsed);
-        if(animExists(curAnimName + '-loop') && curAnimFinished)
-			playAnim(curAnimName + '-loop');
+        if (!debugMode)
+        {
+            if(animExists(curAnimName + '-loop') && curAnimFinished)
+		    	playAnim(curAnimName + '-loop');
+        }
 
         if(singStep > 0)
-            singStep -= /*Conductor.stepCrochet **/ elapsed;
+            singStep -= elapsed;
     }
 
     override public function updateOffset() {

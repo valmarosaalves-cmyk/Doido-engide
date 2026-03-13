@@ -40,24 +40,36 @@ class OffsetEditor extends MusicBeatState
 		camChar.follow(camFollow, LOCKON, 1);
         camFollow.setPosition(FlxG.width/2, FlxG.height/2);
 
-        var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+        var bg = new FlxSprite().loadImage('menuInvert');
         bg.screenCenter();
 		add(bg);
 
-        ghost = new Character(curChar, isPlayer);
-		ghost.setPosition(
-			(FlxG.width / 2) - (ghost.width/2),
-			(FlxG.height / 2) - (ghost.height/2)
+		var middlePoint = new FlxSprite().loadImage('editors/point');
+		middlePoint.setPosition(
+			(FlxG.width - middlePoint.width) / 2,
+			FlxG.height - 200 - (middlePoint.height / 2)
 		);
+		middlePoint.color = 0xFFFF0000;
+
+        ghost = new Character(curChar, isPlayer);
         ghost.alpha = 0.4;
 		add(ghost);
 
         char = new Character(curChar, isPlayer);
-		char.setPosition(
-			(FlxG.width / 2) - (char.width/2),
-			(FlxG.height / 2) - (char.height/2)
-		);
 		add(char);
+
+		add(middlePoint);
+
+		for(char in [ghost, char])
+		{
+			char.debugMode = true;
+			char.setPosition(
+				middlePoint.x - (char.width - middlePoint.width) / 2,
+				middlePoint.y + (middlePoint.height / 2) - char.height
+			);
+			char.x += char.globalOffset.x;
+			char.y += char.globalOffset.y;
+		}
 
         exportTxt = new FlxText(0,0,0,"",24);
 		exportTxt.setFormat(Main.globalFont, 24, 0xFFFFFFFF, RIGHT);

@@ -45,10 +45,10 @@ class Stage
         camZoom = 0.9;
         gfVersion = "";
 
-        dadPos = {x: 200, y: FlxG.height - 50};
+        dadPos = {x: 300, y: FlxG.height - 50};
         bfPos = {x: FlxG.width - 200, y: FlxG.height - 50};
-        gfPos = {x: FlxG.width / 2, y: FlxG.height - 150};
-
+        gfPos = {x: FlxG.width / 2 + 100, y: FlxG.height - 150};
+        
         dadCam = {x: 0, y: 0};
         bfCam = {x: 0, y: 0};
         gfCam = {x: 0, y: 0};
