@@ -19,6 +19,8 @@ class Strumline extends FlxGroup
 	public var strumlineData:Int = 0;
 	
 	public var scrollSpeed:Float = 1.0;
+
+	public var holdingNotes:Array<Bool> = [];
 	
 	// use these to access the actual data
 	public var strums:Array<StrumNote> = [];
@@ -32,6 +34,8 @@ class Strumline extends FlxGroup
 		this.isPlayer = isPlayer;
 		this.botplay = botplay;
 		this.wide = wide;
+
+		for (i in 0...4) holdingNotes.push(false);
 		
 		for(i in 0...NoteUtil.directions.length)
 		{

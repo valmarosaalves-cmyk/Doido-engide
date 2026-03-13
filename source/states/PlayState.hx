@@ -1,5 +1,6 @@
 package states;
 
+import flixel.sound.FlxSound;
 import flixel.math.FlxMath;
 import doido.song.*;
 import doido.song.chart.SongHandler;
@@ -51,7 +52,10 @@ class PlayState extends MusicBeatState implements Playable
 	public var canPause:Bool = true;
 
 	public var audio:AudioHandler;
+	public var countdownSfx:Array<FlxSound> = [];
+
 	public var defaultSongSpeed:Float = 1.0;
+	public var startedSong:Bool = false;
 
 	public var stageBuild:Stage;
 
@@ -143,7 +147,13 @@ class PlayState extends MusicBeatState implements Playable
 		Assets.sparrow("notes/base/splashes");
 		Assets.sparrow("notes/base/covers");
 		for(i in 0...4)
-			Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i]);
+		{
+			countdownSfx.push(
+				FlxG.sound.load(
+					Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i])
+				)
+			);
+		}
 
 		hudClass = switch(SONG.song) {
 			default: new DoidoHud(this);
@@ -402,7 +412,16 @@ class PlayState extends MusicBeatState implements Playable
 		}
 		
 		if (!paused)
+		{
 			Conductor.songPos += elapsed * 1000 * audio.speed;
+			FlxG.animationTimeScale = audio.speed;
+			if (!startedSong)
+			{
+				for(snd in countdownSfx)
+					if (snd.playing)
+						snd.pitch = audio.speed;
+			}
+		}
 
 		if (curEventCount < spawnEvents.length)
 		{
@@ -492,18 +511,22 @@ class PlayState extends MusicBeatState implements Playable
 			default: nullable ? null : dad;
 			case 'dad': dad;
 			case 'bf'|'boyfriend': 	bf;
-			//case 'gf'|'girlfriend': gf; //she doesnt exist yet!
+			case 'gf'|'girlfriend': gf;
 		}
 	}
 
 	public function startSong()
 	{
 		audio.play();
+		startedSong = true;
 	}
 
 	public function pauseSong()
 	{
 		paused = true;
+		for(snd in FlxG.sound.list) {
+			snd.pause();
+		}
 		audio.pause();
 		audio.speed = 0.0;
 		MusicBeat.activateTimers(false);
@@ -512,8 +535,11 @@ class PlayState extends MusicBeatState implements Playable
 
 	public function unpauseSong()
 	{
-		MusicBeat.activateTimers(true);
 		paused = false;
+		for(snd in FlxG.sound.list) {
+			snd.resume();
+		}
+		MusicBeat.activateTimers(true);
 		if (Conductor.songPos < audio.length)
 		{
 			if (Conductor.songPos >= 0)
@@ -538,7 +564,7 @@ class PlayState extends MusicBeatState implements Playable
 		super.stepHit();
 		callScript("stepHit", [curStep]);
 		playField.stepHit(curStep);
-		if (audio.playing && Conductor.songPos < audio.length)
+		if (startedSong && Conductor.songPos < audio.length)
 			audio.sync();
 		
 		if (Conductor.songPos >= audio.length)
@@ -567,7 +593,7 @@ class PlayState extends MusicBeatState implements Playable
 			else if (curBeat + 4 >= 0) // countdown
 			{
 				//trace(curBeat + 4);
-				FlxG.sound.play(Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][curBeat + 4]));
+				countdownSfx[curBeat + 4].play();
 			}
 		}
 
@@ -584,8 +610,6 @@ class PlayState extends MusicBeatState implements Playable
 					char.dance();
 			}
 		}
-
-		
 
 		if (curBeat % 4 == 0)	
 		{

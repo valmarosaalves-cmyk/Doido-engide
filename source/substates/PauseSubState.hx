@@ -26,10 +26,11 @@ class PauseSubState extends MusicBeatSubState
         drawText();
         text.y = FlxG.height - text.height - 10;
 
-        //add the song title to the other side (was dissapearing for sm reason)
+        // add the song title
         title = new FlxText(10, 10, 0, PlayState.SONG.song);
-		title.setFormat(Main.globalFont, 48, 0xFFFFFFFF, RIGHT);
-		title.setOutline(0xFF000000, 5);
+		title.setFormat(Main.globalFont, 36, 0xFFFFFFFF, RIGHT);
+		title.setOutline(0xFF000000, 2);
+        title.x = FlxG.width - title.width - 10;
 		add(title);
     }
 

@@ -85,6 +85,7 @@ class MusicBeatState extends FlxUIState
 		Logs.print('switched to ${Type.getClassName(Type.getClass(this))}');
 		persistentDraw = true;
 		persistentUpdate = false;
+		FlxG.animationTimeScale = 1.0;
 		
 		Controls.setSoundKeys();
 
@@ -171,6 +172,7 @@ class MusicBeatSubState extends FlxSubState
 		MusicBeat.activeState = this;
 		persistentDraw = true;
 		persistentUpdate = false;
+		FlxG.animationTimeScale = 1.0;
 		curStepFloat = Conductor.getStepAtTime();
 		curStep = _curStep = Math.floor(curStepFloat);
 

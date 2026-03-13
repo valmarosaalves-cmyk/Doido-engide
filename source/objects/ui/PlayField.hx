@@ -139,7 +139,7 @@ class PlayField extends FlxGroup
 			{
 				if (!strumline.isPlayer)
 				{
-					if (strum.curAnimName == "confirm" && strum.curAnimFinished)
+					if (strum.curAnimName == "confirm" && strum.curAnimFinished && !strumline.holdingNotes[strum.lane])
 						strum.playAnim("static");
 				}
 				else
@@ -159,6 +159,9 @@ class PlayField extends FlxGroup
 					}
 				}
 			}
+
+			for(i in 0...strumline.holdingNotes.length)
+				strumline.holdingNotes[i] = false;
 
 			// updating notes
 			strumline.updateNotes(curStepFloat);
@@ -355,6 +358,8 @@ class PlayField extends FlxGroup
 
 		if (canPlayHoldAnims)
 			strum.playAnim("confirm");
+
+		strumline.holdingNotes[strum.lane] = true;
 
 		if (onNoteHold != null) onNoteHold(note, strumline);
 		canPlayHoldAnims = false;

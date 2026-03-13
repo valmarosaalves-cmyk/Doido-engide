@@ -21,16 +21,16 @@
 
         {
             "name": "singLEFT",
-            "prefix": "Dad Sing Note LEFT",
-            "offset": {"x": -6, "y": 26}
+            "prefix": "dad sing note right",
+            "offset": {"x": 41, "y": 8}
         },
         {
             "name": "singLEFT-loop",
-            "prefix": "Dad Sing Note LEFT",
+            "prefix": "dad sing note right",
             "framerate": 12,
             "indices": [2, 4],
             "loop": true,
-            "offset": {"x": -6, "y": 26}
+            "offset": {"x": 41, "y": 8}
         },
 
         {
@@ -63,16 +63,16 @@
 
         {
             "name": "singRIGHT",
-            "prefix": "dad sing note right",
-            "offset": {"x": 41, "y": 8}
+            "prefix": "Dad Sing Note LEFT",
+            "offset": {"x": -6, "y": 26}
         },
         {
             "name": "singRIGHT-loop",
-            "prefix": "dad sing note right",
+            "prefix": "Dad Sing Note LEFT",
             "framerate": 12,
             "indices": [2, 4],
             "loop": true,
-            "offset": {"x": 41, "y": 8}
+            "offset": {"x": -6, "y": 26}
         }
     ]
 }

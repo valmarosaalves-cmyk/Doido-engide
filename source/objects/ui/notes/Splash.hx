@@ -60,7 +60,7 @@ class Cover extends BaseSplash
 
 		if(strum != null) {
 			setPosition(strum.x, strum.y);
-			if((strum.animation.curAnim.name != "confirm" && isPlayer) || note.holdHitPercent >= 1.0) {
+			if(strum.animation.curAnim.name != "confirm" || note.holdHitPercent >= 1.0) {
 				if(animation.curAnim.name != "splash") {
 					//trace(note.holdHitPercent);
 					if(note.holdHitPercent < Timings.timings.get("sick").hold)
