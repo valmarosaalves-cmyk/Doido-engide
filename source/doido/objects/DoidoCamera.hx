@@ -27,20 +27,11 @@ class DoidoCamera extends FlxCamera {
 
     override function updateScrollRect():Void
 	{
+		super.updateScrollRect();
 		var rect:Rectangle = (_scrollRect != null) ? _scrollRect.scrollRect : null;
 
 		if (rect != null)
 		{
-			rect.x = rect.y = 0;
-
-			rect.width = width * initialZoom * FlxG.scaleMode.scale.x;
-			rect.height = height * initialZoom * FlxG.scaleMode.scale.y;
-
-			_scrollRect.scrollRect = rect;
-
-			_scrollRect.x = -0.5 * rect.width;
-			_scrollRect.y = -0.5 * rect.height;
-
 			// angle fix
 			var flxRect = FlxRect.get();
 			flxRect.copyFromFlash(_scrollRect.scrollRect);
@@ -59,8 +50,7 @@ class DoidoCamera extends FlxCamera {
 
     override function set_angle(Angle:Float):Float
 	{
-		angle = Angle;
-		flashSprite.rotation = Angle;
+		super.set_angle(Angle);
 		updateScrollRect(); // angle fix
 		return Angle;
 	}
