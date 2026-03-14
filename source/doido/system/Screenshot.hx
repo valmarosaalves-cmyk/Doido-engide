@@ -8,10 +8,9 @@ import flixel.graphics.FlxGraphic;
 import flixel.FlxSprite;
 import lime.app.Application;
 import openfl.display.BitmapData;
-#if sys
+#if SCREENSHOT_FEATURE
 import sys.FileSystem;
 import sys.io.File;
-#end
 
 class Screenshot extends FlxBasic
 {
@@ -95,3 +94,9 @@ class Screenshot extends FlxBasic
         lastScreenshot = null;
     }
 }
+#else
+class Screenshot extends FlxBasic {
+    //just in case
+    public static function clearScreenshot() {}
+}
+#end

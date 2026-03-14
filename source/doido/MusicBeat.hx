@@ -19,7 +19,7 @@ class MusicBeat
 
 	public static function switchState(?target:MusicBeatState, tOut:String = 'funkin', ?tIn:String)
 	{
-		Screenshot.clearScreenshot();
+		#if SCREENSHOT_FEATURE Screenshot.clearScreenshot(); #end
 
 		if(tIn != null)
 			nextTransition = tIn;
@@ -110,7 +110,7 @@ class MusicBeatState extends FlxUIState
 
 	override function openSubState(subState:FlxSubState)
 	{
-		Screenshot.clearScreenshot();
+		#if SCREENSHOT_FEATURE Screenshot.clearScreenshot(); #end
 		super.openSubState(subState);
 	}
 
@@ -200,7 +200,7 @@ class MusicBeatSubState extends FlxSubState
 
 	override function openSubState(subState:FlxSubState)
 	{
-		Screenshot.clearScreenshot();
+		#if SCREENSHOT_FEATURE Screenshot.clearScreenshot(); #end
 		super.openSubState(subState);
 	}
 
