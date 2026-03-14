@@ -46,19 +46,24 @@ class Screenshot extends FlxBasic
         
         FlxG.sound.play(Assets.sound('screenshot'));
 
-        var scaleX:Float = FlxG.stage.window.width / 1280;
-        var scaleY:Float = FlxG.stage.window.height / 720;
-        var scale:Float = Math.min(scaleX, scaleY);
         var rect:Rectangle = new Rectangle();
-        rect = new Rectangle(
-            (FlxG.stage.window.width - 1280*scale)/2,
-            (FlxG.stage.window.height - 720*scale)/2,
-            1280*scale,
-            720*scale
-        );
+        var scaleImage:Bool = !FlxG.keys.pressed.SHIFT;
+        var scaleX:Float = FlxG.stage.window.width / FlxG.width;
+        var scaleY:Float = FlxG.stage.window.height / FlxG.height;
+        var scale:Float = Math.min(scaleX, scaleY);
+        if(!scaleImage) scale = 1/scale;
         
-        var rawImage = Application.current.window.readPixels(rect);
-        rawImage.resize(1280, 720);
+        if(scaleImage) {
+            rect = new Rectangle(
+                (FlxG.stage.window.width - FlxG.width*scale)/2,
+                (FlxG.stage.window.height - FlxG.height*scale)/2,
+                FlxG.width*scale,
+                FlxG.height*scale
+            );
+        }
+        
+        var rawImage = Application.current.window.readPixels(scaleImage ? rect : null);
+        if(scaleImage) rawImage.resize(FlxG.width, FlxG.height);
         var pngBytes = rawImage.encode(PNG);
         if (!FileSystem.exists("screenshots/"))
 			FileSystem.createDirectory("screenshots/");
@@ -75,7 +80,8 @@ class Screenshot extends FlxBasic
         camera.flash(0.8, null, true);
         
         lastScreenshot = new FlxSprite().loadGraphic(FlxGraphic.fromBitmapData(BitmapData.fromImage(rawImage)));
-        lastScreenshot.scale.set(0.25, 0.25);
+        if(scaleImage) lastScreenshot.scale.set(0.25, 0.25);
+        else lastScreenshot.scale.set(0.25*scale, 0.25*scale);
         lastScreenshot.updateHitbox();
         lastScreenshot.cameras = [camera];
 
