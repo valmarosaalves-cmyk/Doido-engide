@@ -4,6 +4,8 @@ import states.PlayState;
 import flixel.text.FlxText;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 
 class PauseSubState extends MusicBeatSubState
 {
@@ -38,8 +40,11 @@ class PauseSubState extends MusicBeatSubState
         creditsText = new FlxText(10, title.y + 30, 0, "");
         creditsText.setFormat(Main.globalFont, 36, 0xFFFFFFFF, RIGHT);
 		creditsText.setOutline(0xFF000000, 2);
-        drawCreditsText();
+        creditsText.alpha = 1;
         add(creditsText);
+
+        drawCreditsText();
+        creditsFade();
     }
 
     function drawOptionsText() {
@@ -48,30 +53,41 @@ class PauseSubState extends MusicBeatSubState
             optionText.text += (i == cur ? "> " : "") + options[i] + "\n";
     }
 
-    /**
-     * Function that draws credits text.
-     * if any of the credits fields are missing (null), they're skipped.
-     */
+    var curCredit:Int = 0;
     function drawCreditsText()
     {
-        if(PlayState.META.composer != null)
-            creditsText.text += 'Composer: ' + PlayState.META.composer + "\n";
-        if(PlayState.META.charter != null)
-            creditsText.text += 'Charter: ' + PlayState.META.charter+ "\n";
-        if(PlayState.META.artist != null)
-            creditsText.text += 'Artist: ' + PlayState.META.artist;
-
-        //if the credits text is empty, it gets destroyed.
-        // not really needed but since flxtext is a bitch, ill keep it.
-        if(creditsText.text == "")
-        {
-            creditsText.kill();
-            creditsText.destroy();
-            return;
-        }
+        creditsText.text = (curCredit == 0 ?
+            'Composer: ' + PlayState.META.composer + "\n" :
+            'Charter: ' + PlayState.META.charter+ "\n"
+        );
 
         creditsText.x = FlxG.width - (creditsText.width + 12);
         creditsText.updateHitbox();
+
+        curCredit++;
+        curCredit = FlxMath.wrap(curCredit, 0, 1);
+    }
+
+    var creditsTween:FlxTween;
+    var fadeDelay:Float = 5;
+    var fadeDuration:Float = 0.75;
+    function creditsFade()
+    {
+        creditsTween = FlxTween.tween(creditsText, {alpha: 0.0}, fadeDuration, {
+            startDelay: fadeDelay,
+            ease: FlxEase.quartOut,
+            onComplete: (_) ->
+            {
+                drawCreditsText();
+                FlxTween.tween(creditsText, {alpha: 1.0}, fadeDuration, {
+                ease: FlxEase.quartOut,
+                onComplete: (_) ->
+                {
+                    creditsFade();
+                }
+                });
+            }
+        });
     }
 
     override function update(elapsed:Float)
