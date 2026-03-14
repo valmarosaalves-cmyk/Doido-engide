@@ -58,15 +58,13 @@ class PauseSubState extends MusicBeatSubState
     {
         creditsText.text = (curCredit == 0 ?
             'Composer: ' + PlayState.META.composer + "\n" :
-            'Charter: ' + PlayState.META.charter+ "\n"
+            'Charter: ' + PlayState.META.charter + "\n"
         );
 
         creditsText.x = FlxG.width - (creditsText.width + 12);
-        creditsText.updateHitbox();
 
         curCredit++;
         curCredit = FlxMath.wrap(curCredit, 0, 1);
-        trace(curCredit);
     }
 
     var creditsTween:FlxTween;
