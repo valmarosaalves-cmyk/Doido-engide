@@ -96,8 +96,10 @@ class Main extends Sprite
         // fullscreen bind fix
 		FlxG.stage.addEventListener(openfl.events.KeyboardEvent.KEY_DOWN, fullscreen, false, 100);
 
+        #if SCREENSHOT_FEATURE
         // screenshots!!
         FlxG.plugins.addPlugin(new doido.system.Screenshot());
+        #end
     }
 
     function fullscreen(e:openfl.events.KeyboardEvent) {
