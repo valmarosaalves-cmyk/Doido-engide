@@ -66,7 +66,7 @@ class Screenshot extends FlxBasic
         var camera = MusicBeat.getTopCamera();
         camera.flash(0.8, null, true);
         
-        lastScreenshot = new FlxSprite().loadGraphic(FlxGraphic.fromBitmapData(BitmapData.fromImage(rawImage)));
+        lastScreenshot.loadGraphic(FlxGraphic.fromBitmapData(BitmapData.fromImage(rawImage)));
         lastScreenshot.scale.set(0.25, 0.25);
         lastScreenshot.updateHitbox();
         lastScreenshot.cameras = [camera];
@@ -93,10 +93,12 @@ class Screenshot extends FlxBasic
 
     public static function clearScreenshot()
     {
-        if (lastScreenshot == null) return;
+        if (lastScreenshot == null) lastScreenshot = new FlxSprite();
+
+        if (!MusicBeat.activeState.members.contains(lastScreenshot)) return;
+        
         FlxTween.cancelTweensOf(lastScreenshot);
         MusicBeat.activeState.remove(lastScreenshot);
         Cache.clearSingleGraphic(lastScreenshot.graphic);
-        lastScreenshot = null;
     }
 }
