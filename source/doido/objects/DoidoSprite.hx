@@ -6,7 +6,7 @@ typedef Animation = {
     var name:String;
     var prefix:String;
     var ?framerate:Int;
-    var ?looped:Bool;
+    var ?loop:Bool;
     var ?offset:DoidoPoint;
     var ?indices:Array<Int>;
     var ?flipX:Bool;
@@ -47,6 +47,17 @@ class DoidoSprite extends FlxAnimate
 		animOffsets.set(animName, offset);
 	}
 
+	public function getOffset(animName:String):DoidoPoint {
+		if (!animExists(animName)) return {x: 0, y: 0};
+		return animOffsets.get(animName);
+	}
+
+	public function addToOffset(animName:String, x:Float = 0, y:Float = 0) {
+		if (!animExists(animName)) return;
+		animOffsets.get(animName).x += x;
+		animOffsets.get(animName).y += y;
+	}
+
 	public function addAnim(animData:Animation) {
 		if(spriteType == ATLAS) {
 			switch (atlasType) {
@@ -57,7 +68,7 @@ class DoidoSprite extends FlxAnimate
 							library.timeline,
 							animData.indices,
 							animData.framerate ?? 24,
-							animData.looped ?? false,
+							animData.loop ?? false,
 							animData.flipX ?? false,
 							animData.flipY ?? false
 						);
@@ -66,7 +77,7 @@ class DoidoSprite extends FlxAnimate
 							animData.name,
 							library.timeline,
 							animData.framerate ?? 24,
-							animData.looped ?? false,
+							animData.loop ?? false,
 							animData.flipX ?? false,
 							animData.flipY ?? false
 						);
@@ -77,7 +88,7 @@ class DoidoSprite extends FlxAnimate
 							animData.prefix,
 							animData.indices,
 							animData.framerate ?? 24,
-							animData.looped ?? false,
+							animData.loop ?? false,
 							animData.flipX ?? false,
 							animData.flipY ?? false
 						);
@@ -86,7 +97,7 @@ class DoidoSprite extends FlxAnimate
 							animData.name,
 							animData.prefix,
 							animData.framerate ?? 24,
-							animData.looped ?? false,
+							animData.loop ?? false,
 							animData.flipX ?? false,
 							animData.flipY ?? false
 						);
@@ -97,7 +108,7 @@ class DoidoSprite extends FlxAnimate
 							animData.prefix,
 							animData.indices,
 							animData.framerate ?? 24,
-							animData.looped ?? false,
+							animData.loop ?? false,
 							animData.flipX ?? false,
 							animData.flipY ?? false
 						);
@@ -106,7 +117,7 @@ class DoidoSprite extends FlxAnimate
 							animData.name,
 							animData.prefix,
 							animData.framerate ?? 24,
-							animData.looped ?? false,
+							animData.loop ?? false,
 							animData.flipX ?? false,
 							animData.flipY ?? false
 						);
@@ -119,7 +130,7 @@ class DoidoSprite extends FlxAnimate
 					animData.prefix,
 					animData.indices, "",
 					animData.framerate ?? 24,
-					animData.looped ?? false,
+					animData.loop ?? false,
 					animData.flipX ?? false,
 					animData.flipY ?? false
 				);
@@ -128,7 +139,7 @@ class DoidoSprite extends FlxAnimate
 					animData.name,
 					animData.prefix,
 					animData.framerate ?? 24,
-					animData.looped ?? false,
+					animData.loop ?? false,
 					animData.flipX ?? false,
 					animData.flipY ?? false
 				);

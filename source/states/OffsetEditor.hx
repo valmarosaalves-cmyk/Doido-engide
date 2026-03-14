@@ -99,7 +99,7 @@ class OffsetEditor extends MusicBeatState
 
 			var offsets:DoidoPoint = char.animOffsets.get(anim);
 
-			exportTxt.text += '$anim ${offsets.x} ${offsets.y}\n';
+			exportTxt.text += (char.curAnimName == anim ? "> " : "") + '$anim ${offsets.x} ${offsets.y}\n';
 		}
 		exportTxt.text += '\nCam Pos: ${(Math.round(camFollow.x*10))/10} ${(Math.round(camFollow.y*10))/10}' 
         + '\nZoom (on editor): ${(Math.round(camChar.zoom*10))/10}';
@@ -151,12 +151,14 @@ class OffsetEditor extends MusicBeatState
         if(FlxG.keys.justPressed.SPACE) char.playAnim(char.curAnimName, true);
     }
 
-    public function changeAnim(change:Int = 0)
+    public function changeAnim(change:Int = 0):Void
 	{
 		if(change != 0) FlxG.sound.play(Assets.sound('scroll'));
         curAnim += change;
 		curAnim = FlxMath.wrap(curAnim, 0, char.animList.length-1);
-        char.playAnim(char.animList[curAnim], true);
+
+		char.playAnim(char.animList[curAnim], true);
+		updateTxt();
 	}
 
     var curAnim:Int = 0;
@@ -172,9 +174,16 @@ class OffsetEditor extends MusicBeatState
 			x*=100;
 			y*=100;
 		}
+
+		char.addToOffset(char.curAnimName, -x, -y);
 		
-        char.animOffsets.get(char.curAnimName).x += -x;
-        char.animOffsets.get(char.curAnimName).y += -y;
+		var loopAnimName:String = char.curAnimName.endsWith("-loop") ? char.curAnimName.replace("-loop", "") : char.curAnimName + "-loop";
+		if (char.animExists(loopAnimName))
+		{
+			if (char.animExists(loopAnimName))
+				char.addOffset(loopAnimName, char.getOffset(char.curAnimName));
+		}
+
         char.playAnim(char.curAnimName, true);
 		
 		updateTxt();

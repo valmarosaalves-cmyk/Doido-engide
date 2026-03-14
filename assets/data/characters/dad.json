@@ -38,14 +38,6 @@
             "prefix": "Dad Sing Note DOWN",
             "offset": {"x": 0, "y": -8}
         },
-        {
-            "name": "singDOWN-loop",
-            "prefix": "Dad Sing Note DOWN",
-            "framerate": 12,
-            "indices": [2, 4],
-            "loop": true,
-            "offset": {"x": 0, "y": -8}
-        },
 
         {
             "name": "singUP",
