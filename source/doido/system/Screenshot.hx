@@ -8,6 +8,7 @@ import flixel.graphics.FlxGraphic;
 import flixel.FlxSprite;
 import lime.app.Application;
 import openfl.display.BitmapData;
+import lime.math.Rectangle;
 #if SCREENSHOT_FEATURE
 import sys.FileSystem;
 import sys.io.File;
@@ -44,7 +45,20 @@ class Screenshot extends FlxBasic
         if (Std.isOfType(MusicBeat.activeState, Transition)) return;
         
         FlxG.sound.play(Assets.sound('screenshot'));
-        var rawImage = Application.current.window.readPixels();
+
+        var scaleX:Float = FlxG.stage.window.width / 1280;
+        var scaleY:Float = FlxG.stage.window.height / 720;
+        var scale:Float = Math.min(scaleX, scaleY);
+        var rect:Rectangle = new Rectangle();
+        rect = new Rectangle(
+            (FlxG.stage.window.width - 1280*scale)/2,
+            (FlxG.stage.window.height - 720*scale)/2,
+            1280*scale,
+            720*scale
+        );
+        
+        var rawImage = Application.current.window.readPixels(rect);
+        rawImage.resize(1280, 720);
         var pngBytes = rawImage.encode(PNG);
         if (!FileSystem.exists("screenshots/"))
 			FileSystem.createDirectory("screenshots/");
