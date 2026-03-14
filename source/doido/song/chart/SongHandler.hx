@@ -11,7 +11,6 @@ typedef DoidoMeta =
     var ?stage:String;
 	var ?composer:String;
 	var ?charter:String;
-    //var ?difficulties:Array<String>; // im not sure how im going to implement this...
 }
 
 typedef DoidoSong =

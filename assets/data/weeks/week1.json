@@ -1,0 +1,10 @@
+{
+    "songs": [
+        {"song": "bopeebo", "icon":"dad"},
+        {"song": "fresh", "icon":"dad"},
+        {"song": "dadbattle", "icon":"dad"}
+    ],
+    "weekFile": "week1",
+    "weekName": "daddy dearest",
+    "chars": ["dad", "bf", "gf"],
+}
