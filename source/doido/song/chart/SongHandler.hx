@@ -9,6 +9,9 @@ typedef DoidoMeta =
     var ?player2:String;
     var ?gf:String;
     var ?stage:String;
+	var ?composer:String;
+	var ?charter:String;
+	var ?artist:String;
     //var ?difficulties:Array<String>; // im not sure how im going to implement this...
 }
 
@@ -160,6 +163,9 @@ class SongHandler
         meta.player2 = (b.player2 ?? a.player2);
         meta.gf = (b.gf ?? a.gf);
         meta.stage = (b.stage ?? a.stage);
+		meta.composer = (b.composer ?? a.composer);
+		meta.charter = (b.charter ?? a.charter);
+		meta.artist = (b.artist ?? a.artist);
         //meta.difficulties = (b.difficulties ?? a.difficulties);
         return meta;
     }

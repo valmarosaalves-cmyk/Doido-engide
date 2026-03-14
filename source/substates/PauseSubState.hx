@@ -8,8 +8,9 @@ import flixel.math.FlxMath;
 class PauseSubState extends MusicBeatSubState
 {
     var options:Array<String> = ["Resume", "Restart Song", "Exit To Menu"];
-    var text:FlxText;
+    var optionText:FlxText;
     var title:FlxText;
+    var creditsText:FlxText;
     var cur:Int = 0;
 
     public function new()
@@ -19,12 +20,12 @@ class PauseSubState extends MusicBeatSubState
         bg.alpha = 0.4;
         add(bg);
 
-        text = new FlxText(10, 0, 0, '');
-		text.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);
-		text.setOutline(0xFF000000, 3);
-		add(text);
-        drawText();
-        text.y = FlxG.height - text.height - 10;
+        optionText = new FlxText(10, 0, 0, '');
+		optionText.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);
+		optionText.setOutline(0xFF000000, 3);
+		add(optionText);
+        drawOptionsText();
+        optionText.y = FlxG.height - optionText.height - 10;
 
         // add the song title
         title = new FlxText(10, 10, 0, PlayState.SONG.song);
@@ -32,12 +33,45 @@ class PauseSubState extends MusicBeatSubState
 		title.setOutline(0xFF000000, 2);
         title.x = FlxG.width - title.width - 10;
 		add(title);
+
+        //  add the credits text
+        creditsText = new FlxText(10, title.y + 30, 0, "");
+        creditsText.setFormat(Main.globalFont, 36, 0xFFFFFFFF, RIGHT);
+		creditsText.setOutline(0xFF000000, 2);
+        drawCreditsText();
+        add(creditsText);
     }
 
-    function drawText() {
-        text.text = "";
+    function drawOptionsText() {
+        optionText.text = "";
         for(i in 0...options.length)
-            text.text += (i == cur ? "> " : "") + options[i] + "\n";
+            optionText.text += (i == cur ? "> " : "") + options[i] + "\n";
+    }
+
+    /**
+     * Function that draws credits text.
+     * if any of the credits fields are missing (null), they're skipped.
+     */
+    function drawCreditsText()
+    {
+        if(PlayState.META.composer != null)
+            creditsText.text += 'Composer: ' + PlayState.META.composer + "\n";
+        if(PlayState.META.charter != null)
+            creditsText.text += 'Charter: ' + PlayState.META.charter+ "\n";
+        if(PlayState.META.artist != null)
+            creditsText.text += 'Artist: ' + PlayState.META.artist;
+
+        //if the credits text is empty, it gets destroyed.
+        // not really needed but since flxtext is a bitch, ill keep it.
+        if(creditsText.text == "")
+        {
+            creditsText.kill();
+            creditsText.destroy();
+            return;
+        }
+
+        creditsText.x = FlxG.width - (creditsText.width + 12);
+        creditsText.updateHitbox();
     }
 
     override function update(elapsed:Float)
@@ -78,6 +112,6 @@ class PauseSubState extends MusicBeatSubState
 		
 		cur += change;
 		cur = FlxMath.wrap(cur, 0, options.length - 1);
-		drawText();
+		drawOptionsText();
 	}
 }
