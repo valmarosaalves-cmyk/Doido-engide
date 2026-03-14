@@ -66,6 +66,7 @@ class PauseSubState extends MusicBeatSubState
 
         curCredit++;
         curCredit = FlxMath.wrap(curCredit, 0, 1);
+        trace(curCredit);
     }
 
     var creditsTween:FlxTween;
@@ -78,7 +79,7 @@ class PauseSubState extends MusicBeatSubState
             ease: FlxEase.quartOut,
             onComplete: (_) ->
             {
-                //drawCreditsText();
+                drawCreditsText();
                 FlxTween.tween(creditsText, {alpha: 1.0}, fadeDuration, {
                 ease: FlxEase.quartOut,
                 onComplete: (_) ->
