@@ -35,7 +35,7 @@ class Screenshot extends FlxBasic
             MusicBeat.getTopCamera().stopFlash();
             clearScreenshot();
         }
-        
+
         super.update(elapsed);
     }
 
@@ -81,7 +81,7 @@ class Screenshot extends FlxBasic
                 
                 FlxTween.tween(lastScreenshot, {x: -FlxG.width}, 0.4, {
                     ease: FlxEase.cubeIn,
-                    startDelay: 0.2,
+                    startDelay: 1.6,
                     onComplete: (twn) -> {
                         clearScreenshot();
                     }
