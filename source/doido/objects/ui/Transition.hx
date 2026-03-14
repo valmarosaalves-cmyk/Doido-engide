@@ -87,7 +87,7 @@ class Transition extends MusicBeatSubState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		setToTopCamera();
+		cameras = [MusicBeat.getTopCamera()];
 
 		switch(transition) {
 			case 'funkin':

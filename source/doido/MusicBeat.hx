@@ -2,7 +2,9 @@ package doido;
 
 import doido.Cache;
 import doido.song.Conductor;
+import doido.system.Screenshot;
 import doido.objects.ui.Transition;
+import flixel.FlxCamera;
 import flixel.FlxState;
 import flixel.FlxSubState;
 import flixel.addons.ui.FlxUIState;
@@ -17,6 +19,8 @@ class MusicBeat
 
 	public static function switchState(?target:MusicBeatState, tOut:String = 'funkin', ?tIn:String)
 	{
+		Screenshot.clearScreenshot();
+
 		if(tIn != null)
 			nextTransition = tIn;
 		else
@@ -71,6 +75,9 @@ class MusicBeat
 				twn.active = apple;
 		});
 	}
+
+	public static function getTopCamera():FlxCamera
+		return FlxG.cameras.list[FlxG.cameras.list.length - 1];
 }
 
 /*
@@ -99,6 +106,12 @@ class MusicBeatState extends FlxUIState
 
 		curStepFloat = Conductor.getStepAtTime();
 		curStep = _curStep = Math.floor(curStepFloat);
+	}
+
+	override function openSubState(subState:FlxSubState)
+	{
+		Screenshot.clearScreenshot();
+		super.openSubState(subState);
 	}
 
 	private var _curStep = 0; // actual curStep
@@ -176,17 +189,19 @@ class MusicBeatSubState extends FlxSubState
 		curStepFloat = Conductor.getStepAtTime();
 		curStep = _curStep = Math.floor(curStepFloat);
 
-		setToTopCamera();
-	}
-
-	public function setToTopCamera() {
-		this.cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
+		cameras = [MusicBeat.getTopCamera()];
 	}
 	
 	override function close()
 	{
 		MusicBeat.activeState = subParent;
 		super.close();
+	}
+
+	override function openSubState(subState:FlxSubState)
+	{
+		Screenshot.clearScreenshot();
+		super.openSubState(subState);
 	}
 
 	private var _curStep:Int = 0; // actual curStep

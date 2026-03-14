@@ -68,12 +68,17 @@ class Cache
     public static function clearGraphics() {
         for(key => graphic in current.graphics) {
             //FlxG.bitmap.remove(graphic); maybe not?
-            if (graphic.bitmap != null && graphic.bitmap.__texture != null)
-                graphic.bitmap.__texture.dispose();
-            graphic.persist = false;
-            graphic.destroy();
+            clearSingleGraphic(graphic);
             current.graphics.remove(key);
         }
+    }
+
+    public static function clearSingleGraphic(graphic:FlxGraphic)
+    {
+        if (graphic.bitmap != null && graphic.bitmap.__texture != null)
+            graphic.bitmap.__texture.dispose();
+        graphic.persist = false;
+        graphic.destroy();
     }
 
     public static function isGraphicCached(key:String)
