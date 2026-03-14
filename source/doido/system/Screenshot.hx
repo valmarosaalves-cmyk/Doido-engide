@@ -43,16 +43,12 @@ class Screenshot extends FlxBasic
     {
         // sorry no screenshots during transitions
         if (Std.isOfType(MusicBeat.activeState, Transition)) return;
-        #if !sys return #end 
-
-        FlxG.sound.play(Assets.sound("screenshot"));
         
+        FlxG.sound.play(Assets.sound('screenshot'));
         var rawImage = Application.current.window.readPixels();
         var pngBytes = rawImage.encode(PNG);
-
         if (!FileSystem.exists("screenshots/"))
 			FileSystem.createDirectory("screenshots/");
-
         var i:Int = 0;
         var rawName:String = Date.now().toString().replace(":", "-");
         var name:String = rawName;
@@ -62,7 +58,6 @@ class Screenshot extends FlxBasic
             name = '$rawName ($i)';
         }
         File.saveBytes('screenshots/$name.png', pngBytes);
-
         var camera = MusicBeat.getTopCamera();
         camera.flash(0.8, null, true);
         
