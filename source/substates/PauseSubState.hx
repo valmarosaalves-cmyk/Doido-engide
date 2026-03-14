@@ -78,7 +78,7 @@ class PauseSubState extends MusicBeatSubState
             ease: FlxEase.quartOut,
             onComplete: (_) ->
             {
-                drawCreditsText();
+                //drawCreditsText();
                 FlxTween.tween(creditsText, {alpha: 1.0}, fadeDuration, {
                 ease: FlxEase.quartOut,
                 onComplete: (_) ->
