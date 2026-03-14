@@ -181,7 +181,7 @@ class Assets
 
     public static function getScriptArray(?song:String):Array<String> {
 		var arr:Array<String> = [];
-		for(folder in ["scripts", 'songs/$song/scripts']) {
+		for(folder in ["data/scripts", 'songs/$song/scripts']) {
 			for(file in list(folder, SCRIPT)) {
                 arr.push('$folder/$file');
                 trace(file);
