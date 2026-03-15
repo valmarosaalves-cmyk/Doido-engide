@@ -28,28 +28,31 @@ class HealthIcon extends FlxSprite
         this.isPlayer = isPlayer;
         this.curIcon = curIcon;
 
-        if(Assets.fileExists('data/icons/$curIcon.json'))
+        try {
             data = cast(Assets.json('data/icons/$curIcon'));
-        else
-            data = DEFAULT_DATA;
+        }
+        catch(e) {
+            Logs.print('ICON $curIcon LOAD ERROR: $e', ERROR);
+            data = DEFAULT;
+        }
         
         var iconGraphic = Assets.image('icons/${data.image ?? curIcon}');
-        gridFrames = data.gridFrames ?? (Math.floor(iconGraphic.width / (data.gridWidth ?? DEFAULT_DATA.gridWidth)));
+        gridFrames = data.gridFrames ?? (Math.floor(iconGraphic.width / (data.gridWidth ?? DEFAULT.gridWidth)));
         loadGraphic(iconGraphic, true, Math.floor(iconGraphic.width / gridFrames), iconGraphic.height);
 
         animation.add("icon", [for(i in 0...gridFrames) i], 0, false);
         animation.play("icon");
 
-        scale.set(data.scale ?? DEFAULT_DATA.scale, data.scale ?? DEFAULT_DATA.scale);
+        scale.set(data.scale ?? DEFAULT.scale, data.scale ?? DEFAULT.scale);
         updateHitbox();
 
-        var clr:Dynamic = data.color ?? DEFAULT_DATA.color;
+        var clr:Dynamic = data.color ?? DEFAULT.color;
         if(Std.isOfType(clr, String)) barColor = FlxColor.fromString(clr);
         else if(Std.isOfType(clr, Array)) barColor = FlxColor.fromRGB(clr[0], clr[1], clr[2]); 
 
-        flipX = data.flipX ?? DEFAULT_DATA.flipX;
-        flipY = data.flipY ?? DEFAULT_DATA.flipY;
-        antialiasing = ((data.pixel == true) ? false : DEFAULT_DATA.pixel);
+        flipX = data.flipX ?? DEFAULT.flipX;
+        flipY = data.flipY ?? DEFAULT.flipY;
+        antialiasing = ((data.pixel == true) ? false : DEFAULT.pixel);
         if(isPlayer) flipX = !flipX;
         
         return this;
@@ -66,7 +69,7 @@ class HealthIcon extends FlxSprite
 		animation.curAnim.curFrame = daFrame;
 	}
 
-    final DEFAULT_DATA:IconData = {
+    final DEFAULT:IconData = {
         image: "face",
         color: "0xFFA1A1A1",
         scale: 1,

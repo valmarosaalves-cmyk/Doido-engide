@@ -8,6 +8,7 @@ import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.text.FlxBitmapFont;
 import haxe.Json;
+import haxe.io.Path;
 import openfl.Assets as OpenFLAssets;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
@@ -158,15 +159,16 @@ class Assets
         };
     }
 
-    public static function list(key:String, type:Asset = OTHER):Array<String> {
+    public static function list(key:String, clean:Bool = false, ?exclude:Array<String>, type:Asset = OTHER):Array<String> {
         var rawlist:Array<String> = OpenFLAssets.list();
         var list:Array<String> = [];
         var path = getPath(key);
+        if(exclude == null) exclude = [];
 
         if(type != OTHER) {
             for(i in 0...rawlist.length) {
                 for(type in extensions.get(type)) {
-                    if(rawlist[i].endsWith(type)) {
+                    if(rawlist[i].endsWith(type) && !(exclude.contains(rawlist[i]) || exclude.contains('${rawlist[i]}.$type'))) {
                         list.push(rawlist[i]);
                     }
                 }
@@ -175,8 +177,15 @@ class Assets
         else list = rawlist;
 
         //taken from flixel-animate
-        return list.filter((str) -> str.startsWith(path.substring(path.indexOf(':') + 1, path.length)))
+        list = list.filter((str) -> str.startsWith(path.substring(path.indexOf(':') + 1, path.length)))
 			.map((str) -> str.split('${path.split(":").pop()}/').pop());
+
+        if(clean) {
+            for(i in 0...list.length)
+                list[i] = cleanPath(list[i]);
+        }
+            
+        return list;
     }
 
     public static function getScriptArray(?song:String):Array<String> {
@@ -184,10 +193,8 @@ class Assets
 		for(folder in ["data/scripts", 'songs/$song/scripts']) {
 			for(file in list(folder, SCRIPT)) {
                 arr.push('$folder/$file');
-                trace(file);
             }
 		}
-		//trace(arr);
 		return arr;
 	}
 
@@ -258,4 +265,7 @@ class Assets
         
         return frames;
     }
+    
+    public static inline function cleanPath(path:String):String
+        return Path.withoutExtension(Path.withoutDirectory(path));
 }

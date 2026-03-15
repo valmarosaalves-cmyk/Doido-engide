@@ -63,8 +63,13 @@ class Character extends DoidoSprite
 
     function loadCharacter()
     {
-        if(Assets.fileExists('data/characters/$curChar.json')) data = cast(Assets.json('data/characters/$curChar'));
-        else data = DEFAULT;
+        try {
+            data = cast(Assets.json('data/characters/$curChar'));
+        }
+        catch(e) {
+            Logs.print('CHAR $curChar LOAD ERROR: $e', ERROR);
+            data = DEFAULT;
+        }
 
         spriteTypeFromString(data.spriteType);
         atlasTypeFromString(data.atlasType);

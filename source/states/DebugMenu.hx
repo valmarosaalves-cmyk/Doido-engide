@@ -1,5 +1,6 @@
 package states;
 
+import doido.song.Week.WeekData;
 import doido.Cache;
 import doido.song.chart.Legacy;
 import doido.song.chart.SongHandler;
@@ -11,6 +12,7 @@ import flixel.input.gamepad.FlxGamepadInputID as FlxPad;
 import haxe.Json;
 import openfl.media.Sound;
 import states.editors.ChartingState;
+import doido.song.Week;
 
 using doido.utils.TextUtil;
 
@@ -205,10 +207,7 @@ class OffsetSel extends MusicBeatState
     override function create()
     {
         super.create();
-        for(i in Assets.list("data/characters/", JSON))
-        {
-            options.push(i.replace("assets/data/characters/", "").replace(".json", ""));
-        }
+        options = Assets.list("data/characters/", true, JSON);
         DiscordIO.changePresence("In the Offset Editor");
 
         var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
@@ -270,7 +269,7 @@ class OffsetSel extends MusicBeatState
 
 class Freeplay extends MusicBeatState
 {
-    var options:Array<String> = ["bopeebo", "corn-theft", "useless", "bittersweet", "lunar-odyssey", "commotion", #if !mobile "Load Other" #end];
+    var options:Array<String> = [];
     var text:FlxText;
     var title:FlxText;
     var cur:Int = 0;
@@ -279,6 +278,16 @@ class Freeplay extends MusicBeatState
     {
         super.create();
         DiscordIO.changePresence("In the Freeplay Menu");
+
+        for (week in Week.weekList(false, true)) {
+            for(song in week.songs) {
+                options.push(song.song);
+            }
+        }
+
+        #if !mobile
+        options.push("Load Other");
+        #end
 
         var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
         bg.screenCenter();
