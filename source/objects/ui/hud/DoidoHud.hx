@@ -50,7 +50,7 @@ class DoidoHud extends BaseHud
         var rating = super.popUpRating(ratingName);
 		rating.ratingScale = 0.7;
         rating.screenCenter(X);
-		if(Save.data.middlescroll) rating.x -= FlxG.width / 4;
+		if(play.middlescroll) rating.x -= FlxG.width / 4;
 		rating.y = ratingPos;
         rating.defaultAnim();
         return rating;
@@ -61,7 +61,7 @@ class DoidoHud extends BaseHud
         var numberArray = super.popUpCombo(comboNum);
         
         for (number in numberArray) {
-			if(Save.data.middlescroll) number.x -= FlxG.width / 4;
+			if(play.middlescroll) number.x -= FlxG.width / 4;
             number.y = ratingPos + 75;
             number.defaultAnim();
         }
@@ -71,7 +71,7 @@ class DoidoHud extends BaseHud
 
 	var ratingPos(get, never):Int;
 	function get_ratingPos():Int
-		return Save.data.downscroll ? FlxG.height - 150 : 65;
+		return play.downscroll ? FlxG.height - 150 : 65;
 
 	override function positionCombo(numberArray:Array<ComboSprite>) {
 		for(number in numberArray) number.numberScale = 0.7;
@@ -82,11 +82,11 @@ class DoidoHud extends BaseHud
         super.updatePositions();
 
         healthBar.x = (FlxG.width / 2) - (healthBar.border.width / 2);
-		healthBar.y = (Save.data.downscroll ? 70 : FlxG.height - healthBar.border.height - 50);
+		healthBar.y = (play.downscroll ? 70 : FlxG.height - healthBar.border.height - 50);
         scoreTxt.y = healthBar.y + healthBar.border.height + 8;
 
 		updateTimeTxt();
-		timeTxt.y = Save.data.downscroll ? (FlxG.height - timeTxt.height - 14) : (14);
+		timeTxt.y = play.downscroll ? (FlxG.height - timeTxt.height - 14) : (14);
     }
 
     override function updateScoreTxt()

@@ -66,6 +66,9 @@ class PlayState extends MusicBeatState implements Playable
 
 	public var health:Float = 1;
 
+	public var downscroll:Bool;
+	public var middlescroll:Bool;
+
 	#if TOUCH_CONTROLS
 	var pauseButton:DoidoHitbox;
 	#end
@@ -106,6 +109,9 @@ class PlayState extends MusicBeatState implements Playable
 		Conductor.mapBPMChanges(EVENTS.events);
 		Conductor.songPos = -(Conductor.crochet * 5);
 		resetStatics();
+
+		downscroll = (#if TOUCH_CONTROLS Save.data.modernControls #else false #end ? true : Save.data.downscroll);
+		middlescroll = (#if TOUCH_CONTROLS Save.data.modernControls #else false #end ? true : Save.data.middlescroll);
 
 		spawnEvents = EVENTS.events;
 		
@@ -165,8 +171,8 @@ class PlayState extends MusicBeatState implements Playable
 
 		callScript("create");
 		changeStage(META.stage);
-		
-		playField = new PlayField(SONG.notes, SONG.speed, Save.data.downscroll, Save.data.middlescroll);
+
+		playField = new PlayField(SONG.notes, SONG.speed, downscroll, middlescroll);
 		playField.cameras = [camStrum];
 		add(playField);
 
@@ -659,6 +665,8 @@ class PlayState extends MusicBeatState implements Playable
 
 interface Playable {
 	var health:Float;
+	var downscroll:Bool;
+	var middlescroll:Bool;
 	var songLength(get, never):Float;
 	var player1(get, never):String;
 	var player2(get, never):String;

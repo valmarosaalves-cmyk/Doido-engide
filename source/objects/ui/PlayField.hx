@@ -30,14 +30,7 @@ class PlayField extends FlxGroup
 		this.spawnNotes = spawnNotes;
 		NoteUtil.setUpDirections(4);
 
-		var wide:Bool = false;
-		#if TOUCH_CONTROLS
-		if(Save.data.modernControls) {
-			middlescroll = true;
-			downscroll = true;
-			wide = true;
-		}
-		#end
+		var wide:Bool = #if TOUCH_CONTROLS Save.data.modernControls #else false #end;
 
 		var strumPos:Array<Float> = [-FlxG.width / 4, FlxG.width / 4];
 		if(middlescroll)
