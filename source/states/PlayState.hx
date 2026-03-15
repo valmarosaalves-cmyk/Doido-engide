@@ -651,10 +651,15 @@ class PlayState extends MusicBeatState implements Playable
 	public var player2(get, never):String;
 	public function get_player2():String
 		return dad.curChar;
+
+	public var songLength(get, never):Float;
+	public function get_songLength():Float
+		return audio.length;
 }
 
 interface Playable {
 	var health:Float;
+	var songLength(get, never):Float;
 	var player1(get, never):String;
 	var player2(get, never):String;
 }

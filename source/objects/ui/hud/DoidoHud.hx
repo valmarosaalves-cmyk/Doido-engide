@@ -2,10 +2,12 @@ package objects.ui.hud;
 
 import flixel.math.FlxMath;
 import objects.ui.hud.BaseHud.IconChange;
+import doido.song.Conductor;
 
 class DoidoHud extends BaseHud
 {
     public var scoreTxt:FlxBitmapText;
+	public var timeTxt:FlxBitmapText;
 
     public var healthBar:DoidoBar;
     public var iconP1:HealthIcon;
@@ -28,10 +30,17 @@ class DoidoHud extends BaseHud
 		changeIcon(play.player2, ENEMY);
 		add(iconP2);
         
-        scoreTxt = new FlxBitmapText(10, 0, Assets.bitmapFont("vcr"));
+        scoreTxt = new FlxBitmapText(0, 0, Assets.bitmapFont("vcr"));
 		scoreTxt.setOutline(0xFF000000, 2);
         scoreTxt.alignment = CENTER;
 		add(scoreTxt);
+
+		timeTxt = new FlxBitmapText(0, 0, Assets.bitmapFont("vcr"));
+		timeTxt.setOutline(0xFF000000, 2);
+        timeTxt.alignment = CENTER;
+		timeTxt.scale.set(1.4,1.4);
+		timeTxt.updateHitbox();
+		add(timeTxt);
 
         updatePositions();
     }
@@ -41,6 +50,7 @@ class DoidoHud extends BaseHud
         var rating = super.popUpRating(ratingName);
 		rating.ratingScale = 0.7;
         rating.screenCenter(X);
+		if(Save.data.middlescroll) rating.x -= FlxG.width / 4;
 		rating.y = ratingPos;
         rating.defaultAnim();
         return rating;
@@ -51,6 +61,7 @@ class DoidoHud extends BaseHud
         var numberArray = super.popUpCombo(comboNum);
         
         for (number in numberArray) {
+			if(Save.data.middlescroll) number.x -= FlxG.width / 4;
             number.y = ratingPos + 75;
             number.defaultAnim();
         }
@@ -73,6 +84,9 @@ class DoidoHud extends BaseHud
         healthBar.x = (FlxG.width / 2) - (healthBar.border.width / 2);
 		healthBar.y = (Save.data.downscroll ? 70 : FlxG.height - healthBar.border.height - 50);
         scoreTxt.y = healthBar.y + healthBar.border.height + 8;
+
+		updateTimeTxt();
+		timeTxt.y = Save.data.downscroll ? (FlxG.height - timeTxt.height - 14) : (14);
     }
 
     override function updateScoreTxt()
@@ -85,6 +99,18 @@ class DoidoHud extends BaseHud
 		scoreTxt.text = scoreText;
         scoreTxt.screenCenter(X);
     }
+
+	public var songTime:Float = 0.0;
+	function updateTimeTxt()
+	{
+		if(!timeTxt.visible) return;
+		songTime = FlxMath.bound(Conductor.songPos, 0, play.songLength);
+		timeTxt.text
+			= TextUtil.posToTimer(songTime)
+			+ " / "
+			+ TextUtil.posToTimer(play.songLength);
+		timeTxt.screenCenter(X);
+	}
 
     override function update(elapsed:Float) {
         super.update(elapsed);
@@ -104,6 +130,7 @@ class DoidoHud extends BaseHud
 			icon.updateHitbox();
 		}
 		updateIconPos();
+		updateTimeTxt();
     }
 
     public function updateIconPos() {

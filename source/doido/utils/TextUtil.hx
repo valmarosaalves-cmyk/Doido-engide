@@ -23,4 +23,23 @@ class TextUtil
 			Math.floor(text.y)
 		);
 	}
+
+	public static function posToTimer(mil:Float = 0):String
+	{
+		if(mil < 0) mil = 0;
+		// gets song pos and makes a timer out of it
+		var sec:Int = Math.floor(mil / 1000);
+		var min:Int = Math.floor(sec / 60);
+		
+		function forceZero(shit:String):String
+		{
+			while(shit.length <= 1)
+				shit = '0' + shit;
+			return shit;
+		}
+		
+		var disSec:String = forceZero('${sec % 60}');
+		var disMin:String = '$min';
+		return '$disMin:$disSec';
+	}
 }
