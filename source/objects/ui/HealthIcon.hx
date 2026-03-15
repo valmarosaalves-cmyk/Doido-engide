@@ -52,7 +52,7 @@ class HealthIcon extends FlxSprite
 
         flipX = data.flipX ?? DEFAULT.flipX;
         flipY = data.flipY ?? DEFAULT.flipY;
-        antialiasing = ((data.pixel == true) ? false : DEFAULT.pixel);
+        antialiasing = ((data.pixel == true) ? false : flixel.FlxSprite.defaultAntialiasing);
         if(isPlayer) flipX = !flipX;
         
         return this;
@@ -73,7 +73,6 @@ class HealthIcon extends FlxSprite
         image: "face",
         color: "0xFFA1A1A1",
         scale: 1,
-        pixel: flixel.FlxSprite.defaultAntialiasing,
         gridWidth: 150,
         flipX: false,
         flipY: false
