@@ -1,5 +1,6 @@
 package states;
 
+import doido.objects.Alphabet;
 import doido.song.Week.WeekData;
 import doido.Cache;
 import doido.song.chart.Legacy;
@@ -32,6 +33,19 @@ class DebugMenu extends MusicBeatState
         var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
         bg.screenCenter();
 		add(bg);
+
+        var doidoText = "<wave intensity=10 speed=3>DOIDO</wave> <shake intensity=2 speed=10><color value=#FF0000>ENGINE</color></shake>";
+        doidoText += "\n<wave intensity=15 speed=20>PUDIM</wave>";
+
+        var alphabet = new Alphabet(FlxG.width / 2, 60, doidoText, true, CENTER);
+        add(alphabet);
+
+        var doidoText = "<color value=0xFFFF0000>testing... testing... <shake intensity=3 speed=20><bold>TESTING...</bold></shake></color>";
+
+        var alphabet = new Alphabet(FlxG.width / 2, alphabet.y + alphabet.height + 20, doidoText, false, CENTER);
+        alphabet.scale.set(0.5, 0.5);
+        alphabet.updateHitbox();
+        add(alphabet);
 
         text = new FlxText(10, 0, 0, '');
 		text.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);

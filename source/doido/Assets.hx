@@ -45,12 +45,15 @@ class Assets
         OTHER => [""] //?
     ];
     public static final mainPath:String = 'assets';
-    public static inline function getPath(key:String):String {
-        return '$mainPath/$key';
+    public static inline function getPath(key:String, ?library:String = ""):String {
+        if (library == "")
+            return '$mainPath/$key';
+        else
+            return '$mainPath/$library/$key';
     }
 
-    public static inline function fileExists(path:String, type:Asset = OTHER):Bool
-        return whichExists(getPath(path), type) >= 0;
+    public static inline function fileExists(path:String, ?library:String = "", type:Asset = OTHER):Bool
+        return whichExists(getPath(path, library), type) >= 0;
 
     public static function fileBrowse(onComplete:openfl.net.FileReference->Void, ?filter:openfl.net.FileFilter, ?onError:String->Void):Void
 	{
@@ -126,8 +129,8 @@ class Assets
         return -1;
     }
 
-    public static function resolvePath(key:String, type:Asset):String {
-        var path = getPath(key);
+    public static function resolvePath(key:String, library:String = "", type:Asset):String {
+        var path = getPath(key, library);
         var index = whichExists(path, type);
         if(index == -1) {
             Logs.print("PATH NOT FOUND: " + path, ERROR);
@@ -137,8 +140,8 @@ class Assets
         return getExt(path, extensions.get(type)[index]);
     }
 
-    public static function getAsset<T>(key:String, type:Asset, ext:Bool = true):T {
-        var path = resolvePath(key, (ext ? type : OTHER));
+    public static function getAsset<T>(key:String, ?library:String = "", type:Asset, ext:Bool = true):T {
+        var path = resolvePath(key, library, (ext ? type : OTHER));
         switch(type) {
             case IMAGE:
                 if(path == null)
@@ -159,10 +162,10 @@ class Assets
         };
     }
 
-    public static function list(key:String, clean:Bool = false, ?exclude:Array<String>, type:Asset = OTHER):Array<String> {
+    public static function list(key:String, ?library:String = "", clean:Bool = false, ?exclude:Array<String>, type:Asset = OTHER):Array<String> {
         var rawlist:Array<String> = OpenFLAssets.list();
         var list:Array<String> = [];
-        var path = getPath(key);
+        var path = getPath(key, library);
         if(exclude == null) exclude = [];
 
         if(type != OTHER) {
@@ -198,14 +201,14 @@ class Assets
 		return arr;
 	}
 
-    public static inline function image(key:String):FlxGraphic
-		return getAsset('images/$key', IMAGE);
+    /*
+    *   AUDIO
+    */
+    public static inline function sound(key:String, ?library:String = ""):Sound
+		return getAsset('sounds/$key', library, SOUND);
 
-    public static inline function sound(key:String):Sound
-		return getAsset('sounds/$key', SOUND);
-
-    public static inline function music(key:String):Sound
-        return getAsset('music/$key', SOUND);
+    public static inline function music(key:String, ?library:String = ""):Sound
+        return getAsset('music/$key', library, SOUND);
 
     public static inline function inst(song:String):Sound
 		return getAsset('songs/$song/audio/Inst', SOUND);
@@ -213,48 +216,63 @@ class Assets
     public static inline function voices(song:String, postfix:String = ""):Sound
 		return getAsset('songs/$song/audio/Voices$postfix', SOUND);
 
-    public static inline function json(key:String):Dynamic
-		return Json.parse(getAsset('$key', JSON));
+    /*
+    *   DATA
+    */
+    public static inline function json(key:String, ?library:String = ""):Dynamic
+		return Json.parse(getAsset(key, library, JSON));
 
-    public static inline function script(key:String):String
-        return getAsset('$key', SCRIPT, false);
+    public static inline function script(key:String, ?library:String = ""):String
+        return getAsset('$key', library, SCRIPT, false);
 
-    public static inline function font(key:String):String
-        return getAsset('fonts/$key', FONT);
+    public static inline function font(key:String, ?library:String = ""):String
+        return getAsset('fonts/$key', library, FONT);
 
-    public static inline function bitmapFont(key:String):FlxBitmapFont
-        return FlxBitmapFont.fromAngelCode(getAsset('fonts/$key', IMAGE), getAsset('fonts/$key', XML));
+    public static inline function bitmapFont(key:String, ?library:String = ""):FlxBitmapFont
+        return FlxBitmapFont.fromAngelCode(getAsset('fonts/$key', library, IMAGE), getAsset('fonts/$key', library, XML));
 
-    public static inline function sparrow(key:String):FlxFramesCollection
-		return framesCollection(key, SPARROW);
+    /*
+    *   IMAGES
+    */
+    public static inline function image(key:String, ?library:String = ""):FlxGraphic
+		return getAsset('images/$key', library, IMAGE);
 
-    public static inline function multiSparrow(key:String, extrasheets:Array<String>):FlxFramesCollection
-		return framesCollection(key, extrasheets, MULTISPARROW);
+    public static inline function sparrow(key:String, ?library:String = ""):FlxFramesCollection
+		return framesCollection(key, library, SPARROW);
+
+    public static inline function multiSparrow(key:String, ?library:String = "", extrasheets:Array<String>):FlxFramesCollection
+		return framesCollection(key, library, extrasheets, MULTISPARROW);
 	
-    public static inline function packer(key:String):FlxFramesCollection
-		return framesCollection(key, PACKER);
+    public static inline function packer(key:String, ?library:String = ""):FlxFramesCollection
+		return framesCollection(key, library, PACKER);
 
-    public static inline function aseprite(key:String):FlxFramesCollection
-		return framesCollection(key, ASEPRITE);
+    public static inline function aseprite(key:String, ?library:String = ""):FlxFramesCollection
+		return framesCollection(key, library, ASEPRITE);
 
-	public static inline function animate(key:String):FlxAnimateFrames
-		return cast framesCollection(key, ATLAS);
+	public static inline function animate(key:String, ?library:String = ""):FlxAnimateFrames
+		return cast framesCollection(key, library, ATLAS);
 
-    public static inline function framesCollection(key:String, ?extrasheets:Array<String>, type:SpriteType):FlxFramesCollection {
-        var path = getPath(key);
+    public static inline function framesCollection(key:String, ?library:String = "", ?extrasheets:Array<String>, type:SpriteType):FlxFramesCollection {
+        var path = getPath(key, library);
         var frames:FlxFramesCollection = null;
 
         if(Cache.isFramesCached(path)) frames = Cache.getCachedFrames(path);
         else {
             frames = switch(type) {
-                case ASEPRITE: FlxAtlasFrames.fromAseprite(getAsset('images/$key', IMAGE), getAsset('images/$key', JSON));
-                case PACKER: FlxAtlasFrames.fromSpriteSheetPacker(getAsset('images/$key', IMAGE), getAsset('images/$key', TEXT));
-                case ATLAS: FlxAnimateFrames.fromAnimate('images/$key');
-                default: FlxAtlasFrames.fromSparrow(getAsset('images/$key', IMAGE), getAsset('images/$key', XML));
+                case ASEPRITE:
+                    FlxAtlasFrames.fromAseprite(getAsset('images/$key', library, IMAGE), getAsset('images/$key', library, JSON));
+                case PACKER:
+                    FlxAtlasFrames.fromSpriteSheetPacker(getAsset('images/$key', library, IMAGE), getAsset('images/$key', library, TEXT));
+                case ATLAS:
+                    FlxAnimateFrames.fromAnimate('images/$key', library);
+                default:
+                    FlxAtlasFrames.fromSparrow(getAsset('images/$key', library, IMAGE), getAsset('images/$key', library, XML));
             }
             if(type == MULTISPARROW && (extrasheets ?? []).length > 0) {
-                for(i in 0...extrasheets.length) {
-                    var newFrames:FlxFramesCollection = FlxAtlasFrames.fromSparrow(getAsset('images/$key', IMAGE), getAsset('images/$key', XML));
+                for(extraKey in extrasheets) {
+                    var newFrames:FlxFramesCollection = FlxAtlasFrames.fromSparrow(
+                        getAsset('images/$extraKey', library, IMAGE), getAsset('images/$extraKey', library, XML)
+                    );
                     for(frame in newFrames.frames) {
                         frames.pushFrame(frame);
                     }
