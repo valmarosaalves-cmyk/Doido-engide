@@ -15,11 +15,12 @@ typedef TagData = {
 
 enum TagType
 {
-    ColorTag(value:FlxColor);
-    ShakeTag(speed:Float, intensity:Float);
-    WaveTag(speed:Float, intensity:Float);
     BoldTag;
     PlainTag;
+    ColorTag(value:FlxColor);
+    RainbowTag(speed:Float, uniform:Bool);
+    ShakeTag(speed:Float, intensity:Float);
+    WaveTag(speed:Float, intensity:Float);
 }
 
 class AlphabetUtil
@@ -84,6 +85,15 @@ class AlphabetUtil
 
     static function parseTag(content:String, index:Int):TagData
     {
+        if (content.startsWith("bold") || content.startsWith("plain"))
+        {
+            return {
+                startIndex: index,
+                endIndex: -1,
+                type: content.startsWith("bold") ? BoldTag : PlainTag
+            };
+        }
+
         if (content.startsWith("color"))
         {
             var colorIndex = content.indexOf("#");
@@ -99,6 +109,18 @@ class AlphabetUtil
                     type: ColorTag(FlxColor.fromString(hex))
                 };
             }
+        }
+
+        if (content.startsWith("rainbow"))
+        {
+            var speed = parseFloatTag(content, "speed", 1);
+            var uniform = parseBoolTag(content, "uniform", false);
+
+            return {
+                startIndex: index,
+                endIndex: -1,
+                type: RainbowTag(speed, uniform)
+            };
         }
 
         if (content.startsWith("shake"))
@@ -125,15 +147,6 @@ class AlphabetUtil
             };
         }
 
-        if (content.startsWith("bold") || content.startsWith("plain"))
-        {
-            return {
-                startIndex: index,
-                endIndex: -1,
-                type: content.startsWith("bold") ? BoldTag : PlainTag
-            };
-        }
-
         return null;
     }
 
@@ -151,9 +164,25 @@ class AlphabetUtil
             end = content.length;
 
         var value = content.substring(start, end);
-
         var parsed = Std.parseFloat(value);
 
         return Math.isNaN(parsed) ? defaultValue : parsed;
+    }
+
+    static function parseBoolTag(content:String, name:String, defaultValue:Bool):Bool
+    {
+        var idx = content.indexOf(name + "=");
+        if (idx == -1)
+            return defaultValue;
+
+        var start = idx + name.length + 1;
+        var end = content.indexOf(" ", start);
+
+        if (end == -1)
+            end = content.length;
+
+        var value = content.substring(start, end);
+
+        return (value == "true" ? true : value == "false" ? false : defaultValue);
     }
 }

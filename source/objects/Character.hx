@@ -1,6 +1,5 @@
 package objects;
 
-import doido.song.Conductor;
 import doido.objects.DoidoSprite;
 
 typedef DoidoCharacter = {

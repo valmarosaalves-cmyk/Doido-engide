@@ -7,6 +7,9 @@
 <!-- paints the text inside the tag -->
 <color value=#RRGGBB> colored text </color>
 
+<!-- makes the text all colorful! (uniform: syncs the letters to have same color) -->
+<rainbow speed=3 uniform=false> rainbow text </rainbow>
+
 <!-- shakes the text inside the tag -->
 <shake speed=1 intensity=5> shakey text </shake>
 

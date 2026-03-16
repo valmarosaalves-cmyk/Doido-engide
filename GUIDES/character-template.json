@@ -1,0 +1,44 @@
+{
+    "spritesheet": "face",
+    "extrasheets": null,
+    "spriteType": "ATLAS",
+    "atlasType": null,
+    "idleAnims": ["idle"],
+    "quickDancer": false,
+    "deathChar": "bf-dead",
+    "globalOffset": null,
+    "cameraOffset": null,
+    "singLength": null,
+    "singType": null,
+    "scale": 1.0,
+    "pixel": false,
+    "flipX": null,
+    "flipY": null,
+    "anims": [
+        {
+            "name": "idle",
+            "prefix": "idle-alive",
+            "offset": {"x": 0, "y": 0}
+        },
+        {
+            "name": "singLEFT",
+            "prefix": "left-alive",
+            "offset": {"x": 42, "y": 0}
+        },
+        {
+            "name": "singDOWN",
+            "prefix": "down-alive",
+            "offset": {"x": 0, "y": 8}
+        },
+        {
+            "name": "singUP",
+            "prefix": "up-alive",
+            "offset": {"x": 19, "y": 40}
+        },
+        {
+            "name": "singRIGHT",
+            "prefix": "right-alive",
+            "offset": {"x": -23, "y": 13}
+        }
+    ]
+}

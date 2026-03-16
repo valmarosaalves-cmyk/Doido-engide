@@ -35,12 +35,13 @@ class DebugMenu extends MusicBeatState
 		add(bg);
 
         var doidoText = "<wave intensity=10 speed=3>DOIDO</wave> <shake intensity=2 speed=10><color value=#FF0000>ENGINE</color></shake>";
-        doidoText += "\n<wave intensity=15 speed=20>PUDIM</wave>";
+        doidoText += "\n<rainbow speed=6><wave intensity=15 speed=20>PUDIM</wave></rainbow>";
 
         var alphabet = new Alphabet(FlxG.width / 2, 50, doidoText, true, CENTER);
         add(alphabet);
 
-        var doidoText = "Here's a test for bitmap fonts in the alphabet...\nIt can even have the same <wave intensity=5 speed=3>WACKY</wave> <shake intensity=2 speed=10>effects</shake>!";
+        var doidoText = "Here's a test for bitmap fonts in the alphabet...\n";
+        doidoText += "It can even have the same <rainbow speed=3><wave intensity=5 speed=3>WACKY</wave></rainbow> <shake intensity=2 speed=10>effects</shake>!\n";
         var alphabet = new Alphabet(FlxG.width / 2, alphabet.y + alphabet.height + 20, doidoText, false, CENTER, "vcr");
         alphabet.scale.set(2,2);
         alphabet.updateHitbox();

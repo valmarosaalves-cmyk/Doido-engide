@@ -1,10 +1,11 @@
 package doido.objects;
 
-import flixel.graphics.frames.FlxFramesCollection;
-import flixel.util.FlxColor;
 import doido.utils.AlphabetUtil;
 import flixel.FlxSprite;
+import flixel.graphics.frames.FlxFramesCollection;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
+import flixel.math.FlxMath;
+import flixel.util.FlxColor;
 
 //bitmap font to-do:
 // - outlines
@@ -54,6 +55,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
         reloadText();
         return align;
     }
+
     public function set_font(v:String):String
     {
         font = v;
@@ -61,18 +63,6 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
         reloadText();
         return font;
     }
-    public function set_pixel(b:Bool):Bool {
-        pixel = b;
-        forEachAlive(function(char:AlphaCharacter) {
-            updateAntialiasing(char);
-        });
-        return pixel;
-    }
-
-    public function updateAntialiasing(char:AlphaCharacter) {
-        char.antialiasing = pixel ? false : flixel.FlxSprite.defaultAntialiasing;
-    }
-
     //jank, should be fixed later
     public function calculateSize() {
         switch(font) {
@@ -89,6 +79,23 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
                 char.kill();
         }
     }
+
+    public function set_pixel(b:Bool):Bool {
+        pixel = b;
+        forEachAlive(function(char:AlphaCharacter) {
+            updateAntialiasing(char);
+        });
+        return pixel;
+    }
+    public function updateAntialiasing(char:AlphaCharacter) {
+        char.antialiasing = pixel ? false : flixel.FlxSprite.defaultAntialiasing;
+    }
+
+    //in any other engine we could cache the framescollection so it doesnt have to keep being loaded
+    //but we already have a cache to take care of that lol
+    public var fontFrames(get, never):FlxFramesCollection;
+    public function get_fontFrames():FlxFramesCollection
+        return Assets.framesCollection(font, "fonts", [], ((font == "alphabet") ? SPARROW : FONT));
 
     private var letters:String = "abcdefghijklmnopqrstuvwxyzç";
 	private var numbers:String = "0123456789";
@@ -152,18 +159,11 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
                         {
                             case BoldTag: charBold = true;
                             case PlainTag: charBold = false;
-                            case ColorTag(value):
-                                if (charBold)
-                                    char.color = value;
-                                else
-                                    char.setColorTransform(
-                                        0, 0, 0, 1,
-                                        value.red,
-                                        value.green,
-                                        value.blue,
-                                        0
-                                    );
-
+                            case ColorTag(value): char.setColor(value, charBold);
+                            case RainbowTag(speed, uniform):
+                                char.rainbowSpeed = speed;
+                                if (!uniform)
+                                    char.rainbowHue = FlxMath.mod(30 * -charID, 360);
                             case ShakeTag(speed, intensity):
                                 char.shakeSpeed = speed;
                                 char.shakeIntensity = intensity;
@@ -206,12 +206,6 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 
         updateHitbox();
     }
-
-    //in any other engine we could cache the framescollection so it doesnt have to keep being loaded
-    //but we already have a cache to take care of that lol
-    public var fontFrames(get, never):FlxFramesCollection;
-    public function get_fontFrames():FlxFramesCollection
-        return Assets.framesCollection(font, "fonts", [], ((font == "alphabet") ? SPARROW : FONT));
 
     override function updateHitbox()
     {
@@ -273,7 +267,15 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
             if (char.waveIntensity > 0)
             {
                 char.waveSine += elapsed * char.waveSpeed;
-                char.offset.y += Math.sin(char.waveSine + char.ID) * char.waveIntensity;
+                char.offset.y += Math.sin(char.waveSine - char.ID) * char.waveIntensity;
+            }
+
+            if (char.rainbowSpeed > 0)
+            {
+                char.rainbowHue += elapsed * 60 * char.rainbowSpeed;
+                char.rainbowHue %= 360;
+
+                char.setColor(FlxColor.fromHSB(char.rainbowHue, 1, 1));
             }
 
         });
@@ -296,7 +298,11 @@ class AlphaCharacter extends FlxSprite
     public var shakeSpeed:Float = 0.0;
     public var shakeIntensity:Float = 0.0;
 
+    public var rainbowSpeed:Float = 0.0;
+    public var rainbowHue:Float = 0.0;
+
     public var alphabet:Bool = true;
+    public var bold:Bool = false;
 
 	public function new() {
 		super();
@@ -317,16 +323,25 @@ class AlphaCharacter extends FlxSprite
         shakeSpeed = 0.0;
         shakeIntensity = 0.0;
 
+        rainbowSpeed = 0.0;
+        rainbowHue = 0.0;
+
+        alphabet = true;
+        bold = false;
+
         super.revive();
     }
 
-	function addAnim(animName:String, animXml:String) {
+	function addAnim(animName:String, animXml:String):Void
+    {
 		animation.addByPrefix(animName, animXml, 24, true);
 		animation.play(animName);
 		updateHitbox();
 	}
 
-	public function makeLetter(key:String, bold:Bool = false) {
+	public function makeLetter(key:String, bold:Bool = false):Void
+    {
+        this.bold = bold;
         if(alphabet) {
             if(!bold)
             {
@@ -339,18 +354,18 @@ class AlphaCharacter extends FlxSprite
 		else addAnim(key, key);
 	}
 
-	public function makeNumber(key:String, bold:Bool = false)
+	public function makeNumber(key:String, bold:Bool = false):Void
 	{
-        if(alphabet) {
-            if(!bold)
-                addAnim(key, '${key}0');
-            else
-                addAnim(key, '$key bold');
-        }
-		else addAnim(key, key);
+        this.bold = bold;
+        if (!alphabet) return addAnim(key, key);
+
+        if(!bold)
+            addAnim(key, '${key}0');
+        else
+            addAnim(key, '$key bold');
 	}
 
-	public function makeSymbol(key:String, bold:Bool = false)
+	public function makeSymbol(key:String, bold:Bool = false):Void
 	{
         if(alphabet) {
             var animName:String = switch(key)
@@ -378,7 +393,7 @@ class AlphaCharacter extends FlxSprite
         else addAnim(key, key);
 	}
 
-	public function makeArrow(key:String)
+	public function makeArrow(key:String):Void
 	{
 		//Logs.print('why $key');
 		switch(key.toLowerCase())
@@ -389,6 +404,23 @@ class AlphaCharacter extends FlxSprite
 			case "right":addAnim("arrowR", "arrow right");
 		}
 	}
+
+    public function setColor(color:FlxColor, ?bold:Bool)
+    {
+        if (bold == null) bold = this.bold;
+        if (alphabet && !bold)
+        {
+            setColorTransform(
+                0, 0, 0, 1,
+                color.red,
+                color.green,
+                color.blue,
+                0
+            );
+        }
+        else
+            this.color = color;
+    }
 
     override function updateHitbox() {
         super.updateHitbox();
