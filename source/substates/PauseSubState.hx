@@ -1,5 +1,6 @@
 package substates;
 
+import doido.objects.Alphabet;
 import states.PlayState;
 import flixel.text.FlxText;
 import flixel.FlxSprite;
@@ -9,11 +10,11 @@ import flixel.tweens.FlxTween;
 
 class PauseSubState extends MusicBeatSubState
 {
-    var options:Array<String> = ["Resume", "Restart Song", "Exit To Menu"];
-    var optionText:FlxText;
+    var options:Array<String> = ["Resume", "Restart Song", "Change Difficulty", "Botplay", "Exit To Menu"];
+    var optionText:Array<Alphabet> = [];
     var title:FlxText;
     var creditsText:FlxText;
-    var cur:Int = 0;
+    var curSelected:Int = 0;
 
     public function new()
     {
@@ -22,12 +23,17 @@ class PauseSubState extends MusicBeatSubState
         bg.alpha = 0.4;
         add(bg);
 
-        optionText = new FlxText(10, 0, 0, '');
-		optionText.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);
-		optionText.setOutline(0xFF000000, 3);
-		add(optionText);
-        drawOptionsText();
-        optionText.y = FlxG.height - optionText.height - 10;
+        if (PlayState.instance.startedSong)
+            options.insert(3, "Options");
+
+        for(i in 0...options.length)
+        {
+            var option = new Alphabet(40, 0, options[i], true);
+            option.y = FlxMath.lerp(120, FlxG.height - 90 - option.height, i / (options.length - 1));
+            optionText.push(option);
+            option.ID = i;
+            add(option);
+        }
 
         // add the song title
         title = new FlxText(10, 10, 0, PlayState.SONG.song);
@@ -43,28 +49,23 @@ class PauseSubState extends MusicBeatSubState
         creditsText.alpha = 1;
         add(creditsText);
 
+        changeSelection();
         drawCreditsText();
         creditsFade();
     }
 
-    function drawOptionsText() {
-        optionText.text = "";
-        for(i in 0...options.length)
-            optionText.text += (i == cur ? "> " : "") + options[i] + "\n";
-    }
-
-    var curCredit:Int = 0;
+    var curSelectedCredit:Int = 0;
     function drawCreditsText()
     {
-        creditsText.text = (curCredit == 0 ?
+        creditsText.text = (curSelectedCredit == 0 ?
             'Composer: ' + PlayState.META.composer + "\n" :
             'Charter: ' + PlayState.META.charter + "\n"
         );
 
         creditsText.x = FlxG.width - (creditsText.width + 12);
 
-        curCredit++;
-        curCredit = FlxMath.wrap(curCredit, 0, 1);
+        curSelectedCredit++;
+        curSelectedCredit = FlxMath.wrap(curSelectedCredit, 0, 1);
     }
 
     var creditsTween:FlxTween;
@@ -100,7 +101,7 @@ class PauseSubState extends MusicBeatSubState
 
         if (Controls.justPressed(ACCEPT))
         {
-            switch(options[cur].toLowerCase()) {
+            switch(options[curSelected].toLowerCase()) {
                 case 'resume':
                     close();
                 case 'restart song':
@@ -108,7 +109,8 @@ class PauseSubState extends MusicBeatSubState
 			        MusicBeat.switchState(new states.PlayState());
                 case 'exit to menu':
 			        MusicBeat.switchState(new states.DebugMenu());
-
+                default:
+                    FlxG.sound.play(Assets.sound("cancel"));
             }
         }
 
@@ -125,8 +127,22 @@ class PauseSubState extends MusicBeatSubState
 	{
 		if(change != 0) FlxG.sound.play(Assets.sound('scroll'));
 		
-		cur += change;
-		cur = FlxMath.wrap(cur, 0, options.length - 1);
-		drawOptionsText();
+		curSelected += change;
+		curSelected = FlxMath.wrap(curSelected, 0, options.length - 1);
+
+        for(text in optionText)
+        {
+            FlxTween.completeTweensOf(text);
+            if (text.ID == curSelected)
+            {
+                text.alpha = 1.0;
+                text.x += 40;
+                FlxTween.tween(text, {x: text.x - 40}, 0.2, {
+                    ease: FlxEase.sineInOut
+                });    
+            }
+            else
+                text.alpha = 0.7;
+        }
 	}
 }
