@@ -63,7 +63,9 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
     }
     public function set_pixel(b:Bool):Bool {
         pixel = b;
-        reloadText();
+        forEachAlive(function(char:AlphaCharacter) {
+            char.antialiasing = pixel ? false : flixel.FlxSprite.defaultAntialiasing;
+        });
         return pixel;
     }
 
