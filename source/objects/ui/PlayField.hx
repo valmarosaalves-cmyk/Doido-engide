@@ -130,7 +130,7 @@ class PlayField extends FlxGroup
 			// updating strums
 			for(strum in strumline.strums)
 			{
-				if (!strumline.isPlayer)
+				if (strumline.botplay)
 				{
 					if (strum.curAnimName == "confirm" && strum.curAnimFinished && !strumline.holdingNotes[strum.lane])
 						strum.playAnim("static");

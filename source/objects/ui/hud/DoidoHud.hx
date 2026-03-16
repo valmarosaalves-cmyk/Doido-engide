@@ -9,6 +9,9 @@ class DoidoHud extends BaseHud
     public var scoreTxt:FlxBitmapText;
 	public var timeTxt:FlxBitmapText;
 
+	var botplaySin:Float = 0;
+	var botplayTxt:FlxBitmapText;
+
     public var healthBar:DoidoBar;
     public var iconP1:HealthIcon;
 	public var iconP2:HealthIcon;
@@ -41,6 +44,15 @@ class DoidoHud extends BaseHud
 		timeTxt.scale.set(1.4,1.4);
 		timeTxt.updateHitbox();
 		add(timeTxt);
+
+		botplayTxt = new FlxBitmapText(0, 0, Assets.bitmapFont("vcr"));
+		botplayTxt.text = "[BOTPLAY]";
+		botplayTxt.setOutline(0xFF000000, 2);
+        botplayTxt.alignment = CENTER;
+		botplayTxt.scale.set(1.7,1.7);
+		botplayTxt.updateHitbox();
+		botplayTxt.screenCenter();
+		add(botplayTxt);
 
         updatePositions();
     }
@@ -115,6 +127,13 @@ class DoidoHud extends BaseHud
     override function update(elapsed:Float) {
         super.update(elapsed);
         healthBar.percent = (health * 50);
+
+		botplayTxt.visible = play.botplay;
+		if(botplayTxt.visible)
+		{
+			botplaySin += elapsed * Math.PI;
+			botplayTxt.alpha = 0.5 + Math.sin(botplaySin) * 0.8;
+		}
 
         for(icon in [iconP1, iconP2])
 		{

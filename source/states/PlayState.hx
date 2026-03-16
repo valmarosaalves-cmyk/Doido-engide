@@ -661,12 +661,20 @@ class PlayState extends MusicBeatState implements Playable
 	public var songLength(get, never):Float;
 	public function get_songLength():Float
 		return audio.length;
+
+	public var botplay(default, set):Bool;
+	public function set_botplay(b:Bool):Bool {
+        botplay = b;
+        playField.bfStrumline.botplay = b;
+        return botplay;
+    }
 }
 
 interface Playable {
 	var health:Float;
 	var downscroll:Bool;
 	var middlescroll:Bool;
+	var botplay(default, set):Bool;
 	var songLength(get, never):Float;
 	var player1(get, never):String;
 	var player2(get, never):String;

@@ -14,6 +14,7 @@ class PauseSubState extends MusicBeatSubState
     var optionText:Array<Alphabet> = [];
     var title:FlxText;
     var creditsText:FlxText;
+    var botplayTxt:FlxText;
     var curSelected:Int = 0;
 
     public function new()
@@ -48,6 +49,13 @@ class PauseSubState extends MusicBeatSubState
 		creditsText.setOutline(0xFF000000, 2);
         creditsText.alpha = 1;
         add(creditsText);
+
+        botplayTxt = new FlxText(0,0,0,"BOTPLAY");
+		botplayTxt.setFormat(Main.globalFont, 36, 0xFFFFFFFF, RIGHT);
+        botplayTxt.x = FlxG.width - botplayTxt.width - 10;
+		botplayTxt.y = FlxG.height- botplayTxt.height- 10;
+        botplayTxt.visible = PlayState.instance.botplay;
+		add(botplayTxt);
 
         changeSelection();
         drawCreditsText();
@@ -107,6 +115,10 @@ class PauseSubState extends MusicBeatSubState
                 case 'restart song':
                     MusicBeat.skip = true;
 			        MusicBeat.switchState(new states.PlayState());
+                case 'botplay':
+                    FlxG.sound.play(Assets.sound("cancel"));
+                    PlayState.instance.botplay = !PlayState.instance.botplay;
+                    botplayTxt.visible = PlayState.instance.botplay;
                 case 'exit to menu':
 			        MusicBeat.switchState(new states.DebugMenu());
                 default:
