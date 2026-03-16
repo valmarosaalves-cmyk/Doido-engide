@@ -39,7 +39,6 @@ class DoidoHitbox extends FlxSprite implements IFlxInput
             _color = color;
 
         this.makeColor(width, height, _color);
-        this.alpha = 0.5;
 
         currentState = RELEASED;
         lastState = RELEASED;

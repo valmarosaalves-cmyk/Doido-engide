@@ -50,7 +50,7 @@ class DoidoHud extends BaseHud
         var rating = super.popUpRating(ratingName);
 		rating.ratingScale = 0.7;
         rating.screenCenter(X);
-		if(play.middlescroll) rating.x -= FlxG.width / 4;
+		if(play.middlescroll #if TOUCH_CONTROLS && !Save.data.modernControls #end) rating.x -= FlxG.width / 4;
 		rating.y = ratingPos;
         rating.defaultAnim();
         return rating;
@@ -61,7 +61,7 @@ class DoidoHud extends BaseHud
         var numberArray = super.popUpCombo(comboNum);
         
         for (number in numberArray) {
-			if(play.middlescroll) number.x -= FlxG.width / 4;
+			if(play.middlescroll #if TOUCH_CONTROLS && !Save.data.modernControls #end) number.x -= FlxG.width / 4;
             number.y = ratingPos + 75;
             number.defaultAnim();
         }
