@@ -228,9 +228,6 @@ class Assets
     public static inline function font(key:String, ?library:String = ""):String
         return getAsset('fonts/$key', library, FONT);
 
-    public static inline function bitmapFont(key:String, ?library:String = ""):FlxBitmapFont
-        return FlxBitmapFont.fromAngelCode(getAsset('fonts/$key', library, IMAGE), getAsset('fonts/$key', library, XML));
-
     /*
     *   IMAGES
     */
@@ -252,6 +249,9 @@ class Assets
 	public static inline function animate(key:String, ?library:String = ""):FlxAnimateFrames
 		return cast framesCollection(key, library, ATLAS);
 
+    public static inline function bitmapFont(key:String, ?library:String = "fonts"):FlxBitmapFont
+        return cast framesCollection(key, library, FONT);
+
     public static inline function framesCollection(key:String, ?library:String = "", ?extrasheets:Array<String>, type:SpriteType):FlxFramesCollection {
         var path = getPath(key, library);
         var frames:FlxFramesCollection = null;
@@ -259,6 +259,8 @@ class Assets
         if(Cache.isFramesCached(path)) frames = Cache.getCachedFrames(path);
         else {
             frames = switch(type) {
+                case FONT:
+                    FlxBitmapFont.fromAngelCode(getAsset('images/$key', library, IMAGE), getAsset('images/$key', library, XML));
                 case ASEPRITE:
                     FlxAtlasFrames.fromAseprite(getAsset('images/$key', library, IMAGE), getAsset('images/$key', library, JSON));
                 case PACKER:

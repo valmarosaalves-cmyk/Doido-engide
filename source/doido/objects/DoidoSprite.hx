@@ -19,6 +19,7 @@ enum SpriteType {
 	PACKER;
 	ASEPRITE;
 	MULTISPARROW;
+	FONT; //ONLY USE FOR FONTS!!!
 }
 
 enum AtlasType {

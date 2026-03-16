@@ -1,9 +1,14 @@
 package doido.objects;
 
+import flixel.graphics.frames.FlxFramesCollection;
 import flixel.util.FlxColor;
 import doido.utils.AlphabetUtil;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
+
+//bitmap font to-do:
+// - outlines
+// - better antialiasing fix?
 
 enum AlphabetAlign
 {
@@ -18,6 +23,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
     public var align(default, set):AlphabetAlign = LEFT;
     public var bold(default, set):Bool = false;
     public var font(default, set):String = "alphabet";
+    public var pixel(default, set):Bool = false;
 
     public function new(x:Float, y:Float, text:String, ?bold:Bool = false, ?align:AlphabetAlign = LEFT, ?font:String = "alphabet")
     {
@@ -51,15 +57,39 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
     public function set_font(v:String):String
     {
         font = v;
+        calculateSize();
         reloadText();
         return font;
+    }
+    public function set_pixel(b:Bool):Bool {
+        pixel = b;
+        reloadText();
+        return pixel;
+    }
+
+    //jank, should be fixed later
+    public function calculateSize() {
+        switch(font) {
+            case "alphabet":
+                charHeight = 70;
+                charWidth = 35;
+            default:
+                var char = new AlphaCharacter();
+                char.frames = fontFrames;
+                char.alphabet = (font == "alphabet");
+                char.makeLetter("l");
+                charHeight = char.height;
+                charWidth = char.width;
+                char.kill();
+        }
     }
 
     private var chars:String = "abcdefghijklmnopqrstuvwxyzç";
 	private var numbers:String = "0123456789";
 	private var symbols:String = ",.#$%&()*+-:;<=>@[]^_!¨?/|~'\"";
 
-    private final charHeight:Float = 70;
+    public var charHeight:Float = 70;
+    public var charWidth:Float = 35;
     public var lineWidth:Array<Float> = [];
 
     public function reloadText()
@@ -91,15 +121,17 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 
             if(rawChar == " ") 
             {
-                lastWidth += 35;
+                lastWidth += charWidth;
                 lineWidth[daRow] = lastWidth;
                 charID++;
                 continue;
             }
 
             var char = recycle(AlphaCharacter);
-            char.frames = Assets.sparrow(font, "fonts");
+            char.frames = fontFrames;
+            char.alphabet = (font == "alphabet");
             char.row = daRow;
+            char.antialiasing = pixel ? false : flixel.FlxSprite.defaultAntialiasing;
 
             var charBold:Bool = bold;
 
@@ -166,6 +198,12 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 
         updateHitbox();
     }
+
+    //in any other engine we could cache the framescollection so it doesnt have to keep being loaded
+    //but we already have a cache to take care of that lol
+    public var fontFrames(get, never):FlxFramesCollection;
+    public function get_fontFrames():FlxFramesCollection
+        return Assets.framesCollection(font, "fonts", [], ((font == "alphabet") ? SPARROW : FONT));
 
     override function updateHitbox()
     {
@@ -250,6 +288,8 @@ class AlphaCharacter extends FlxSprite
     public var shakeSpeed:Float = 0.0;
     public var shakeIntensity:Float = 0.0;
 
+    public var alphabet:Bool = true;
+
 	public function new() {
 		super();
 	}
@@ -279,46 +319,55 @@ class AlphaCharacter extends FlxSprite
 	}
 
 	public function makeLetter(key:String, bold:Bool = false) {
-		if(!bold)
-		{
-			var captPref:String = (key == key.toUpperCase()) ? "capital" : "lowercase";
-			addAnim(key, '${key.toUpperCase()} ${captPref}');
-		}
-		else
-			addAnim(key, '${key.toUpperCase()} bold');
+        if(alphabet) {
+            if(!bold)
+            {
+                var captPref:String = (key == key.toUpperCase()) ? "capital" : "lowercase";
+                addAnim(key, '${key.toUpperCase()} ${captPref}');
+            }
+            else
+                addAnim(key, '${key.toUpperCase()} bold');
+        }
+		else addAnim(key, key);
 	}
 
 	public function makeNumber(key:String, bold:Bool = false)
 	{
-		if(!bold)
-			addAnim(key, '${key}0');
-		else
-			addAnim(key, '$key bold');
+        if(alphabet) {
+            if(!bold)
+                addAnim(key, '${key}0');
+            else
+                addAnim(key, '$key bold');
+        }
+		else addAnim(key, key);
 	}
 
 	public function makeSymbol(key:String, bold:Bool = false)
 	{
-		var animName:String = switch(key)
-		{
-			default: key;
-			case "'": "apostraphie";
-			case ",": "comma";
-			case "!": "exclamation point";
-			case '"': "parentheses start";
-			case ".": "period";
-			case "?": "question mark";
-			case "/": "slash forward";
-			case "÷": "heart";
-		}
+        if(alphabet) {
+            var animName:String = switch(key)
+            {
+                default: key;
+                case "'": "apostraphie";
+                case ",": "comma";
+                case "!": "exclamation point";
+                case '"': "parentheses start";
+                case ".": "period";
+                case "?": "question mark";
+                case "/": "slash forward";
+                case "÷": "heart";
+            }
 
-		animName += (bold ? " bold" : "0");
-		addAnim(key, animName);
+            animName += (bold ? " bold" : "0");
+            addAnim(key, animName);
 
-		switch(key)
-		{
-			case "-": charOffset.y = -20;
-			case '"'|"'": charOffset.y = -40;
-		}
+            switch(key)
+            {
+                case "-": charOffset.y = -20;
+                case '"'|"'": charOffset.y = -40;
+            }
+        }
+        else addAnim(key, key);
 	}
 
 	public function makeArrow(key:String)
