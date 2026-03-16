@@ -64,9 +64,13 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
     public function set_pixel(b:Bool):Bool {
         pixel = b;
         forEachAlive(function(char:AlphaCharacter) {
-            char.antialiasing = pixel ? false : flixel.FlxSprite.defaultAntialiasing;
+            updateAntialiasing(char);
         });
         return pixel;
+    }
+
+    public function updateAntialiasing(char:AlphaCharacter) {
+        char.antialiasing = pixel ? false : flixel.FlxSprite.defaultAntialiasing;
     }
 
     //jank, should be fixed later
@@ -86,7 +90,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
         }
     }
 
-    private var chars:String = "abcdefghijklmnopqrstuvwxyzç";
+    private var letters:String = "abcdefghijklmnopqrstuvwxyzç";
 	private var numbers:String = "0123456789";
 	private var symbols:String = ",.#$%&()*+-:;<=>@[]^_!¨?/|~'\"";
 
@@ -133,7 +137,6 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
             char.frames = fontFrames;
             char.alphabet = (font == "alphabet");
             char.row = daRow;
-            char.antialiasing = pixel ? false : flixel.FlxSprite.defaultAntialiasing;
 
             var charBold:Bool = bold;
 
@@ -174,8 +177,8 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 
             char.ID = charID;
 
-            // chars
-            if(chars.contains(rawChar.toLowerCase()))
+            // letters
+            if(letters.contains(rawChar.toLowerCase()))
                 char.makeLetter(rawChar, charBold);
 
             // numbers
@@ -189,6 +192,9 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
             // just so the width stays consistent
             char.scale.set(1,1);
             char.updateHitbox();
+
+            // pixel fonts
+            updateAntialiasing(char);
 
             char.lastWidth = lastWidth;
             lastWidth += char.width;
