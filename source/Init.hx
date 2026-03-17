@@ -2,6 +2,7 @@ package;
 
 import doido.Cache;
 import doido.MusicBeat.MusicBeatState;
+import doido.song.Highscore;
 import doido.system.Discord.DiscordIO;
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
@@ -14,6 +15,7 @@ class Init extends MusicBeatState
 		super.create();
 		Save.init();
 		Controls.load();
+		Highscore.load();
 		DiscordIO.check();
 		
 		FlxG.fixedTimestep = false;

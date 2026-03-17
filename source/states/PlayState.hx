@@ -68,6 +68,7 @@ class PlayState extends MusicBeatState implements Playable
 
 	public var downscroll:Bool;
 	public var middlescroll:Bool;
+	public var validScore:Bool = true;
 
 	#if TOUCH_CONTROLS
 	var pauseButton:DoidoHitbox;
@@ -377,6 +378,9 @@ class PlayState extends MusicBeatState implements Playable
 		callScript("update", [elapsed]);
 		super.update(elapsed);
 
+		if(botplay && startedSong)
+			validScore = false;
+
 		function followLerp():Float
 			return FlxMath.bound((cameraSpeed * 5 * elapsed), 0, 1);
 
@@ -403,12 +407,10 @@ class PlayState extends MusicBeatState implements Playable
 		if (FlxG.keys.justPressed.ONE)
 			changeStage(stageBuild.curStage == "stage" ? "school" : "stage");
 		
-		#if debug
 		if (FlxG.keys.justPressed.F9)
 			audio.speed = 10;
 		if (FlxG.keys.justReleased.F9)
 			audio.speed = defaultSongSpeed;
-		#end
 		
 		if (canPause)
 		{
@@ -565,6 +567,23 @@ class PlayState extends MusicBeatState implements Playable
 			cam.zoom *= hudZoom;
 	}
 
+	var endedSong:Bool = false;
+	public function endSong() {
+		if(endedSong) return;
+		endedSong = true;
+		canPause = false;
+
+		if(validScore) {
+			Highscore.addScore(SONG.song.toLowerCase()/* + '-' + songDiff*/, {
+				score: 		Timings.score,
+				accuracy: 	Timings.accuracy,
+				misses: 	Timings.misses,
+			});
+		}
+
+		MusicBeat.switchState(new states.DebugMenu());
+	}
+
 	override function stepHit()
 	{
 		super.stepHit();
@@ -574,10 +593,8 @@ class PlayState extends MusicBeatState implements Playable
 			audio.sync();
 		
 		if (Conductor.songPos >= audio.length)
-		{
-			canPause = false;
-			MusicBeat.switchState(new states.DebugMenu());
-		}
+			endSong();
+
 		hudClass.stepHit(curStep);
 	}
 
@@ -674,6 +691,7 @@ interface Playable {
 	var health:Float;
 	var downscroll:Bool;
 	var middlescroll:Bool;
+	var validScore:Bool;
 	var botplay(default, set):Bool;
 	var songLength(get, never):Float;
 	var player1(get, never):String;

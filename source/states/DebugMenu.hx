@@ -1,5 +1,7 @@
 package states;
 
+import doido.song.Highscore;
+import doido.song.Highscore.ScoreData;
 import doido.objects.Alphabet;
 import doido.song.Week.WeekData;
 import doido.Cache;
@@ -14,6 +16,8 @@ import haxe.Json;
 import openfl.media.Sound;
 import states.editors.ChartingState;
 import doido.song.Week;
+import doido.song.Timings;
+import flixel.util.FlxStringUtil;
 
 using doido.utils.TextUtil;
 
@@ -287,6 +291,7 @@ class Freeplay extends MusicBeatState
     var options:Array<String> = [];
     var text:FlxText;
     var title:FlxText;
+    var score:FlxText;
     var cur:Int = 0;
 
     override function create()
@@ -320,12 +325,29 @@ class Freeplay extends MusicBeatState
 		title.setOutline(0xFF000000, 5);
         title.y = text.y - title.height;
 		add(title);
+
+        score = new FlxText(10, 10, 0, "");
+        score.setFormat(Main.globalFont, 36, 0xFFFFFFFF, RIGHT);
+		score.setOutline(0xFF000000, 2);
+        score.alpha = 1;
+        add(score);
+        drawScore();
     }
 
     function drawText() {
         text.text = "";
         for(i in 0...options.length)
             text.text += (i == cur ? "> " : "") + options[i] + "\n";
+    }
+
+    function drawScore() {
+        var newscore:ScoreData = Highscore.getScore(options[cur]);
+        var rank = Timings.getRank(newscore.accuracy, newscore.misses, false, true);
+        score.text = "";
+		score.text +=   "SCORE: " + FlxStringUtil.formatMoney(Math.floor(newscore.score), false, true);
+		score.text += "\nACCURACY: " +(Math.floor(newscore.accuracy * 100) / 100) + "%" + ' [$rank]';
+		score.text += "\nMISSES: " + Math.floor(newscore.misses);
+        score.x = FlxG.width - score.width - 10;
     }
 
     override function update(elapsed:Float)
@@ -379,6 +401,7 @@ class Freeplay extends MusicBeatState
 		cur += change;
 		cur = FlxMath.wrap(cur, 0, options.length - 1);
 		drawText();
+        drawScore();
 	}
 }
 

@@ -12,6 +12,7 @@ class DoidoHud extends BaseHud
 
 	var botplaySin:Float = 0;
 	var botplayTxt:Alphabet;
+	var badScoreTxt:FlxBitmapText;
 
     public var healthBar:DoidoBar;
     public var iconP1:HealthIcon;
@@ -51,6 +52,15 @@ class DoidoHud extends BaseHud
 		botplayTxt.updateHitbox();
 		botplayTxt.y -= (botplayTxt.height / 2);
 		add(botplayTxt);
+
+		badScoreTxt = new FlxBitmapText(0, 0, Assets.bitmapFont("vcr"));
+		badScoreTxt.setOutline(0xFF000000, 2);
+        badScoreTxt.alignment = CENTER;
+		badScoreTxt.text = "SCORE WILL NOT BE SAVED";
+		badScoreTxt.color = 0xFFFF0000;
+		badScoreTxt.visible = false;
+		badScoreTxt.screenCenter(X);
+		add(badScoreTxt);
 
         updatePositions();
     }
@@ -93,7 +103,9 @@ class DoidoHud extends BaseHud
 
         healthBar.x = (FlxG.width / 2) - (healthBar.border.width / 2);
 		healthBar.y = (play.downscroll ? 70 : FlxG.height - healthBar.border.height - 50);
+
         scoreTxt.y = healthBar.y + healthBar.border.height + 8;
+		badScoreTxt.y = scoreTxt.y + scoreTxt.height + 8;
 
 		updateTimeTxt();
 		timeTxt.y = play.downscroll ? (FlxG.height - timeTxt.height - 14) : (14);
@@ -127,6 +139,7 @@ class DoidoHud extends BaseHud
         healthBar.percent = (health * 50);
 
 		botplayTxt.visible = play.botplay;
+		badScoreTxt.visible = !play.validScore;
 		/*if(botplayTxt.visible)
 		{
 			botplaySin += elapsed * Math.PI;
