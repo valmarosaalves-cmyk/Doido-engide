@@ -589,16 +589,18 @@ class PlayState extends MusicBeatState implements Playable
 		super.stepHit();
 		callScript("stepHit", [curStep]);
 		playField.stepHit(curStep);
-		if (startedSong && Conductor.songPos < audio.length)
-			audio.sync();
-		
-		if (Conductor.songPos >= audio.length)
-			endSong();
+
+		if (startedSong && !endedSong)
+		{
+			if (Conductor.songPos < audio.length - 2000)
+				audio.sync();
+			else if (Conductor.songPos >= audio.length)
+				endSong();
+		}
 
 		hudClass.stepHit(curStep);
 	}
 
-	var camSwitch:Bool = true; //remove later...
 	override function beatHit()
 	{
 		super.beatHit();
@@ -634,15 +636,8 @@ class PlayState extends MusicBeatState implements Playable
 			}
 		}
 
-		if (curBeat % 4 == 0)	
-		{
+		if (curBeat % 4 == 0)
 			beatCamera(1.05, 1.02);
-		}
-
-		/*if(curBeat % 16 == 0 && curBeat > 0) {
-			followCamera(camSwitch ? "bf" : "dad");
-			camSwitch = !camSwitch;
-		}*/
 
 		hudClass.beatHit(curBeat);
 	}
