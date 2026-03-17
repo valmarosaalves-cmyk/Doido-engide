@@ -7,8 +7,7 @@ import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 
-//bitmap font to-do:
-// - outlines
+// bitmap font to-do:
 // - better antialiasing fix?
 
 enum AlphabetAlign
@@ -17,6 +16,14 @@ enum AlphabetAlign
 	CENTER;
 	RIGHT;
 }
+/*typedef OutlineData = {
+    var color:FlxColor;
+    var thickness:Float;
+}
+typedef DropShadowData = {
+    var color:FlxColor;
+    var offset:DoidoPoint;
+}*/
 class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 {
     public var text(default, set):String = "";
@@ -91,6 +98,37 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
         char.antialiasing = pixel ? false : flixel.FlxSprite.defaultAntialiasing;
     }
 
+    /*public var outline(default, null):OutlineData = null;
+    public function setOutline(?color:FlxColor, thickness:Float = 1.0)
+    {
+        if (color == null) color = FlxColor.BLACK;
+        outline = {
+            color: color,
+            thickness: thickness,
+        }
+        reloadText();
+    }
+    public function removeOutline()
+    {
+        outline = null;
+        reloadText();
+    }
+
+    public var dropShadow(default, null):DropShadowData = null;
+    public function setDropShadow(?color:FlxColor, offsetX:Float, offsetY:Float)
+    {
+        if (color == null) color = FlxColor.BLACK;
+        dropShadow = {
+            color: color,
+            offset: {x: offsetX, y: offsetY}
+        };
+        reloadText();
+    }
+    public function removeDropShadow() {
+        dropShadow = null;
+        reloadText();
+    }*/
+
     //in any other engine we could cache the framescollection so it doesnt have to keep being loaded
     //but we already have a cache to take care of that lol
     public var fontFrames(get, never):FlxFramesCollection;
@@ -146,6 +184,8 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
             char.row = daRow;
 
             var charBold:Bool = bold;
+            /*var charOutline = this.outline;
+            var charDropShadow = this.dropShadow;*/
 
             if (textTags.length > 0)
             {
@@ -159,23 +199,27 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
                         {
                             case BoldTag: charBold = true;
                             case PlainTag: charBold = false;
+                            //case OutlineTag(color, thickness): charOutline = {color: color, thickness: thickness};
                             case ColorTag(value): char.setColor(value, charBold);
-                            case RainbowTag(speed, uniform):
+                            case RainbowTag(speed, offset):
                                 char.rainbowSpeed = speed;
-                                if (!uniform)
-                                    char.rainbowHue = FlxMath.mod(30 * -charID, 360);
+                                if (offset != 0)
+                                    char.rainbowHue = FlxMath.mod(offset * -charID, 360);
                             case ShakeTag(speed, intensity):
                                 char.shakeSpeed = speed;
                                 char.shakeIntensity = intensity;
-                            case WaveTag(speed, intensity):
+                            case WaveTag(speed, intensity, delay):
                                 char.waveSpeed = speed;     
                                 char.waveIntensity = intensity;
+                                char.waveDelay = delay;
                         }
                     }
                 }
             }
 
             char.ID = charID;
+            /*char.outline = charOutline;
+            char.dropShadow = charDropShadow;*/
 
             // letters
             if(letters.contains(rawChar.toLowerCase()))
@@ -241,6 +285,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
     override function update(elapsed:Float)
     {
         super.update(elapsed);
+        if (!visible) return;
         forEachAlive(function(char:AlphaCharacter) {
             
             if (char.shakeIntensity > 0)
@@ -267,7 +312,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
             if (char.waveIntensity > 0)
             {
                 char.waveSine += elapsed * char.waveSpeed;
-                char.offset.y += Math.sin(char.waveSine - char.ID) * char.waveIntensity;
+                char.offset.y += Math.sin(char.waveSine - (char.ID * char.waveDelay)) * char.waveIntensity;
             }
 
             if (char.rainbowSpeed > 0)
@@ -293,6 +338,7 @@ class AlphaCharacter extends FlxSprite
     public var waveSine:Float = 0.0;
     public var waveSpeed:Float = 0.0;
     public var waveIntensity:Float = 0.0;
+    public var waveDelay:Float = 0.0;
     
     public var shakeTimer:Float = 0.0;
     public var shakeSpeed:Float = 0.0;
@@ -303,6 +349,9 @@ class AlphaCharacter extends FlxSprite
 
     public var alphabet:Bool = true;
     public var bold:Bool = false;
+
+    /*public var outline:OutlineData = null;
+    public var dropShadow:DropShadowData = null;*/
 
 	public function new() {
 		super();
@@ -318,6 +367,7 @@ class AlphaCharacter extends FlxSprite
         waveSine = 0.0;
         waveSpeed = 0.0;
         waveIntensity = 0.0;
+        waveDelay = 0.0;
 
         shakeTimer = 0.0;
         shakeSpeed = 0.0;
@@ -328,6 +378,9 @@ class AlphaCharacter extends FlxSprite
 
         alphabet = true;
         bold = false;
+
+        /*outline = null;
+        dropShadow = null;*/
 
         super.revive();
     }
@@ -342,16 +395,15 @@ class AlphaCharacter extends FlxSprite
 	public function makeLetter(key:String, bold:Bool = false):Void
     {
         this.bold = bold;
-        if(alphabet) {
-            if(!bold)
-            {
-                var captPref:String = (key == key.toUpperCase()) ? "capital" : "lowercase";
-                addAnim(key, '${key.toUpperCase()} ${captPref}');
-            }
-            else
-                addAnim(key, '${key.toUpperCase()} bold');
+        if (!alphabet) return addAnim(key, key);
+
+        if(!bold)
+        {
+            var captPref:String = (key == key.toUpperCase()) ? "capital" : "lowercase";
+            addAnim(key, '${key.toUpperCase()} ${captPref}');
         }
-		else addAnim(key, key);
+        else
+            addAnim(key, '${key.toUpperCase()} bold');
 	}
 
 	public function makeNumber(key:String, bold:Bool = false):Void
@@ -367,30 +419,30 @@ class AlphaCharacter extends FlxSprite
 
 	public function makeSymbol(key:String, bold:Bool = false):Void
 	{
-        if(alphabet) {
-            var animName:String = switch(key)
-            {
-                default: key;
-                case "'": "apostraphie";
-                case ",": "comma";
-                case "!": "exclamation point";
-                case '"': "parentheses start";
-                case ".": "period";
-                case "?": "question mark";
-                case "/": "slash forward";
-                case "÷": "heart";
-            }
+        this.bold = bold;
+        if (!alphabet) return addAnim(key, key);
 
-            animName += (bold ? " bold" : "0");
-            addAnim(key, animName);
-
-            switch(key)
-            {
-                case "-": charOffset.y = -20;
-                case '"'|"'": charOffset.y = -40;
-            }
+        var animName:String = switch(key)
+        {
+            default: key;
+            case "'": "apostraphie";
+            case ",": "comma";
+            case "!": "exclamation point";
+            case '"': "parentheses start";
+            case ".": "period";
+            case "?": "question mark";
+            case "/": "slash forward";
+            case "÷": "heart";
         }
-        else addAnim(key, key);
+
+        animName += (bold ? " bold" : "0");
+        addAnim(key, animName);
+
+        switch(key)
+        {
+            case "-": charOffset.y = -20;
+            case '"'|"'": charOffset.y = -40;
+        }
 	}
 
 	public function makeArrow(key:String):Void
@@ -405,8 +457,10 @@ class AlphaCharacter extends FlxSprite
 		}
 	}
 
+    public var curColor:FlxColor = FlxColor.WHITE;
     public function setColor(color:FlxColor, ?bold:Bool)
     {
+        curColor = color;
         if (bold == null) bold = this.bold;
         if (alphabet && !bold)
         {
@@ -425,5 +479,44 @@ class AlphaCharacter extends FlxSprite
     override function updateHitbox() {
         super.updateHitbox();
         scaleOffset = {x: offset.x, y: offset.y};
+    }
+
+    override function draw()
+    {
+        /*if (outline != null)
+        {
+            var prevColor = curColor;
+            var prevPos = [x, y];
+
+            setColor(outline.color);
+
+            var segments = Std.int(outline.thickness * 8);
+            var step:Float = (Math.PI * 2) / segments;
+
+            for (i in 0...segments)
+            {
+                var angle = i * step;
+
+                x = prevPos[0] + Math.cos(angle) * outline.thickness;
+                y = prevPos[1] + Math.sin(angle) * outline.thickness;
+
+                super.draw();
+            }
+
+            setColor(prevColor);
+            setPosition(prevPos[0], prevPos[1]);
+        }
+        if (dropShadow != null)
+        {
+            var prevColor = curColor;
+            x += dropShadow.offset.x;
+            y += dropShadow.offset.y;
+            setColor(dropShadow.color);
+            super.draw();
+            x -= dropShadow.offset.x;
+            y -= dropShadow.offset.y;
+            setColor(prevColor);
+        }*/
+        super.draw();
     }
 }

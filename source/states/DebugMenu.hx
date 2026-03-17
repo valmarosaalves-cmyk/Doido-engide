@@ -35,7 +35,7 @@ class DebugMenu extends MusicBeatState
 		add(bg);
 
         var doidoText = "<wave intensity=10 speed=3>DOIDO</wave> <shake intensity=2 speed=10><color value=#FF0000>ENGINE</color></shake>";
-        doidoText += "\n<rainbow speed=6><wave intensity=15 speed=20>PUDIM</wave></rainbow>";
+        doidoText += "\n<rainbow speed=6 offset=8><wave intensity=15 speed=20>PUDIM</wave></rainbow>";
 
         var alphabet = new Alphabet(FlxG.width / 2, 50, doidoText, true, CENTER);
         add(alphabet);

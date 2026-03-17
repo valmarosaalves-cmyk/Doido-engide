@@ -1,5 +1,6 @@
 package objects.ui.hud;
 
+import doido.objects.Alphabet;
 import flixel.math.FlxMath;
 import objects.ui.hud.BaseHud.IconChange;
 import doido.song.Conductor;
@@ -10,7 +11,7 @@ class DoidoHud extends BaseHud
 	public var timeTxt:FlxBitmapText;
 
 	var botplaySin:Float = 0;
-	var botplayTxt:FlxBitmapText;
+	var botplayTxt:Alphabet;
 
     public var healthBar:DoidoBar;
     public var iconP1:HealthIcon;
@@ -45,13 +46,10 @@ class DoidoHud extends BaseHud
 		timeTxt.updateHitbox();
 		add(timeTxt);
 
-		botplayTxt = new FlxBitmapText(0, 0, Assets.bitmapFont("vcr"));
-		botplayTxt.text = "[BOTPLAY]";
-		botplayTxt.setOutline(0xFF000000, 2);
-        botplayTxt.alignment = CENTER;
-		botplayTxt.scale.set(1.7,1.7);
+		botplayTxt = new Alphabet(FlxG.width / 2, FlxG.height / 2, "[<wave intensity=10 speed=4 delay=0.5>BOTPLAY</wave>]", true, CENTER);
+		botplayTxt.scale.set(0.7, 0.7);
 		botplayTxt.updateHitbox();
-		botplayTxt.screenCenter();
+		botplayTxt.y -= (botplayTxt.height / 2);
 		add(botplayTxt);
 
         updatePositions();
@@ -129,11 +127,11 @@ class DoidoHud extends BaseHud
         healthBar.percent = (health * 50);
 
 		botplayTxt.visible = play.botplay;
-		if(botplayTxt.visible)
+		/*if(botplayTxt.visible)
 		{
 			botplaySin += elapsed * Math.PI;
 			botplayTxt.alpha = 0.5 + Math.sin(botplaySin) * 0.8;
-		}
+		}*/
 
         for(icon in [iconP1, iconP2])
 		{

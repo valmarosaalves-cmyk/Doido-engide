@@ -17,10 +17,12 @@ enum TagType
 {
     BoldTag;
     PlainTag;
+    //OutlineTag(color:FlxColor, thickness:Float);
+    //DropShadowTag(color:FlxColor, offsetX:Float, offsetY:Float);
     ColorTag(value:FlxColor);
-    RainbowTag(speed:Float, uniform:Bool);
+    RainbowTag(speed:Float, offset:Float);
     ShakeTag(speed:Float, intensity:Float);
-    WaveTag(speed:Float, intensity:Float);
+    WaveTag(speed:Float, intensity:Float, delay:Float);
 }
 
 class AlphabetUtil
@@ -96,30 +98,37 @@ class AlphabetUtil
 
         if (content.startsWith("color"))
         {
-            var colorIndex = content.indexOf("#");
-            if (colorIndex == -1) colorIndex = content.indexOf("0x");
-
-            if (colorIndex != -1)
-            {
-                var hex = content.substr(colorIndex, content.length);
-
-                return {
-                    startIndex: index,
-                    endIndex: -1,
-                    type: ColorTag(FlxColor.fromString(hex))
-                };
-            }
+            var color = parseColor(content, "value");
+            return {
+                startIndex: index,
+                endIndex: -1,
+                type: ColorTag(color)
+            };
         }
 
-        if (content.startsWith("rainbow"))
+        /*if (content.startsWith("outline"))
         {
-            var speed = parseFloatTag(content, "speed", 1);
-            var uniform = parseBoolTag(content, "uniform", false);
+            var thickness = parseFloatTag(content, "thickness", 1);
+            if (thickness == 0) return null;
+
+            var color = parseColor(content, "color");
 
             return {
                 startIndex: index,
                 endIndex: -1,
-                type: RainbowTag(speed, uniform)
+                type: OutlineTag(color, thickness)
+            };
+        }*/
+
+        if (content.startsWith("rainbow"))
+        {
+            var speed = parseFloatTag(content, "speed", 1);
+            var offset = parseFloatTag(content, "offset", 30);
+
+            return {
+                startIndex: index,
+                endIndex: -1,
+                type: RainbowTag(speed, offset)
             };
         }
 
@@ -139,11 +148,12 @@ class AlphabetUtil
         {
             var speed = parseFloatTag(content, "speed", 1);
             var intensity = parseFloatTag(content, "intensity", 5);
+            var delay = parseFloatTag(content, "delay", 1);
 
             return {
                 startIndex: index,
                 endIndex: -1,
-                type: WaveTag(speed, intensity)
+                type: WaveTag(speed, intensity, delay)
             };
         }
 
@@ -184,5 +194,22 @@ class AlphabetUtil
         var value = content.substring(start, end);
 
         return (value == "true" ? true : value == "false" ? false : defaultValue);
+    }
+
+    static function parseColor(content:String, name:String = "", defaultValue:String = "#000000"):FlxColor
+    {
+        var idx = content.indexOf(name + "=");
+        if (idx == -1)
+            return FlxColor.fromString(defaultValue);
+
+        var start = idx + name.length + 1;
+        var end = content.indexOf(" ", start);
+
+        if (end == -1)
+            end = content.length;
+
+        var value = content.substring(start, end);
+
+        return FlxColor.fromString(value);
     }
 }
