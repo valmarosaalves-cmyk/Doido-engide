@@ -41,9 +41,11 @@ class AudioHandler
 		if (voicesOpp != null) func(voicesOpp);
 	}
 
+	public var resyncThreshold:Int = 30;
+
     public function sync()
 	{
-		if (Math.abs(Conductor.songPos - inst.time) >= 25)
+		if (Math.abs(Conductor.songPos - inst.time) >= resyncThreshold)
 		{
 			Logs.print('FIXING DELAYED CONDUCTOR: ${Conductor.songPos} > ${inst.time}', WARNING);
 			Conductor.songPos = inst.time;
@@ -51,7 +53,7 @@ class AudioHandler
 
 		update((snd) -> {
 			if (snd == inst) return;
-			if (Math.abs(Conductor.songPos - snd.time) >= 25)
+			if (Math.abs(Conductor.songPos - snd.time) >= resyncThreshold)
 			{
 				Logs.print('FIXING DELAYED MUSIC: ${snd.time} > ${Conductor.songPos}', WARNING);
 				update((fixSnd) -> {

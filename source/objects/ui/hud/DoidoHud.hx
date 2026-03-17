@@ -1,5 +1,6 @@
 package objects.ui.hud;
 
+import flixel.util.FlxColor;
 import doido.objects.Alphabet;
 import flixel.math.FlxMath;
 import objects.ui.hud.BaseHud.IconChange;
@@ -12,7 +13,9 @@ class DoidoHud extends BaseHud
 
 	var botplaySin:Float = 0;
 	var botplayTxt:Alphabet;
-	var badScoreTxt:FlxBitmapText;
+
+	var badScoreText:String = "SCORE WON'T BE SAVED";
+	var validScore:Bool = true;
 
     public var healthBar:DoidoBar;
     public var iconP1:HealthIcon;
@@ -52,15 +55,6 @@ class DoidoHud extends BaseHud
 		botplayTxt.updateHitbox();
 		botplayTxt.y -= (botplayTxt.height / 2);
 		add(botplayTxt);
-
-		badScoreTxt = new FlxBitmapText(0, 0, Assets.bitmapFont("vcr"));
-		badScoreTxt.setOutline(0xFF000000, 2);
-        badScoreTxt.alignment = CENTER;
-		badScoreTxt.text = "SCORE WILL NOT BE SAVED";
-		badScoreTxt.color = 0xFFFF0000;
-		badScoreTxt.visible = false;
-		badScoreTxt.screenCenter(X);
-		add(badScoreTxt);
 
         updatePositions();
     }
@@ -105,7 +99,6 @@ class DoidoHud extends BaseHud
 		healthBar.y = (play.downscroll ? 70 : FlxG.height - healthBar.border.height - 50);
 
         scoreTxt.y = healthBar.y + healthBar.border.height + 8;
-		badScoreTxt.y = scoreTxt.y + scoreTxt.height + 8;
 
 		updateTimeTxt();
 		timeTxt.y = play.downscroll ? (FlxG.height - timeTxt.height - 14) : (14);
@@ -113,6 +106,8 @@ class DoidoHud extends BaseHud
 
     override function updateScoreTxt()
     {
+		if (!validScore) return;
+
         var scoreText:String = "";
 		scoreText += 'Misses: ' + Timings.misses + separator;
 		scoreText += 'Accuracy: ' + Timings.accuracy + "%" + ' [${Timings.getRank()}]' + separator;
@@ -139,7 +134,13 @@ class DoidoHud extends BaseHud
         healthBar.percent = (health * 50);
 
 		botplayTxt.visible = play.botplay;
-		badScoreTxt.visible = !play.validScore;
+		if (validScore && !play.validScore)
+		{
+			validScore = false;
+			scoreTxt.text = badScoreText;
+			scoreTxt.color = FlxColor.RED;
+			scoreTxt.screenCenter(X);
+		}
 		/*if(botplayTxt.visible)
 		{
 			botplaySin += elapsed * Math.PI;
