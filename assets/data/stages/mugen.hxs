@@ -2,5 +2,5 @@ function create() {
     var bg = new FlxSprite(600, -180).loadGraphic(Assets.image("stages/mugen/mugen-r"));
     bg.scale.set(5.9, 5.9);
     bg.antialiasing = false;
-    add(bg);
+    PlayState.instance.add(bg);
 }

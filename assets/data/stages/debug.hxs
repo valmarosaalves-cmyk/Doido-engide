@@ -12,7 +12,7 @@ function create()
     bg.screenCenter();
     bg.scale.set(2.5, 2.5);
     bg.scrollFactor.set(0.7, 0.7);
-    add(bg);
+    PlayState.instance.add(bg);
 
     gfScrollFactor.x = 0.85;
     gfScrollFactor.y = 0.85;
@@ -22,7 +22,7 @@ function create()
     bandu.animation.add("sad", [5], 0, true);
     bandu.animation.play("idle");
     bandu.antialiasing = false;
-    add(bandu);
+    PlayState.instance.add(bandu);
 
     setZ(playState.bf, 16);
 
