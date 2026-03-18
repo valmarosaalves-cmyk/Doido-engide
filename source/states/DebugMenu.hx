@@ -286,13 +286,20 @@ class OffsetSel extends MusicBeatState
 	}
 }
 
+typedef FreeplaySong = {
+	var name:String;
+	var ?icon:String;
+	var ?diffs:Array<String>;
+}
+
 class Freeplay extends MusicBeatState
 {
-    var options:Array<String> = [];
+    var options:Array<FreeplaySong> = [];
     var text:FlxText;
     var title:FlxText;
     var score:FlxText;
-    var cur:Int = 0;
+    var curSong:Int = 0;
+    var curDiff:Int = 1;
 
     override function create()
     {
@@ -301,12 +308,16 @@ class Freeplay extends MusicBeatState
 
         for (week in Week.weekList(false, true)) {
             for(song in week.songs) {
-                options.push(song.song);
+                options.push({
+                    name: song.song,
+                    icon: song.icon,
+                    diffs: week.diffs,
+                });
             }
         }
 
         #if !mobile
-        options.push("Load Other");
+        options.push({name: "Load Other"});
         #end
 
         var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
@@ -337,16 +348,18 @@ class Freeplay extends MusicBeatState
     function drawText() {
         text.text = "";
         for(i in 0...options.length)
-            text.text += (i == cur ? "> " : "") + options[i] + "\n";
+            text.text += (i == curSong ? "> " : "") + options[i].name + "\n";
     }
 
     function drawScore() {
-        var newscore:ScoreData = Highscore.getScore(options[cur]);
+        var newscore:ScoreData = Highscore.getScore(options[curSong].name);
         var rank = Timings.getRank(newscore.accuracy, newscore.misses, false, true);
         score.text = "";
+        if(options[curSong].name == "Load Other") return; 
 		score.text +=   "SCORE: " + FlxStringUtil.formatMoney(Math.floor(newscore.score), false, true);
 		score.text += "\nACCURACY: " +(Math.floor(newscore.accuracy * 100) / 100) + "%" + ' [$rank]';
 		score.text += "\nMISSES: " + Math.floor(newscore.misses);
+        score.text += '\n< ${options[curSong].diffs[curDiff].toUpperCase()} >';
         score.x = FlxG.width - score.width - 10;
     }
 
@@ -358,17 +371,21 @@ class Freeplay extends MusicBeatState
             changeSelection(-1);
         if(Controls.justPressed(UI_DOWN))
             changeSelection(1);
+        if(Controls.justPressed(UI_LEFT))
+			changeDiff(-1);
+		if(Controls.justPressed(UI_RIGHT))
+			changeDiff(1);
 
         if(Controls.justPressed(BACK))
 			MusicBeat.switchState(new states.DebugMenu());
 
         if(Controls.justPressed(ACCEPT) || FlxG.keys.justPressed.SHIFT || FlxG.keys.justPressed.SEVEN) {
-            if(options[cur] == "Load Other") {
+            if(options[curSong].name == "Load Other") {
                 MusicBeat.switchState(new states.LoadOther());
             }
             else {
                 try {
-                    PlayState.loadSong(options[cur], "hard");
+                    PlayState.loadSong(options[curSong].name, options[curSong].diffs[curDiff]);
                     
                     if (FlxG.keys.justPressed.SEVEN)
                     {
@@ -398,11 +415,28 @@ class Freeplay extends MusicBeatState
 	{
 		if(change != 0) FlxG.sound.play(Assets.sound('scroll'));
 		
-		cur += change;
-		cur = FlxMath.wrap(cur, 0, options.length - 1);
+		curSong += change;
+		curSong = FlxMath.wrap(curSong, 0, options.length - 1);
 		drawText();
         drawScore();
+        changeDiff();
 	}
+
+    public function changeDiff(change:Int = 0)
+	{
+        if(options[curSong].name == "Load Other") return;
+
+		curDiff += change;
+
+		var maxDiff:Int = options[curSong].diffs.length - 1;
+		if(change == 0)
+			curDiff = Math.floor(FlxMath.bound(curDiff, 0, maxDiff));
+		else
+			curDiff = FlxMath.wrap(curDiff, 0, maxDiff);
+		
+		drawScore();
+	}
+
 }
 
 class LoadOther extends MusicBeatState

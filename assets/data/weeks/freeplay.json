@@ -6,5 +6,6 @@
         {"song": "lunar-odyssey", "icon":"dad"},
         {"song": "commotion", "icon":"dad"}
     ],
-    "freeplayOnly": true
+    "freeplayOnly": true,
+    "diffs": ["hard"]
 }
