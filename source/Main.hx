@@ -31,7 +31,7 @@ class Main extends Sprite
     {
         super();
         initGame();
-        addChild(fpsCounter = new FPSCounter(5, 3));
+        addChild(fpsCounter = new FPSCounter(5, 5));
         fixes();
     }
 
@@ -94,7 +94,7 @@ class Main extends Sprite
 		FlxG.signals.gameResized.add((w,h) -> {resetCamCache();});
 		
         // fullscreen bind fix
-		FlxG.stage.addEventListener(openfl.events.KeyboardEvent.KEY_DOWN, fullscreen, false, 100);
+		FlxG.stage.addEventListener(openfl.events.KeyboardEvent.KEY_DOWN, keyDown, false, 100);
 
         #if SCREENSHOT_FEATURE
         // screenshots!!
@@ -102,7 +102,14 @@ class Main extends Sprite
         #end
     }
 
-    function fullscreen(e:openfl.events.KeyboardEvent) {
+    function keyDown(e:openfl.events.KeyboardEvent) {
+        if (e.keyCode == FlxKey.F3)
+        {
+            Save.data.fpsCounter = !Save.data.fpsCounter;
+            fpsCounter.visible = Save.data.fpsCounter;
+            Save.save();
+        }
+        
         if (e.keyCode == FlxKey.F11)
             FlxG.fullscreen = !FlxG.fullscreen;
         

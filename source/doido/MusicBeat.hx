@@ -123,11 +123,11 @@ class MusicBeatState extends FlxUIState
 	{
 		super.update(elapsed);
 		updateStep();
-		
-		if(FlxG.keys.justPressed.F5) {
+		// stopped working for some reason??
+		/*if(FlxG.keys.justPressed.F5) {
 			MusicBeat.skip = (!FlxG.keys.pressed.SHIFT);
 			MusicBeat.resetState();
-		}
+		}*/
 	}
 
 	private function updateStep()

@@ -26,18 +26,18 @@ class FPSCounter extends Sprite
 		this.x = x;
 		this.y = y;
 
-		fpsField = new CounterField(0, 0, 22, 100, "", Main.globalFont, 0xFFFFFF);
+		fpsField = new CounterField(x, y, 22, 100, "", Main.globalFont, 0xFFFFFF);
 		addChild(fpsField);
 
-		labelField = new CounterField(-30, 9, 12, 100, "FPS", Main.globalFont, 0xFFFFFF);
+		labelField = new CounterField(x-30, y+9, 12, 100, "FPS", Main.globalFont, 0xFFFFFF);
 		addChild(labelField);
 
-		memField = new CounterField(0, 21, 14, 300, "", Main.globalFont, 0xFFFFFF);
+		memField = new CounterField(x, y+21, 14, 300, "", Main.globalFont, 0xFFFFFF);
 		addChild(memField);
 
 		visible = Save.data.fpsCounter;
-		watermark = 'DE-Pudim ${Main.internalVer}';
-		
+		//watermark = 'DE-Pudim ${Main.internalVer}';
+				
 		times = [];
 	}
 
@@ -60,7 +60,7 @@ class FPSCounter extends Sprite
 			fps = FlxG.updateFramerate;
 
 		fpsField.text = '$fps';
-		labelField.x = fpsField.getLineMetrics(0).width + 5;
+		labelField.x = fpsField.x + fpsField.getLineMetrics(0).width + 5;
 
 		memField.text = FlxStringUtil.formatBytes(System.totalMemoryNumber);
 
@@ -79,10 +79,18 @@ class FPSCounter extends Sprite
 		else
 			fpsField.textColor = 0xFFFFFF;
 
-		/*if(mem >= 2 * 1024)
-			memField.textColor = 0xFF0000;
-		else
-			memField.textColor = 0xFFFFFF;*/
+		graphics.clear();
+
+		var bgWidth:Float = Math.max(
+			fpsField.textWidth + labelField.textWidth + 5,
+			memField.textWidth
+		) + 20;
+		var bgHeight:Float = memField.y + memField.textHeight + 16;
+
+		// draw background
+		graphics.beginFill(0x000000, 0.5);
+		graphics.drawRoundRect(x - 6, y - 6, bgWidth, bgHeight, 6, 6);
+		graphics.endFill();
 	}
 }
 
@@ -91,7 +99,6 @@ class CounterField extends TextField
 	public function new(x:Float = 0, y:Float = 0, size:Int = 14, width:Float = 0, initText:String = "", font:String = "", color:Int = 0xFFFFFF)
 	{
 		super();
-
 		this.x = x;
 		this.y = y;
 		this.text = initText;
