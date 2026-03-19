@@ -195,7 +195,7 @@ class Assets
 		var arr:Array<String> = [];
 		for(folder in ["data/scripts", 'songs/$song/scripts']) {
 			for(file in list(folder, SCRIPT)) {
-                arr.push('$folder/$file');
+                if(!file.startsWith("_")) arr.push('$folder/$file');
             }
 		}
 		return arr;
