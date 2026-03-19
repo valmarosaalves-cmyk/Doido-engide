@@ -30,6 +30,10 @@ class Init extends MusicBeatState
 		#if android
 		FlxG.android.preventDefaultKeys = [BACK];
 		#end
+		
+		#if mobile
+        FlxG.scaleMode = new flixel.system.scaleModes.FixedScaleAdjustSizeScaleMode();
+        #end
 	}
 
 	/*
