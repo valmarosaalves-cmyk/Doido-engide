@@ -7,8 +7,10 @@ import doido.utils.EditorUtil;
 import doido.song.chart.SongHandler.NoteData;
 import doido.song.AudioHandler;
 import doido.song.Conductor;
-import doido.song.chart.SongHandler.DoidoEvents;
+import doido.song.chart.SongHandler.DoidoSong;
 import doido.song.chart.SongHandler.DoidoChart;
+import doido.song.chart.SongHandler.DoidoEvents;
+import doido.song.chart.SongHandler.DoidoMeta;
 import doido.utils.NoteUtil;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
@@ -39,8 +41,7 @@ class ChartingState extends MusicBeatState
     public var audio:AudioHandler;
     public var playingSong:Bool = false;
 
-    public var CHART:DoidoChart;
-    public var EVENTS:DoidoEvents;
+    public var SONG:DoidoSong;
 
     public var cursorTxt:FlxBitmapText;
 
@@ -65,11 +66,10 @@ class ChartingState extends MusicBeatState
     // windows!!
     public var timeWindow:TimeWindow;
 
-    public function new(CHART:DoidoChart, EVENTS:DoidoEvents)
+    public function new(SONG:DoidoSong)
     {
         super();
-        this.CHART = CHART;
-        this.EVENTS = EVENTS;
+        this.SONG = SONG;
     }
 
     override function create()
@@ -500,8 +500,7 @@ class ChartingState extends MusicBeatState
 
             if (FlxG.keys.justPressed.ENTER)
             {
-                PlayState.CHART = CHART;
-                PlayState.EVENTS = EVENTS;
+                PlayState.SONG = SONG;
                 MusicBeat.switchState(new PlayState());
             }
 
@@ -756,6 +755,18 @@ class ChartingState extends MusicBeatState
         if (audio.playing && Conductor.songPos >= 0)
             audio.sync();
     }
+
+    public var CHART(get, never):DoidoChart;
+	public function get_CHART():DoidoChart
+		return SONG.CHART;
+
+	public var EVENTS(get, never):DoidoEvents;
+	public function get_EVENTS():DoidoEvents
+		return SONG.EVENTS;
+
+	public var META(get, never):DoidoMeta;
+	public function get_META():DoidoMeta
+		return SONG.META;
 }
 class ChartingGrid extends FlxSprite
 {

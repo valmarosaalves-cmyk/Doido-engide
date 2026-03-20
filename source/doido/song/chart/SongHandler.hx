@@ -3,6 +3,13 @@ package doido.song.chart;
 import doido.utils.NoteUtil;
 import doido.song.chart.Legacy;
 
+typedef DoidoSong =
+{
+	var CHART:DoidoChart;
+	var EVENTS:DoidoEvents;
+	var META:DoidoMeta;
+}
+
 typedef DoidoMeta =
 {
     var ?player1:String;

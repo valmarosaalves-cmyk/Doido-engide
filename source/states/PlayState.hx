@@ -1,5 +1,6 @@
 package states;
 
+import objects.Character.DoidoCharacter;
 import flixel.sound.FlxSound;
 import flixel.math.FlxMath;
 import doido.song.*;
@@ -26,9 +27,7 @@ import doido.objects.DoidoHitbox;
 
 class PlayState extends MusicBeatState implements Playable
 {
-	public static var CHART:DoidoChart;
-	public static var EVENTS:DoidoEvents;
-	public static var META:DoidoMeta;
+	public static var SONG:DoidoSong;
 	public static var skip:Bool = false;
 
 	public var playField:PlayField;
@@ -82,9 +81,11 @@ class PlayState extends MusicBeatState implements Playable
 
 	public static function loadSong(jsonInput:String, ?diff:String = "normal")
 	{
-		CHART = SongHandler.loadChart(jsonInput, diff);
-		EVENTS = SongHandler.loadEvents(jsonInput, diff);
-		META = SongHandler.loadMeta(jsonInput, diff);
+		SONG = {
+			CHART: SongHandler.loadChart(jsonInput, diff),
+			EVENTS: SongHandler.loadEvents(jsonInput, diff),
+			META: SongHandler.loadMeta(jsonInput, diff)
+		};
 	}
 
 	public function resetStatics()
@@ -402,7 +403,7 @@ class PlayState extends MusicBeatState implements Playable
 		}
 
 		if (FlxG.keys.justPressed.SEVEN)
-			MusicBeat.switchState(new ChartingState(CHART, EVENTS));
+			MusicBeat.switchState(new ChartingState(SONG));
 
 		if (FlxG.keys.justPressed.ONE)
 			changeStage(stageBuild.curStage == "stage" ? "school" : "stage");
@@ -680,6 +681,18 @@ class PlayState extends MusicBeatState implements Playable
         playField.bfStrumline.botplay = b;
         return botplay;
     }
+
+	public static var CHART(get, never):DoidoChart;
+	public static function get_CHART():DoidoChart
+		return SONG.CHART;
+
+	public static var EVENTS(get, never):DoidoEvents;
+	public static function get_EVENTS():DoidoEvents
+		return SONG.EVENTS;
+
+	public static var META(get, never):DoidoMeta;
+	public static function get_META():DoidoMeta
+		return SONG.META;
 }
 
 interface Playable {

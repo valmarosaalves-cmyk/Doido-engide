@@ -317,7 +317,7 @@ class Freeplay extends MusicBeatState
         }
 
         #if !mobile
-        options.push({name: "Load Other"});
+        //options.push({name: "Load Other"});
         #end
 
         var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
@@ -381,7 +381,7 @@ class Freeplay extends MusicBeatState
 
         if(Controls.justPressed(ACCEPT) || FlxG.keys.justPressed.SHIFT || FlxG.keys.justPressed.SEVEN) {
             if(options[curSong].name == "Load Other") {
-                MusicBeat.switchState(new states.LoadOther());
+                //MusicBeat.switchState(new states.LoadOther());
             }
             else {
                 try {
@@ -390,7 +390,7 @@ class Freeplay extends MusicBeatState
                     if (FlxG.keys.justPressed.SEVEN)
                     {
                         MusicBeat.switchState(
-                            new ChartingState(PlayState.CHART, PlayState.EVENTS)
+                            new ChartingState(PlayState.SONG)
                         );
                     }
                     else
@@ -439,6 +439,8 @@ class Freeplay extends MusicBeatState
 
 }
 
+// TO BE REDONE
+/*
 class LoadOther extends MusicBeatState
 {
     var options:Array<String> = ["Load Chart", "Load Inst", "Load Voices (Optional)", "Load Player (Optional)", "Load Opponent (Optional)", "Play"];
@@ -578,6 +580,7 @@ class LoadOther extends MusicBeatState
         );
     }
 }
+*/
 
 class ChartConverter extends MusicBeatState
 {
