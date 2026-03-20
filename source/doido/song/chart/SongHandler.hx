@@ -13,7 +13,7 @@ typedef DoidoMeta =
 	var ?charter:String;
 }
 
-typedef DoidoSong =
+typedef DoidoChart =
 {
 	var song:String;
 	var notes:Array<NoteData>;
@@ -55,14 +55,14 @@ class SongHandler
 
 	];*/
 
-    inline public static function loadSong(jsonInput:String, ?diff:String = "normal"):DoidoSong
+    inline public static function loadChart(jsonInput:String, ?diff:String = "normal"):DoidoChart
 	{		
 		Logs.print('Chart Loaded: ' + '$jsonInput/$diff');
 
 		if(!Assets.fileExists('songs/$jsonInput/chart/$diff.json'))
 			diff = "normal";
 
-		return parseSong(Assets.json('songs/$jsonInput/chart/$diff'));
+		return parseChart(Assets.json('songs/$jsonInput/chart/$diff'));
 	}
 
 	inline public static function loadEvents(jsonInput:String, ?diff:String = "normal"):DoidoEvents
@@ -103,39 +103,39 @@ class SongHandler
 		return meta;
 	}
 
-	inline public static function parseSong(content:Dynamic):DoidoSong
+	inline public static function parseChart(content:Dynamic):DoidoChart
 	{
-		var rawSong:Dynamic = cast content;
-		var SONG:DoidoSong = null;
+		var rawChart:Dynamic = cast content;
+		var CHART:DoidoChart = null;
 		
-        if (!Std.isOfType(rawSong.song, String))
-            SONG = Legacy.getSongFromLegacy(rawSong.song);
+        if (!Std.isOfType(rawChart.song, String))
+            CHART = Legacy.getChartFromLegacy(rawChart.song);
 		else
-        	SONG = cast rawSong;
+        	CHART = cast rawChart;
 
-        return formatSong(SONG);
+        return formatChart(CHART);
 	}
 
     // Removes duplicated notes from a chart.
-	inline private static function formatSong(SONG:DoidoSong):DoidoSong
+	inline private static function formatChart(CHART:DoidoChart):DoidoChart
 	{
 		// Normalize song name to use only lowercases and no spaces
-		SONG.song = SONG.song.toLowerCase();
-		if(SONG.song.contains(' '))
-			SONG.song = SONG.song.replace(' ', '-');
+		CHART.song = CHART.song.toLowerCase();
+		if(CHART.song.contains(' '))
+			CHART.song = CHART.song.replace(' ', '-');
 
 		// cleaning multiple notes at the same place
 		var removed:Int = 0;
-		for(note in SONG.notes)
+		for(note in CHART.notes)
 		{
-			for(doubleNote in SONG.notes)
+			for(doubleNote in CHART.notes)
 			{
 				if(note != doubleNote
 				&& note.strumline == doubleNote.strumline
                 && note.stepTime == doubleNote.stepTime
                 && note.lane == doubleNote.lane)
 				{
-					SONG.notes.remove(doubleNote);
+					CHART.notes.remove(doubleNote);
 					removed++;
 				}
 			}
@@ -143,12 +143,12 @@ class SongHandler
 		if(removed > 0)
 			Logs.print('removed $removed duplicated notes');
 
-		/*if(SONG.gfVersion == null)
-			SONG.gfVersion = "stage-set";*/
+		/*if(CHART.gfVersion == null)
+			CHART.gfVersion = "stage-set";*/
 
-		SONG.notes.sort(NoteUtil.sortNotes);
+		CHART.notes.sort(NoteUtil.sortNotes);
 		
-		return SONG;
+		return CHART;
 	}
 
 	inline private static function formatEvents(EVENTS:DoidoEvents):DoidoEvents

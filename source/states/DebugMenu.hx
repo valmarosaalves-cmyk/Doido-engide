@@ -390,7 +390,7 @@ class Freeplay extends MusicBeatState
                     if (FlxG.keys.justPressed.SEVEN)
                     {
                         MusicBeat.switchState(
-                            new ChartingState(PlayState.SONG, PlayState.EVENTS)
+                            new ChartingState(PlayState.CHART, PlayState.EVENTS)
                         );
                     }
                     else
@@ -505,7 +505,7 @@ class LoadOther extends MusicBeatState
                 case "load opponent (optional)":
                     loadAudio("Voices-opponent");
                 default:
-                    if(chartLoaded && Cache.permanent.sounds.get('assets/songs/${PlayState.SONG.song}/audio/Inst.ogg') != null)
+                    if(chartLoaded && Cache.permanent.sounds.get('assets/songs/${PlayState.CHART.song}/audio/Inst.ogg') != null)
                         MusicBeat.switchState(new states.PlayState());
                     else
                         FlxG.sound.play(Assets.sound('beep'));
@@ -533,7 +533,7 @@ class LoadOther extends MusicBeatState
                 var bytes = fr.data;
                 var text = bytes.readUTFBytes(bytes.length);
                 var legacySong:LegacySong = cast Json.parse(text).song;
-                PlayState.SONG = Legacy.getSongFromLegacy(legacySong);
+                PlayState.CHART = Legacy.getChartFromLegacy(legacySong);
                 PlayState.EVENTS = Legacy.getEventsFromLegacy(legacySong);
                 chartLoaded = true;
 
@@ -559,7 +559,7 @@ class LoadOther extends MusicBeatState
                 bytes.position = 0;
                 var sound = new Sound();
                 sound.loadCompressedDataFromByteArray(bytes, bytes.length);
-                var key:String = 'assets/songs/${PlayState.SONG.song}/audio/$file.ogg';
+                var key:String = 'assets/songs/${PlayState.CHART.song}/audio/$file.ogg';
                 Cache.permanent.sounds.set(key, sound);
 
                 switch(file)
@@ -648,7 +648,7 @@ class ChartConverter extends MusicBeatState
                 var text = bytes.readUTFBytes(bytes.length);
 
                 var legacySong:LegacySong = cast Json.parse(text).song;
-                var SONG = Legacy.getSongFromLegacy(legacySong);
+                var CHART = Legacy.getChartFromLegacy(legacySong);
                 var EVENTS = Legacy.getEventsFromLegacy(legacySong);
 
                 var data:String = Json.stringify(EVENTS, "\t");
@@ -660,7 +660,7 @@ class ChartConverter extends MusicBeatState
                     );
                 }
 
-                var data:String = Json.stringify(SONG, "\t");
+                var data:String = Json.stringify(CHART, "\t");
                 if(data != null && data.length > 0)
                 {
                     Assets.fileSave(

@@ -38,9 +38,9 @@ typedef LegacyBPMChange =
 
 class Legacy
 {
-	inline public static function getSongFromLegacy(legacySong:LegacySong):DoidoSong
+	inline public static function getChartFromLegacy(legacySong:LegacySong):DoidoChart
     {
-        var SONG:DoidoSong = {
+        var CHART:DoidoChart = {
             song: legacySong.song,
             notes: [],
             bpm: legacySong.bpm,
@@ -55,7 +55,7 @@ class Legacy
 		var daSteps:Int = 0;
 		
 		// bpm change stuff for sustain notes
-		var noteCrochet:Float = Conductor.calcStep(SONG.bpm);
+		var noteCrochet:Float = Conductor.calcStep(CHART.bpm);
         var bpmChangeMap = getLegacyBPMChanges(legacySong);
 		var lastChange:LegacyBPMChange = {
 			stepTime: 0,
@@ -118,8 +118,8 @@ class Legacy
 			daSteps += section.lengthInSteps;
 			daSection++;
 		}
-		SONG.notes = unspawnNotes;
-        return SONG;
+		CHART.notes = unspawnNotes;
+        return CHART;
     }
 
 	public static function getEventsFromLegacy(legacySong:LegacySong):DoidoEvents

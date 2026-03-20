@@ -4,7 +4,7 @@ import flixel.sound.FlxSound;
 import flixel.math.FlxMath;
 import doido.song.*;
 import doido.song.chart.SongHandler;
-import doido.song.chart.SongHandler.DoidoSong;
+import doido.song.chart.SongHandler.DoidoChart;
 import doido.song.chart.SongHandler.DoidoEvents;
 import flixel.FlxSprite;
 import flixel.tweens.FlxEase;
@@ -26,7 +26,7 @@ import doido.objects.DoidoHitbox;
 
 class PlayState extends MusicBeatState implements Playable
 {
-	public static var SONG:DoidoSong;
+	public static var CHART:DoidoChart;
 	public static var EVENTS:DoidoEvents;
 	public static var META:DoidoMeta;
 	public static var skip:Bool = false;
@@ -82,7 +82,7 @@ class PlayState extends MusicBeatState implements Playable
 
 	public static function loadSong(jsonInput:String, ?diff:String = "normal")
 	{
-		SONG = SongHandler.loadSong(jsonInput, diff);
+		CHART = SongHandler.loadChart(jsonInput, diff);
 		EVENTS = SongHandler.loadEvents(jsonInput, diff);
 		META = SongHandler.loadMeta(jsonInput, diff);
 	}
@@ -96,17 +96,17 @@ class PlayState extends MusicBeatState implements Playable
 	{
 		super.create();
 		instance = this;
-		DiscordIO.changePresence("Playing - " + SONG.song);
+		DiscordIO.changePresence("Playing - " + CHART.song);
 		persistentDraw = true;
 		persistentUpdate = false;
 
-		var scriptPaths:Array<String> = Assets.getScriptArray(SONG.song);
+		var scriptPaths:Array<String> = Assets.getScriptArray(CHART.song);
 		for(path in scriptPaths) {
 			var newScript:Iris = new Iris(Assets.script('$path'), instance, {name: path, autoRun: true, autoPreset: true});
 			loadedScripts.push(newScript);
 		}
 
-		Conductor.initialBPM = SONG.bpm;
+		Conductor.initialBPM = CHART.bpm;
 		Conductor.mapBPMChanges(EVENTS.events);
 		Conductor.songPos = -(Conductor.crochet * 5);
 		resetStatics();
@@ -116,7 +116,7 @@ class PlayState extends MusicBeatState implements Playable
 
 		spawnEvents = EVENTS.events;
 		
-		audio = new AudioHandler(SONG.song);
+		audio = new AudioHandler(CHART.song);
 
 		camGame = new DoidoCamera(false, true);
 		camHUD = new DoidoCamera(true, false);
@@ -162,7 +162,7 @@ class PlayState extends MusicBeatState implements Playable
 			);
 		}
 
-		hudClass = switch(SONG.song) {
+		hudClass = switch(CHART.song) {
 			default: new DoidoHud(this);
 		}
 		add(hudClass);
@@ -173,7 +173,7 @@ class PlayState extends MusicBeatState implements Playable
 		callScript("create");
 		changeStage(META.stage);
 
-		playField = new PlayField(SONG.notes, SONG.speed, downscroll, middlescroll);
+		playField = new PlayField(CHART.notes, CHART.speed, downscroll, middlescroll);
 		playField.cameras = [camStrum];
 		add(playField);
 
@@ -199,7 +199,7 @@ class PlayState extends MusicBeatState implements Playable
 			audio.pause();
 			audio.time = 50000;
 			updateStep();
-			for(note in SONG.notes)
+			for(note in CHART.notes)
 			{
 				if (note.stepTime <= curStepFloat)
 					playField.curSpawnNote++;
@@ -402,7 +402,7 @@ class PlayState extends MusicBeatState implements Playable
 		}
 
 		if (FlxG.keys.justPressed.SEVEN)
-			MusicBeat.switchState(new ChartingState(SONG, EVENTS));
+			MusicBeat.switchState(new ChartingState(CHART, EVENTS));
 
 		if (FlxG.keys.justPressed.ONE)
 			changeStage(stageBuild.curStage == "stage" ? "school" : "stage");
@@ -574,7 +574,7 @@ class PlayState extends MusicBeatState implements Playable
 		canPause = false;
 
 		if(validScore) {
-			Highscore.addScore(SONG.song.toLowerCase()/* + '-' + songDiff*/, {
+			Highscore.addScore(CHART.song.toLowerCase()/* + '-' + songDiff*/, {
 				score: 		Timings.score,
 				accuracy: 	Timings.accuracy,
 				misses: 	Timings.misses,
