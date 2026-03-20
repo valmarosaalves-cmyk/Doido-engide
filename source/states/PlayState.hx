@@ -1,6 +1,5 @@
 package states;
 
-import objects.Character.DoidoCharacter;
 import flixel.sound.FlxSound;
 import flixel.math.FlxMath;
 import doido.song.*;
