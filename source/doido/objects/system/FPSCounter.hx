@@ -1,4 +1,4 @@
-package doido.objects.ui;
+package doido.objects.system;
 
 import haxe.Timer;
 import openfl.system.System;

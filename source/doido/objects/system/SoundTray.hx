@@ -1,4 +1,4 @@
-package doido.objects.ui;
+package doido.objects.system;
 
 #if FLX_SOUND_SYSTEM
 import flixel.FlxG;

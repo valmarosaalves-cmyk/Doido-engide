@@ -1,6 +1,6 @@
 package doido.system;
 
-import doido.objects.ui.Transition;
+import doido.objects.system.Transition;
 import flixel.FlxBasic;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;

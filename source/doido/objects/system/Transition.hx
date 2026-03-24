@@ -1,4 +1,4 @@
-package doido.objects.ui;
+package doido.objects.system;
 
 import flixel.FlxSprite;
 import flixel.util.FlxGradient;

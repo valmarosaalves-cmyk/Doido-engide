@@ -3,7 +3,7 @@ package doido;
 import doido.Cache;
 import doido.song.Conductor;
 import doido.system.Screenshot;
-import doido.objects.ui.Transition;
+import doido.objects.system.Transition;
 import flixel.FlxCamera;
 import flixel.FlxState;
 import flixel.FlxSubState;

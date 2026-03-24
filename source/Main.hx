@@ -1,6 +1,6 @@
 package;
 
-import doido.objects.ui.*;
+import doido.objects.system.*;
 import flixel.FlxG;
 import flixel.FlxGame;
 import flixel.input.keyboard.FlxKey;
