@@ -29,7 +29,7 @@ class Screenshot extends FlxBasic
             }
         }
 
-        if (FlxG.keys.justPressed.F2)
+        if (FlxG.keys.justPressed.F2 #if debug && !FlxG.keys.pressed.SHIFT #end)
         {
             screnshotDelay = 2;
             MusicBeat.getTopCamera().stopFlash();

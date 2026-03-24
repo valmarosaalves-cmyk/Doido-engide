@@ -100,6 +100,10 @@ class Main extends Sprite
         // screenshots!!
         FlxG.plugins.addPlugin(new doido.system.Screenshot());
         #end
+
+        #if debug
+        FlxG.debugger.toggleKeys = [];
+        #end
     }
 
     function keyDown(e:openfl.events.KeyboardEvent) {
@@ -115,6 +119,11 @@ class Main extends Sprite
         
         if (e.keyCode == FlxKey.ENTER && e.altKey)
             e.stopImmediatePropagation();
+
+        #if debug
+        if (e.keyCode == FlxKey.F2 && e.shiftKey)
+            FlxG.debugger.visible = !FlxG.debugger.visible;
+        #end
     }
 
     function resetCamCache() {
