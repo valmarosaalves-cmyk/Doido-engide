@@ -30,7 +30,7 @@
 
 	<define name="DISCORD_RPC" 			if="cpp" unless="mobile" />
 	<define name="ENABLE_PRINTING" 		if="cpp || hl || html5"/>
-	<define name="TOUCH_CONTROLS"		if="mobile"/>
+	<define name="TOUCH_CONTROLS"		if="desktop"/>
 	<define name="SCREENSHOT_FEATURE" 	if="cpp" unless="mobile"/>
 
 	<!-- _____________________________ Path Settings ____________________________ -->

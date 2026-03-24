@@ -20,7 +20,7 @@ class SaveVariables
 	// mobile
 	public var invertX:Bool = false;
 	public var invertY:Bool = false;
-	public var modernControls:Bool = #if desktop false #else true #end;
+	public var modernControls:Bool = #if TOUCH_CONTROLS true #else false #end;
 	// sound
 	public var volume:Float = 1;
 	public var muted:Bool = false;
