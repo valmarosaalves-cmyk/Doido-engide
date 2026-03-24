@@ -1,6 +1,6 @@
 package states.editors;
 
-import doido.objects.DoidoBar;
+import doido.objects.ui.*;
 import flixel.util.FlxStringUtil;
 import flixel.util.FlxTimer;
 import doido.utils.EditorUtil;
@@ -1047,32 +1047,5 @@ class BaseWindow extends FlxGroup
         bg = new FlxSprite().makeColor(100, 100, 0xFF000000);
         bg.alpha = 0.5;
         add(bg);
-    }
-}
-
-class QuickButton extends FlxSprite
-{
-    public var onClick:QuickButton->Void;
-    public function new(onClick:QuickButton->Void)
-    {
-        super();
-        this.onClick = onClick;
-    }
-
-    override function update(elapsed:Float)
-    {
-        super.update(elapsed);
-        var daScale:Float = 1.0;
-        if (FlxG.mouse.overlaps(this))
-        {
-            daScale = 1.15;
-            if (FlxG.mouse.pressed) daScale = 0.9;
-            if (FlxG.mouse.justReleased) onClick(this);
-        }
-
-        scale.set(
-            FlxMath.lerp(scale.x, daScale, elapsed * 8),
-            FlxMath.lerp(scale.y, daScale, elapsed * 8)
-        );
     }
 }

@@ -18,6 +18,7 @@ import states.editors.ChartingState;
 import doido.song.Week;
 import doido.song.Timings;
 import flixel.util.FlxStringUtil;
+import doido.objects.ui.QuickButton.TextButton;
 
 using doido.utils.TextUtil;
 
@@ -28,6 +29,7 @@ class DebugMenu extends MusicBeatState
     var title:FlxText;
     var ver:FlxText;
     var cur:Int = 0;
+    var butt:TextButton;
 
     override function create()
     {
@@ -76,6 +78,13 @@ class DebugMenu extends MusicBeatState
         var bg2 = new FlxSprite().loadGraphic(Assets.image('menuDesat'));
         bg2.setZ(-1);
 		add(bg2);
+
+        butt = new TextButton("Random Text", false, (btn) -> {
+            Logs.print("kuri");
+        });
+        butt.x = 300;
+        butt.y = 300;
+        add(butt);
 
         sort(ZIndex.sort);
     }

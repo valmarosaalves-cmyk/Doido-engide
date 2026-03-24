@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="button_big.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="buttonbig0000" x="2" y="2" width="147" height="33"/>
+	<SubTexture name="buttonbig0001" x="2" y="37" width="147" height="33"/>
+</TextureAtlas>
