@@ -17,11 +17,11 @@ class Init extends MusicBeatState
 		Controls.load();
 		Highscore.load();
 		DiscordIO.check();
-		
+
 		FlxG.fixedTimestep = false;
 		FlxG.mouse.useSystemCursor = true;
-		//FlxG.mouse.visible = false;
-		
+		// FlxG.mouse.visible = false;
+
 		FlxGraphic.defaultPersist = true;
 		openfl.Assets.cache.enabled = false;
 		Cache.initCache();
@@ -33,12 +33,12 @@ class Init extends MusicBeatState
 	}
 
 	/*
-	* A function to call some of the engines build flags from
-	* other states.
-	*/
+	 * A function to call some of the engines build flags from
+	 * other states.
+	 */
 	public static function flagState()
 	{
 		MusicBeat.switchState(new DebugMenu());
-		//MusicBeat.switchState(new DebugMenu.TouchTest());
+		// MusicBeat.switchState(new DebugMenu.TouchTest());
 	}
 }

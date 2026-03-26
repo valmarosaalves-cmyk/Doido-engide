@@ -3,50 +3,52 @@ package doido.song;
 import objects.ui.notes.Note;
 import flixel.math.FlxMath;
 
-typedef TimingData = {
+typedef TimingData =
+{
 	var name:String; // timing name
-    var diff:Float; // milliseconds to hit this timing
-	var hold:Float; // 
-    var judge:Float; // accuracy multiplier
+	var diff:Float; // milliseconds to hit this timing
+	var hold:Float; //
+	var judge:Float; // accuracy multiplier
 };
+
 class Timings
 {
-    public static var timings:Map<String, TimingData> = [
-        "sick" => {
+	public static var timings:Map<String, TimingData> = [
+		"sick" => {
 			name: "sick",
-            diff: 45,
+			diff: 45,
 			hold: 0.85,
-            judge: 1.0,
-        },
-        "good" => {
+			judge: 1.0,
+		},
+		"good" => {
 			name: "good",
-            diff: 90,
+			diff: 90,
 			hold: 0.6,
-            judge: 0.75,
-        },
-        "bad" => {
+			judge: 0.75,
+		},
+		"bad" => {
 			name: "bad",
-            diff: 135,
-			hold: 0.35, 
-            judge: 0.25,
-        },
-        "shit" => {
+			diff: 135,
+			hold: 0.35,
+			judge: 0.25,
+		},
+		"shit" => {
 			name: "shit",
-            diff: 160,
+			diff: 160,
 			hold: 0.2,
-            judge: -1.0,
-        },
-        "miss" => {
+			judge: -1.0,
+		},
+		"miss" => {
 			name: "miss",
-            diff: 180,
+			diff: 180,
 			hold: 0.0,
-            judge: -1.75,
-        },
-    ];
+			judge: -1.75,
+		},
+	];
 
-    public static var minTiming:Float = timings.get("shit").diff;
+	public static var minTiming:Float = timings.get("shit").diff;
 
-    // score and accuracy
+	// score and accuracy
 	public static var score:Int = 0;
 	public static var accuracy:Float = 0;
 	// accuracy calculation
@@ -59,7 +61,7 @@ class Timings
 	// ratings
 	public static var ratingCount:Map<String, Int> = [];
 
-    public static function init()
+	public static function init()
 	{
 		score = 0;
 		accuracy = 0;
@@ -68,47 +70,46 @@ class Timings
 		combo = 0;
 		notesHit = 0;
 		misses = 0;
-		ratingCount = [
-			"sick" 	=> 0,
-			"good" 	=> 0,
-			"bad"	=> 0,
-			"shit"	=> 0,
-		];
+		ratingCount = ["sick" => 0, "good" => 0, "bad" => 0, "shit" => 0,];
 	}
 
-    public static function getTiming(name:String):TimingData
-    {
-        return timings.get(name);
-    }
-
-    public static function diffToTiming(noteDiff:Float):TimingData
+	public static function getTiming(name:String):TimingData
 	{
-        var timing = timings.get("miss");
+		return timings.get(name);
+	}
+
+	public static function diffToTiming(noteDiff:Float):TimingData
+	{
+		var timing = timings.get("miss");
 		if (noteDiff < timing.diff)
 		{
-			for(key => data in timings)
+			for (key => data in timings)
 			{
-				if (data.diff > timing.diff) continue;
-				if (noteDiff > data.diff) continue;
+				if (data.diff > timing.diff)
+					continue;
+				if (noteDiff > data.diff)
+					continue;
 				timing = data;
 			}
 		}
-        return timing;
-    }
+		return timing;
+	}
 
 	public static function holdToTiming(noteHold:Float)
 	{
 		var timing = timings.get("miss");
 		if (noteHold > timing.hold)
 		{
-			for(key => data in timings)
+			for (key => data in timings)
 			{
-				if (data.hold < timing.hold) continue;
-				if (noteHold < data.hold) continue;
+				if (data.hold < timing.hold)
+					continue;
+				if (noteHold < data.hold)
+					continue;
 				timing = data;
 			}
 		}
-        return timing;
+		return timing;
 	}
 
 	public static function addScore(note:Note, noteDiff:Float)
@@ -128,19 +129,14 @@ class Timings
 		}
 		else
 		{
-			if (combo < 0) combo = 0;
+			if (combo < 0)
+				combo = 0;
 			combo++;
 
 			if (noteDiff <= 5)
 				score += 100;
 			else
-				score += Math.ceil(
-					FlxMath.remapToRange(
-						noteDiff,
-						5, getTiming("good").diff,
-						100, 50
-					)
-				);
+				score += Math.ceil(FlxMath.remapToRange(noteDiff, 5, getTiming("good").diff, 100, 50));
 		}
 	}
 
@@ -149,14 +145,14 @@ class Timings
 		var timing = holdToTiming(hold.holdHitPercent);
 		if (timing.name != "miss")
 			ratingCount.set(timing.name, ratingCount.get(timing.name) + 1);
-		
+
 		if (hold.missed)
 			score -= 50;
 		else
 			score += Math.ceil(50 * hold.data.length * hold.holdHitPercent);
 	}
 
-    public static function addAccuracy(judge:Float)
+	public static function addAccuracy(judge:Float)
 	{
 		accHit++;
 		accJudge += judge;
@@ -166,22 +162,18 @@ class Timings
 	public static function addAccuracyDiff(noteDiff:Float):String
 	{
 		var timing = diffToTiming(noteDiff);
-		addAccuracy(
-			timing.judge
-		);
+		addAccuracy(timing.judge);
 		return timing.name;
 	}
 
 	public static function addAccuracyHold(noteHold:Float):String
 	{
 		var timing = holdToTiming(noteHold);
-		addAccuracy(
-			timing.judge
-		);
+		addAccuracy(timing.judge);
 		return timing.name;
 	}
 
-    public static function updateAccuracy()
+	public static function updateAccuracy()
 	{
 		var rawAccuracy:Float = (accJudge / accHit) * 100;
 
@@ -189,18 +181,18 @@ class Timings
 		accuracy = FlxMath.bound(accuracy, 0, 100);
 	}
 
-    public static function getRank(?accuracy:Float, ?misses:Int, inGame:Bool = true, hasPlus:Bool = true):String
+	public static function getRank(?accuracy:Float, ?misses:Int, inGame:Bool = true, hasPlus:Bool = true):String
 	{
-		if(misses == null)
+		if (misses == null)
 			misses = Timings.misses;
 
-		if(accuracy == null)
+		if (accuracy == null)
 			accuracy = Timings.accuracy;
 
 		var result:String = "F";
 		function calc(daRank:String, maxAcc:Float, minAcc:Float)
 		{
-			if(accuracy > minAcc && accuracy <= maxAcc)
+			if (accuracy > minAcc && accuracy <= maxAcc)
 				result = daRank;
 		}
 
@@ -209,18 +201,19 @@ class Timings
 		calc("C", 75, 65);
 		calc("B", 80, 75);
 		calc("A", 95, 80);
-		calc("S", 100,95);
+		calc("S", 100, 95);
 
 		// pluses for your rank
-		if(misses == 0) {
-			if(hasPlus)
+		if (misses == 0)
+		{
+			if (hasPlus)
 				result += "+";
-			if(accuracy == 100.0)
+			if (accuracy == 100.0)
 				result = "P";
 		}
-		
+
 		// you cant give a result without notes :/
-		if(inGame ? (accHit <= 0) : (accuracy == 0 && misses == 0))
+		if (inGame ? (accHit <= 0) : (accuracy == 0 && misses == 0))
 			result = "?";
 
 		return result;

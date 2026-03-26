@@ -6,13 +6,13 @@ import flixel.sound.FlxSound;
 class AudioHandler
 {
 	// esse é que é o tal de "encapsulamento?"
-    public var inst:FlxSound;
-    public var voicesGlobal:FlxSound; // default
+	public var inst:FlxSound;
+	public var voicesGlobal:FlxSound; // default
 	public var voicesOpp:FlxSound; // if the opponent has a voices file, play them too
 
-    public function new(song:String)
-    {
-        inst = FlxG.sound.load(Assets.inst(song));
+	public function new(song:String)
+	{
+		inst = FlxG.sound.load(Assets.inst(song));
 		length = inst?.length;
 
 		// global voices
@@ -21,7 +21,8 @@ class AudioHandler
 		else if (Assets.fileExists('songs/${song}/audio/Voices', SOUND))
 			voicesGlobal = FlxG.sound.load(Assets.voices(song));
 
-		if (voicesGlobal?.length < length) length = voicesGlobal.length;
+		if (voicesGlobal?.length < length)
+			length = voicesGlobal.length;
 
 		// opponent voices
 		if (Assets.fileExists('songs/${song}/audio/Voices-opp', SOUND))
@@ -29,21 +30,24 @@ class AudioHandler
 		else if (Assets.fileExists('songs/${song}/audio/Voices-opponent', SOUND))
 			voicesOpp = FlxG.sound.load(Assets.voices(song, "-opponent"));
 
-		if (voicesOpp?.length < length) length = voicesOpp.length;
+		if (voicesOpp?.length < length)
+			length = voicesOpp.length;
 
 		muteVoices = false;
-    }
+	}
 
-    private function update(func:(snd:FlxSound)->Void)
+	private function update(func:(snd:FlxSound) -> Void)
 	{
 		func(inst);
-		if (voicesGlobal != null) func(voicesGlobal);
-		if (voicesOpp != null) func(voicesOpp);
+		if (voicesGlobal != null)
+			func(voicesGlobal);
+		if (voicesOpp != null)
+			func(voicesOpp);
 	}
 
 	public var resyncThreshold:Int = 30;
 
-    public function sync()
+	public function sync()
 	{
 		if (Math.abs(Conductor.songPos - inst.time) >= resyncThreshold)
 		{
@@ -51,41 +55,54 @@ class AudioHandler
 			Conductor.songPos = inst.time;
 		}
 
-		update((snd) -> {
-			if (snd == inst) return;
+		update((snd) ->
+		{
+			if (snd == inst)
+				return;
 			if (Math.abs(Conductor.songPos - snd.time) >= resyncThreshold)
 			{
 				Logs.print('FIXING DELAYED MUSIC: ${snd.time} > ${Conductor.songPos}', WARNING);
-				update((fixSnd) -> {
+				update((fixSnd) ->
+				{
 					fixSnd.time = Conductor.songPos;
 				});
 			}
 		});
 	}
 
-	public function play(?time:Float) {
-		update((snd) -> {
+	public function play(?time:Float)
+	{
+		update((snd) ->
+		{
 			snd.play();
-			if (time != null) snd.time = time;
+			if (time != null)
+				snd.time = time;
 		});
 	}
 
-	public function pause() {
-		update((snd) -> {
+	public function pause()
+	{
+		update((snd) ->
+		{
 			snd.pause();
 		});
 	}
 
 	public var playing(get, never):Bool;
-	function get_playing():Bool {
+
+	function get_playing():Bool
+	{
 		return inst.playing;
 	}
 
 	public var time(default, set):Float = 0.0;
-	public function set_time(v:Float) {
-		//trace("before " + inst.time);
+
+	public function set_time(v:Float)
+	{
+		// trace("before " + inst.time);
 		time = v;
-		update((snd) -> {
+		update((snd) ->
+		{
 			snd.time = v;
 		});
 		sync();
@@ -95,16 +112,21 @@ class AudioHandler
 	public var length:Float = 0.0;
 
 	public var speed(default, set):Float = 1.0;
-	public function set_speed(v:Float) {
+
+	public function set_speed(v:Float)
+	{
 		speed = v;
-		update((snd) -> {
+		update((snd) ->
+		{
 			snd.pitch = v;
 		});
 		return speed;
 	}
 
 	public var muteVoices(default, set):Bool;
-	function set_muteVoices(val:Bool):Bool {
+
+	function set_muteVoices(val:Bool):Bool
+	{
 		if (voicesGlobal != null)
 			voicesGlobal.volume = (val ? 0.0 : 1.0);
 

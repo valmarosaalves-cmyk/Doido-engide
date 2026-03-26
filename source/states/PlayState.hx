@@ -19,7 +19,6 @@ import states.editors.ChartingState;
 import substates.PauseSubState;
 import doido.objects.DoidoCamera;
 import doido.utils.LerpUtil;
-
 #if TOUCH_CONTROLS
 import doido.objects.DoidoHitbox;
 #end
@@ -41,6 +40,7 @@ class PlayState extends MusicBeatState implements Playable
 	public var camFollow:LerpPoint;
 	public var camDisplace:LerpPoint;
 	public var defaultHudZoom:Float = 1.0;
+
 	public static var defaultCamZoom:Float = 0.9;
 
 	public var curFocus:String = "";
@@ -76,6 +76,7 @@ class PlayState extends MusicBeatState implements Playable
 	public var curEventCount:Int = 0;
 
 	public static var instance:PlayState;
+
 	public var loadedScripts:Array<Iris> = [];
 
 	public static function loadSong(jsonInput:String, ?diff:String = "normal")
@@ -91,7 +92,7 @@ class PlayState extends MusicBeatState implements Playable
 	{
 		Timings.init();
 	}
-	
+
 	override function create()
 	{
 		super.create();
@@ -101,7 +102,8 @@ class PlayState extends MusicBeatState implements Playable
 		persistentUpdate = false;
 
 		var scriptPaths:Array<String> = Assets.getScriptArray(CHART.song);
-		for(path in scriptPaths) {
+		for (path in scriptPaths)
+		{
 			var newScript:Iris = new Iris(Assets.script('$path'), instance, {name: path, autoRun: true, autoPreset: true});
 			loadedScripts.push(newScript);
 		}
@@ -111,11 +113,11 @@ class PlayState extends MusicBeatState implements Playable
 		Conductor.songPos = -(Conductor.crochet * 5);
 		resetStatics();
 
-		downscroll = (#if TOUCH_CONTROLS Save.data.modernControls #else false #end ? true : Save.data.downscroll);
-		middlescroll = (#if TOUCH_CONTROLS Save.data.modernControls #else false #end ? true : Save.data.middlescroll);
+		downscroll = (#if TOUCH_CONTROLS Save.data.modernControls #else false #end ?true:Save.data.downscroll);
+		middlescroll = (#if TOUCH_CONTROLS Save.data.modernControls #else false #end ?true:Save.data.middlescroll);
 
 		spawnEvents = EVENTS.events;
-		
+
 		audio = new AudioHandler(CHART.song);
 
 		camGame = new DoidoCamera(false, true);
@@ -131,7 +133,7 @@ class PlayState extends MusicBeatState implements Playable
 		bf = new CharGroup(true);
 		bf.addChar(META.player1, true);
 		bf.setZ(10);
-		
+
 		dad = new CharGroup(false);
 		dad.addChar(META.player2, true);
 		dad.setZ(9);
@@ -139,30 +141,28 @@ class PlayState extends MusicBeatState implements Playable
 		gf = new CharGroup(false);
 		gf.addChar(META.gf, true);
 		gf.setZ(8);
-		
+
 		characters.push(gf);
 		characters.push(dad);
 		characters.push(bf);
 
-		for(char in characters) {
+		for (char in characters)
+		{
 			add(char);
 		}
 
-		//temporary caching
+		// temporary caching
 		Assets.image("hud/base/numbers");
 		Assets.image("hud/base/ratings");
 		Assets.sparrow("notes/base/splashes");
 		Assets.sparrow("notes/base/covers");
-		for(i in 0...4)
+		for (i in 0...4)
 		{
-			countdownSfx.push(
-				FlxG.sound.load(
-					Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i])
-				)
-			);
+			countdownSfx.push(FlxG.sound.load(Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i])));
 		}
 
-		hudClass = switch(CHART.song) {
+		hudClass = switch (CHART.song)
+		{
 			default: new DoidoHud(this);
 		}
 		add(hudClass);
@@ -183,34 +183,35 @@ class PlayState extends MusicBeatState implements Playable
 		hudClass.init();
 		hudClass.cameras = [camHUD];
 		setUpInput();
-		
+
 		debugInfo = new DebugInfo(this);
 		debugInfo.cameras = [camStrum];
 		add(debugInfo);
 
 		#if TOUCH_CONTROLS
-		pauseButton = new DoidoHitbox(0,0,100,100,0.4);
+		pauseButton = new DoidoHitbox(0, 0, 100, 100, 0.4);
 		pauseButton.cameras = [camOther];
 		add(pauseButton);
 		#end
 
-		if(skip) {
+		if (skip)
+		{
 			audio.play();
 			audio.pause();
 			audio.time = 50000;
 			updateStep();
-			for(note in CHART.notes)
+			for (note in CHART.notes)
 			{
 				if (note.stepTime <= curStepFloat)
 					playField.curSpawnNote++;
 			}
 		}
-		
+
 		followCamera("dad");
 		camFollow.get(1);
 
 		camGame.zoom = defaultCamZoom;
-		for(cam in [camHUD, camStrum])
+		for (cam in [camHUD, camStrum])
 			cam.zoom = defaultHudZoom;
 
 		callScript("createPost");
@@ -234,21 +235,24 @@ class PlayState extends MusicBeatState implements Playable
 
 				var judge = Timings.getTiming(rating).judge;
 				var healthJudge:Float = 0.05 * judge;
-				if(judge < 0) healthJudge *= 2;
+				if (judge < 0)
+					healthJudge *= 2;
 				health += healthJudge;
 			}
 
-			if (rating != "miss") hudClass.popUpRating(rating);
+			if (rating != "miss")
+				hudClass.popUpRating(rating);
 			hudClass.updateScoreTxt();
 		}
 
 		playField.onNoteHit = (note, strumline) ->
 		{
-			if (note.isHold && !note.isHoldEnd) return;
+			if (note.isHold && !note.isHoldEnd)
+				return;
 
 			if (!note.isHold)
 			{
-				for(char in characters)
+				for (char in characters)
 				{
 					if (char.strumline == strumline)
 						char.playSingAnim(note);
@@ -269,7 +273,7 @@ class PlayState extends MusicBeatState implements Playable
 						gf.resetSingStep();
 						gf.playAnim("horny");
 					}
-					else if(gf.animExists("cheer")) // gf cheer
+					else if (gf.animExists("cheer")) // gf cheer
 					{
 						gf.resetSingStep();
 						gf.playAnim("cheer");
@@ -278,25 +282,28 @@ class PlayState extends MusicBeatState implements Playable
 			}
 			else
 			{
-				if (audio.voicesOpp == null) audio.muteVoices = false;
+				if (audio.voicesOpp == null)
+					audio.muteVoices = false;
 			}
 			callScript("onNoteHit", [note, strumline]);
 		};
 		playField.onNoteMiss = (note, strumline) ->
 		{
-			if (note.isHold && !note.isHoldEnd) return;
+			if (note.isHold && !note.isHoldEnd)
+				return;
 
-			for(char in characters)
+			for (char in characters)
 			{
 				if (char.strumline == strumline)
 					char.playSingAnim(note, true);
 			}
-			
+
 			if (strumline.isPlayer)
 			{
 				if (Timings.combo >= 10)
 				{
-					if(gf.animExists("sad")) {
+					if (gf.animExists("sad"))
+					{
 						gf.resetSingStep();
 						gf.playAnim("sad");
 					}
@@ -307,13 +314,15 @@ class PlayState extends MusicBeatState implements Playable
 			}
 			callScript("onNoteMiss", [note, strumline]);
 		};
-		playField.onNoteHold = (note, strumline) -> {
-			for(char in characters)
+		playField.onNoteHold = (note, strumline) ->
+		{
+			for (char in characters)
 			{
-				if (char.strumline == strumline) {
-					if(char.singType == LAST)
+				if (char.strumline == strumline)
+				{
+					if (char.singType == LAST)
 						char.resetSingStep();
-					else if(char.curAnimFrame == char.singLoop || char.singType == FIRST)
+					else if (char.curAnimFrame == char.singLoop || char.singType == FIRST)
 						char.playSingAnim(note);
 				}
 			}
@@ -323,10 +332,10 @@ class PlayState extends MusicBeatState implements Playable
 
 			callScript("onNoteHold", [note, strumline]);
 		};
-		
+
 		playField.onGhostTap = (lane, direction) ->
 		{
-			//Logs.print("GHOST TAPPED " + direction.toUpperCase(), WARNING);
+			// Logs.print("GHOST TAPPED " + direction.toUpperCase(), WARNING);
 			hudClass.updateScoreTxt();
 			callScript("onGhostTap", [lane, direction]);
 		};
@@ -336,34 +345,27 @@ class PlayState extends MusicBeatState implements Playable
 	{
 		if (curStage != stageBuild.curStage)
 		{
-			for(item in stageBuild.stageItems)
+			for (item in stageBuild.stageItems)
 				remove(item);
-			
+
 			stageBuild.reloadStage(curStage);
-			for(item in stageBuild.stageItems)
+			for (item in stageBuild.stageItems)
 				add(item);
 		}
-		
+
 		defaultCamZoom = stageBuild.camZoom;
-		if(stageBuild.gfVersion != "") gf.setActive(stageBuild.gfVersion);
-		else gf.setActive(META.gf);
+		if (stageBuild.gfVersion != "")
+			gf.setActive(stageBuild.gfVersion);
+		else
+			gf.setActive(META.gf);
 
 		dad.setPos(stageBuild.dadPos.x, stageBuild.dadPos.y);
 		bf.setPos(stageBuild.bfPos.x, stageBuild.bfPos.y);
-        gf.setPos(stageBuild.gfPos.x, stageBuild.gfPos.y);
+		gf.setPos(stageBuild.gfPos.x, stageBuild.gfPos.y);
 
-		dad.setScrollFactor(
-			stageBuild.dadScrollFactor.x,
-			stageBuild.dadScrollFactor.y
-		);
-		bf.setScrollFactor(
-			stageBuild.bfScrollFactor.x,
-			stageBuild.bfScrollFactor.y
-		);
-		gf.setScrollFactor(
-			stageBuild.gfScrollFactor.x,
-			stageBuild.gfScrollFactor.y
-		);
+		dad.setScrollFactor(stageBuild.dadScrollFactor.x, stageBuild.dadScrollFactor.y);
+		bf.setScrollFactor(stageBuild.bfScrollFactor.x, stageBuild.bfScrollFactor.y);
+		gf.setScrollFactor(stageBuild.gfScrollFactor.x, stageBuild.gfScrollFactor.y);
 	}
 
 	override function draw()
@@ -373,12 +375,13 @@ class PlayState extends MusicBeatState implements Playable
 	}
 
 	var cameraSpeed:Float = 1.0;
+
 	override function update(elapsed:Float)
 	{
 		callScript("update", [elapsed]);
 		super.update(elapsed);
 
-		if(botplay && startedSong)
+		if (botplay && startedSong)
 			validScore = false;
 
 		function followLerp():Float
@@ -388,15 +391,16 @@ class PlayState extends MusicBeatState implements Playable
 		camGame.moveCam([
 			camFollow.get(followLerp()),
 			camDisplace.get(followLerp()),
-			{x: -FlxG.width/2, y: -FlxG.height/2}
+			{x: -FlxG.width / 2, y: -FlxG.height / 2}
 		]);
-		
+
 		camGame.zoom = FlxMath.lerp(camGame.zoom, defaultCamZoom, elapsed * 12);
-		for(cam in [camHUD, camStrum])
+		for (cam in [camHUD, camStrum])
 			cam.zoom = FlxMath.lerp(cam.zoom, defaultHudZoom, elapsed * 12);
 
 		health = FlxMath.bound(health, 0, 2);
-		if(Controls.justPressed(RESET) || health <= 0) {
+		if (Controls.justPressed(RESET) || health <= 0)
+		{
 			MusicBeat.skip = true;
 			MusicBeat.switchState(new states.PlayState());
 		}
@@ -406,26 +410,27 @@ class PlayState extends MusicBeatState implements Playable
 
 		if (FlxG.keys.justPressed.ONE)
 			changeStage(stageBuild.curStage == "stage" ? "school" : "stage");
-		
+
 		if (FlxG.keys.justPressed.F9)
 			audio.speed = 10;
 		if (FlxG.keys.justReleased.F9)
 			audio.speed = defaultSongSpeed;
-		
+
 		if (canPause)
 		{
-			if(Controls.justPressed(PAUSE) #if TOUCH_CONTROLS || pauseButton.justPressed #end) {
+			if (Controls.justPressed(PAUSE) #if TOUCH_CONTROLS || pauseButton.justPressed #end)
+			{
 				pauseSong();
 			}
 		}
-		
+
 		if (!paused)
 		{
 			Conductor.songPos += elapsed * 1000 * audio.speed;
 			FlxG.animationTimeScale = audio.speed;
 			if (!startedSong)
 			{
-				for(snd in countdownSfx)
+				for (snd in countdownSfx)
 					if (snd.playing)
 						snd.pitch = audio.speed;
 			}
@@ -433,37 +438,41 @@ class PlayState extends MusicBeatState implements Playable
 
 		if (curEventCount < spawnEvents.length)
 		{
-			for(i in 0...spawnEvents.length)
+			for (i in 0...spawnEvents.length)
 			{
-				if (i < curEventCount) continue;
+				if (i < curEventCount)
+					continue;
 
 				var eventData = spawnEvents[curEventCount];
-				if ((eventData.stepTime - curStepFloat) <= 0) {
+				if ((eventData.stepTime - curStepFloat) <= 0)
+				{
 					playEvent(eventData.name, eventData.data);
 					curEventCount++;
 				}
-					
 			}
 		}
-			
+
 		playField.updateNotes(curStepFloat);
 		callScript("updatePost", [elapsed]);
 	}
 
-	function preloadEvent(name:String, data:Array<Dynamic>) {
-		switch(name) {
+	function preloadEvent(name:String, data:Array<Dynamic>)
+	{
+		switch (name)
+		{
 			case 'Change Character':
 				strToChar(data[0]).addChar(data[1]);
 			case 'Change Stage':
 				stageBuild.reloadStage(data[0]);
-				if(stageBuild.gfVersion != "") gf.addChar(stageBuild.gfVersion, false);
+				if (stageBuild.gfVersion != "")
+					gf.addChar(stageBuild.gfVersion, false);
 		}
 	}
 
 	function playEvent(name:String, data:Array<Dynamic>)
 	{
 		callScript("playEvent", [name, data]);
-		switch(name)
+		switch (name)
 		{
 			case "Change Stage":
 				changeStage(data[0]);
@@ -472,21 +481,22 @@ class PlayState extends MusicBeatState implements Playable
 		}
 	}
 
-	public function followCamera(charStr:String = "", ?offset:DoidoPoint) {
-		offset = MathUtil.addPoint(offset ?? {x: 0, y: 0},
-			switch (charStr) {
-				case "dad": stageBuild.dadCam;
-				case "bf": stageBuild.bfCam;
-				case "gf": stageBuild.gfCam;
-				default: {x:0, y:0};
-			}
-		);
+	public function followCamera(charStr:String = "", ?offset:DoidoPoint)
+	{
+		offset = MathUtil.addPoint(offset ?? {x: 0, y: 0}, switch (charStr)
+		{
+			case "dad": stageBuild.dadCam;
+			case "bf": stageBuild.bfCam;
+			case "gf": stageBuild.gfCam;
+			default: {x: 0, y: 0};
+		});
 
 		var char = strToChar(charStr);
 		curFocus = charStr;
-		camFollow.point = {x: 0,y: 0};
+		camFollow.point = {x: 0, y: 0};
 
-		if(char != null) {
+		if (char != null)
+		{
 			var playerMult:Int = (char.isPlayer ? -1 : 1);
 
 			camFollow.point = {
@@ -498,9 +508,12 @@ class PlayState extends MusicBeatState implements Playable
 		camFollow.point = MathUtil.addPoint(camFollow.point, offset);
 	}
 
-	function updateDisplace() {
-		if(maxDisplace == {x: 0, y: 0}) return;
-		switch (strToChar(curFocus).curAnimName) {
+	function updateDisplace()
+	{
+		if (maxDisplace == {x: 0, y: 0})
+			return;
+		switch (strToChar(curFocus).curAnimName)
+		{
 			case 'singLEFT':
 				camDisplace.point = {x: -maxDisplace.x, y: 0};
 			case 'singRIGHT':
@@ -514,12 +527,14 @@ class PlayState extends MusicBeatState implements Playable
 		}
 	}
 
-	function strToChar(str:String, nullable:Bool = false):CharGroup {
-		return switch(str) {
+	function strToChar(str:String, nullable:Bool = false):CharGroup
+	{
+		return switch (str)
+		{
 			default: nullable ? null : dad;
 			case 'dad': dad;
-			case 'bf'|'boyfriend': 	bf;
-			case 'gf'|'girlfriend': gf;
+			case 'bf' | 'boyfriend': bf;
+			case 'gf' | 'girlfriend': gf;
 		}
 	}
 
@@ -532,7 +547,8 @@ class PlayState extends MusicBeatState implements Playable
 	public function pauseSong()
 	{
 		paused = true;
-		for(snd in FlxG.sound.list) {
+		for (snd in FlxG.sound.list)
+		{
 			snd.pause();
 		}
 		audio.pause();
@@ -544,7 +560,8 @@ class PlayState extends MusicBeatState implements Playable
 	public function unpauseSong()
 	{
 		paused = false;
-		for(snd in FlxG.sound.list) {
+		for (snd in FlxG.sound.list)
+		{
 			snd.resume();
 		}
 		MusicBeat.activateTimers(true);
@@ -563,21 +580,25 @@ class PlayState extends MusicBeatState implements Playable
 	public function beatCamera(gameZoom:Float, hudZoom:Float)
 	{
 		camGame.zoom *= gameZoom;
-		for(cam in [camHUD, camStrum])
+		for (cam in [camHUD, camStrum])
 			cam.zoom *= hudZoom;
 	}
 
 	var endedSong:Bool = false;
-	public function endSong() {
-		if(endedSong) return;
+
+	public function endSong()
+	{
+		if (endedSong)
+			return;
 		endedSong = true;
 		canPause = false;
 
-		if(validScore) {
-			Highscore.addScore(CHART.song.toLowerCase()/* + '-' + songDiff*/, {
-				score: 		Timings.score,
-				accuracy: 	Timings.accuracy,
-				misses: 	Timings.misses,
+		if (validScore)
+		{
+			Highscore.addScore(CHART.song.toLowerCase() /* + '-' + songDiff*/, {
+				score: Timings.score,
+				accuracy: Timings.accuracy,
+				misses: Timings.misses,
 			});
 		}
 
@@ -606,7 +627,7 @@ class PlayState extends MusicBeatState implements Playable
 		super.beatHit();
 		callScript("beatHit", [curBeat]);
 
-		if(curBeat < -4)
+		if (curBeat < -4)
 			return;
 
 		// COUNTDOWN AND SONG START
@@ -617,12 +638,12 @@ class PlayState extends MusicBeatState implements Playable
 				startSong();
 			else if (curBeat + 4 >= 0) // countdown
 			{
-				//trace(curBeat + 4);
+				// trace(curBeat + 4);
 				countdownSfx[curBeat + 4].play();
 			}
 		}
 
-		for(char in characters)
+		for (char in characters)
 		{
 			if ((curBeat % 2 == 0 || char.quickDancer) && (char.singStep <= 0))
 			{
@@ -642,59 +663,74 @@ class PlayState extends MusicBeatState implements Playable
 		hudClass.beatHit(curBeat);
 	}
 
-	public function callScript(fun:String, ?args:Array<Dynamic>) {
-		for(script in loadedScripts) {
+	public function callScript(fun:String, ?args:Array<Dynamic>)
+	{
+		for (script in loadedScripts)
+		{
 			@:privateAccess {
-				var ny: Dynamic = script.interp.variables.get(fun);
-				try {
-					if(ny != null && Reflect.isFunction(ny))
+				var ny:Dynamic = script.interp.variables.get(fun);
+				try
+				{
+					if (ny != null && Reflect.isFunction(ny))
 						script.call(fun, args);
-				} catch(e) {
+				}
+				catch (e)
+				{
 					Logs.print('error parsing script: ' + e, ERROR);
 				}
 			}
 		}
 		stageBuild.callScript(fun, args);
 	}
-	
-	public function setScript(name:String, value:Dynamic, allowOverride:Bool = true) {
-		for(script in loadedScripts)
+
+	public function setScript(name:String, value:Dynamic, allowOverride:Bool = true)
+	{
+		for (script in loadedScripts)
 			script.set(name, value, allowOverride);
 	}
 
 	public var player1(get, never):String;
+
 	public function get_player1():String
 		return bf.curChar;
 
 	public var player2(get, never):String;
+
 	public function get_player2():String
 		return dad.curChar;
 
 	public var songLength(get, never):Float;
+
 	public function get_songLength():Float
 		return audio.length;
 
 	public var botplay(default, set):Bool;
-	public function set_botplay(b:Bool):Bool {
-        botplay = b;
-        playField.bfStrumline.botplay = b;
-        return botplay;
-    }
+
+	public function set_botplay(b:Bool):Bool
+	{
+		botplay = b;
+		playField.bfStrumline.botplay = b;
+		return botplay;
+	}
 
 	public static var CHART(get, never):DoidoChart;
+
 	public static function get_CHART():DoidoChart
 		return SONG.CHART;
 
 	public static var EVENTS(get, never):DoidoEvents;
+
 	public static function get_EVENTS():DoidoEvents
 		return SONG.EVENTS;
 
 	public static var META(get, never):DoidoMeta;
+
 	public static function get_META():DoidoMeta
 		return SONG.META;
 }
 
-interface Playable {
+interface Playable
+{
 	var health:Float;
 	var downscroll:Bool;
 	var middlescroll:Bool;

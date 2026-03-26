@@ -30,7 +30,7 @@ class Save
 {
 	public static var data:SaveVariables = {};
 	public static var defaultData:SaveVariables = {};
-	
+
 	public static function init()
 	{
 		load();
@@ -38,23 +38,23 @@ class Save
 		FlxG.sound.volume = data.volume;
 		FlxG.sound.muted = data.muted;
 	}
-	
+
 	public static function save(?file:DoidoSave)
 	{
-		if(file == null)
+		if (file == null)
 			file = new DoidoSave("settings");
-		
+
 		for (key in Reflect.fields(data))
 			Reflect.setField(file.data, key, Reflect.field(data, key));
 
 		file.close();
 		update();
 	}
-	
+
 	public static function load()
 	{
 		var file = new DoidoSave("settings");
-		
+
 		if (file != null && file.data != null)
 		{
 			for (key in Reflect.fields(data))
@@ -65,7 +65,7 @@ class Save
 		}
 		save(file);
 	}
-	
+
 	private static function update()
 	{
 		if (data.fps > FlxG.drawFramerate)
@@ -78,9 +78,9 @@ class Save
 			FlxG.drawFramerate = data.fps;
 			FlxG.updateFramerate = data.fps;
 		}
-		
+
 		flixel.FlxSprite.defaultAntialiasing = data.antialiasing;
-		
+
 		if (Main.fpsCounter != null)
 			Main.fpsCounter.visible = data.fpsCounter;
 	}

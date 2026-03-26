@@ -8,7 +8,6 @@ import haxe.CallStack;
 import haxe.io.Path;
 import openfl.display.Sprite;
 import openfl.events.UncaughtErrorEvent;
-
 #if sys
 import sys.FileSystem;
 import sys.io.File;
@@ -16,41 +15,41 @@ import sys.io.File;
 
 class Main extends Sprite
 {
-    //later we should have the window size options be determined automatically, probably
-    var gameWidth:Int = 1280;
-    var gameHeight:Int = 720;
-    var framerate:Int = 60;
-    var skipSplash:Bool = true;
+	// later we should have the window size options be determined automatically, probably
+	var gameWidth:Int = 1280;
+	var gameHeight:Int = 720;
+	var framerate:Int = 60;
+	var skipSplash:Bool = true;
 
-    public static final savePath:String = "DiogoTV/DEPudim";
-    public static final internalVer:String = "Alpha 1";
-    public static var fpsCounter:FPSCounter;
-    public static var globalFont:String;
+	public static final savePath:String = "DiogoTV/DEPudim";
+	public static final internalVer:String = "Alpha 1";
+	public static var fpsCounter:FPSCounter;
+	public static var globalFont:String;
 
-    public function new()
-    {
-        super();
-        initGame();
-        addChild(fpsCounter = new FPSCounter(5, 5));
-        fixes();
-    }
+	public function new()
+	{
+		super();
+		initGame();
+		addChild(fpsCounter = new FPSCounter(5, 5));
+		fixes();
+	}
 
-    function initGame() {
-        // adding the crash handler
-        openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(
-            UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError
-        );
+	function initGame()
+	{
+		// adding the crash handler
+		openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 
-        Logs.init(); // custom logging shit
+		Logs.init(); // custom logging shit
 
-        var game:FlxGame = new FlxGame(gameWidth, gameHeight, Init, framerate, framerate, skipSplash);
-        globalFont = Assets.font("vcr"); // we need to initialize this before the font ever gets used, otherwise it wont be found
-        @:privateAccess
-        game._customSoundTray = SoundTray;
-        addChild(game);
-    }
+		var game:FlxGame = new FlxGame(gameWidth, gameHeight, Init, framerate, framerate, skipSplash);
+		globalFont = Assets.font("vcr"); // we need to initialize this before the font ever gets used, otherwise it wont be found
+		@:privateAccess
+		game._customSoundTray = SoundTray;
+		addChild(game);
+	}
 
-    function onUncaughtError(e:UncaughtErrorEvent):Void {
+	function onUncaughtError(e:UncaughtErrorEvent):Void
+	{
 		e.preventDefault();
 		e.stopImmediatePropagation();
 
@@ -78,68 +77,73 @@ class Main extends Sprite
 		#end
 
 		FlxG.bitmap.clearCache();
-		//CoolUtil.playMusic();
+		// CoolUtil.playMusic();
 
 		MusicBeat.skipTrans = true;
-		MusicBeat.switchState(
-            new doido.system.CrashHandler(
-                'Crash log created at: "${normalPath}"\n\n' + stackTraceString
-            )
-        );
+		MusicBeat.switchState(new doido.system.CrashHandler('Crash log created at: "${normalPath}"\n\n' + stackTraceString));
 	}
 
-    function fixes() {
-        // shader coords fix
+	function fixes()
+	{
+		// shader coords fix
 		FlxG.signals.focusGained.add(resetCamCache);
-		FlxG.signals.gameResized.add((w,h) -> {resetCamCache();});
-		
-        // fullscreen bind fix
+		FlxG.signals.gameResized.add((w, h) ->
+		{
+			resetCamCache();
+		});
+
+		// fullscreen bind fix
 		FlxG.stage.addEventListener(openfl.events.KeyboardEvent.KEY_DOWN, keyDown, false, 100);
 
-        #if SCREENSHOT_FEATURE
-        // screenshots!!
-        FlxG.plugins.addPlugin(new doido.system.Screenshot());
-        #end
+		#if SCREENSHOT_FEATURE
+		// screenshots!!
+		FlxG.plugins.addPlugin(new doido.system.Screenshot());
+		#end
 
-        #if debug
-        FlxG.debugger.toggleKeys = [];
-        #end
-    }
+		#if debug
+		FlxG.debugger.toggleKeys = [];
+		#end
+	}
 
-    function keyDown(e:openfl.events.KeyboardEvent) {
-        if (e.keyCode == FlxKey.F3)
-        {
-            Save.data.fpsCounter = !Save.data.fpsCounter;
-            fpsCounter.visible = Save.data.fpsCounter;
-            Save.save();
-        }
-        
-        if (e.keyCode == FlxKey.F11)
-            FlxG.fullscreen = !FlxG.fullscreen;
-        
-        if (e.keyCode == FlxKey.ENTER && e.altKey)
-            e.stopImmediatePropagation();
+	function keyDown(e:openfl.events.KeyboardEvent)
+	{
+		if (e.keyCode == FlxKey.F3)
+		{
+			Save.data.fpsCounter = !Save.data.fpsCounter;
+			fpsCounter.visible = Save.data.fpsCounter;
+			Save.save();
+		}
 
-        #if debug
-        if (e.keyCode == FlxKey.F2 && e.shiftKey)
-            FlxG.debugger.visible = !FlxG.debugger.visible;
-        #end
-    }
+		if (e.keyCode == FlxKey.F11)
+			FlxG.fullscreen = !FlxG.fullscreen;
 
-    function resetCamCache() {
-		if(FlxG.cameras != null) {
-			for(cam in FlxG.cameras.list) {
-				if(cam != null && cam.filters != null)
+		if (e.keyCode == FlxKey.ENTER && e.altKey)
+			e.stopImmediatePropagation();
+
+		#if debug
+		if (e.keyCode == FlxKey.F2 && e.shiftKey)
+			FlxG.debugger.visible = !FlxG.debugger.visible;
+		#end
+	}
+
+	function resetCamCache()
+	{
+		if (FlxG.cameras != null)
+		{
+			for (cam in FlxG.cameras.list)
+			{
+				if (cam != null && cam.filters != null)
 					resetSpriteCache(cam.flashSprite);
 			}
 		}
-		if(FlxG.game != null)
+		if (FlxG.game != null)
 			resetSpriteCache(FlxG.game);
 	}
 
-	static function resetSpriteCache(sprite:Sprite):Void {
+	static function resetSpriteCache(sprite:Sprite):Void
+	{
 		@:privateAccess {
-			sprite.__cacheBitmap 	 = null;
+			sprite.__cacheBitmap = null;
 			sprite.__cacheBitmapData = null;
 		}
 	}

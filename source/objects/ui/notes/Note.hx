@@ -18,20 +18,20 @@ class Note extends FlxSprite
 	public var holdIndex:Float = -1;
 	public var holdStep:Float = -1;
 	public var holdHitPercent:Float = 0.0;
-	
+
 	// noteskin stuff
 	public var noteScale:Float = 1.0;
-	
+
 	// modchart stuff
 	public var noteAngle:Null<Float> = null;
 	public var noteSpeed:Null<Float> = null;
 	public var noteSpeedMult:Float = 1.0;
-	
+
 	public function new()
 	{
 		super();
 	}
-	
+
 	public function loadData(data:NoteData)
 	{
 		// visual stuff
@@ -53,7 +53,7 @@ class Note extends FlxSprite
 		holdIndex = 0;
 		holdStep = 0;
 		holdHitPercent = 0.0;
-		
+
 		// noteskin stuff
 		noteScale = 1.0;
 
@@ -61,16 +61,16 @@ class Note extends FlxSprite
 		noteAngle = null;
 		noteSpeed = null;
 		noteSpeedMult = 1.0;
-		
-		//noteSpeed = (FlxG.random.bool(50) ? null : 1.0);
+
+		// noteSpeed = (FlxG.random.bool(50) ? null : 1.0);
 	}
-	
+
 	public function reloadSprite()
 	{
 		clipRect = null;
-		
+
 		var direction:String = NoteUtil.intToString(data.lane);
-		switch("i told you ill do the skins later")
+		switch ("i told you ill do the skins later")
 		{
 			default:
 				var postfix:String = (isHold ? " hold" + (isHoldEnd ? " end" : "") : "");
@@ -79,12 +79,12 @@ class Note extends FlxSprite
 				animation.addByPrefix(direction, 'note ${direction}${postfix}0', 0, false);
 				noteScale = 0.7;
 		}
-		
+
 		scale.set(noteScale, noteScale);
 		updateHitbox();
 		animation.play(direction);
 	}
-	
+
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -94,7 +94,7 @@ class Note extends FlxSprite
 	{
 		updateHitbox();
 		offset.x += frameWidth * scale.x / 2;
-		if(isHold)
+		if (isHold)
 		{
 			offset.y = 0;
 			origin.y = 0;

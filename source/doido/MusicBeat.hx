@@ -21,7 +21,7 @@ class MusicBeat
 	{
 		#if SCREENSHOT_FEATURE Screenshot.clearScreenshot(); #end
 
-		if(tIn != null)
+		if (tIn != null)
 			nextTransition = tIn;
 		else
 			nextTransition = tOut;
@@ -29,19 +29,19 @@ class MusicBeat
 		var trans = new Transition(false, tOut);
 		trans.finishCallback = function()
 		{
-			if(target != null)		
+			if (target != null)
 				FlxG.switchState(() -> target);
 			else
 				FlxG.resetState();
 		};
 
-		if(skipTrans)
+		if (skipTrans)
 			return trans.finishCallback();
-		
-		if(activeState != null)
+
+		if (activeState != null)
 			activeState.openSubState(trans);
 	}
-	
+
 	public static function resetState()
 	{
 		switchState(null);
@@ -54,7 +54,8 @@ class MusicBeat
 	public static function get_skip()
 		return skipTrans && skipClearCache;
 
-	public static function set_skip(newSkip:Bool) {
+	public static function set_skip(newSkip:Bool)
+	{
 		skipTrans = newSkip;
 		skipClearCache = newSkip;
 		return newSkip;
@@ -65,13 +66,13 @@ class MusicBeat
 	{
 		FlxTimer.globalManager.forEach(function(tmr:FlxTimer)
 		{
-			if(!tmr.finished)
+			if (!tmr.finished)
 				tmr.active = apple;
 		});
 
 		FlxTween.globalManager.forEach(function(twn:FlxTween)
 		{
-			if(!twn.finished)
+			if (!twn.finished)
 				twn.active = apple;
 		});
 	}
@@ -82,7 +83,7 @@ class MusicBeat
 
 /*
 	Custom state and substate classes. Use them instead of FlxState or FlxSubstate
-*/
+ */
 class MusicBeatState extends FlxUIState
 {
 	override function create()
@@ -93,13 +94,13 @@ class MusicBeatState extends FlxUIState
 		persistentDraw = true;
 		persistentUpdate = false;
 		FlxG.animationTimeScale = 1.0;
-		
+
 		Controls.setSoundKeys();
 
-		if(!MusicBeat.skipClearCache)
+		if (!MusicBeat.skipClearCache)
 			Cache.clearCache();
 
-		if(!MusicBeat.skipTrans)
+		if (!MusicBeat.skipTrans)
 			openSubState(new Transition(true, MusicBeat.nextTransition));
 
 		MusicBeat.skip = false;
@@ -115,6 +116,7 @@ class MusicBeatState extends FlxUIState
 	}
 
 	private var _curStep = 0; // actual curStep
+
 	public var curStep = 0;
 	public var curStepFloat:Float = 0;
 	public var curBeat = 0;
@@ -135,33 +137,35 @@ class MusicBeatState extends FlxUIState
 		curStepFloat = Conductor.getStepAtTime();
 		_curStep = Math.floor(curStepFloat);
 
-		while(_curStep != curStep)
+		while (_curStep != curStep)
 			stepHit();
 	}
 
 	private function stepHit()
 	{
-		if(_curStep > curStep)
+		if (_curStep > curStep)
 			curStep++;
 		else
 		{
 			curStep = _curStep;
 		}
 
-		if(curStep % 4 == 0)
+		if (curStep % 4 == 0)
 			beatHit();
 
 		function loopGroup(group:FlxGroup):Void
 		{
-			if(group == null) return;
-			for(item in group.members)
+			if (group == null)
+				return;
+			for (item in group.members)
 			{
-				if(item == null) continue;
-				if(Std.isOfType(item, FlxGroup))
+				if (item == null)
+					continue;
+				if (Std.isOfType(item, FlxGroup))
 					loopGroup(cast item);
-	
+
 				/*if(item._stepHit != null)
-					item._stepHit(curStep);*/
+					item._stepHit(curStep); */
 			}
 		}
 		loopGroup(this);
@@ -191,7 +195,7 @@ class MusicBeatSubState extends FlxSubState
 
 		cameras = [MusicBeat.getTopCamera()];
 	}
-	
+
 	override function close()
 	{
 		MusicBeat.activeState = subParent;
@@ -205,10 +209,11 @@ class MusicBeatSubState extends FlxSubState
 	}
 
 	private var _curStep:Int = 0; // actual curStep
+
 	public var curStep:Int = 0;
 	public var curStepFloat:Float = 0;
 	public var curBeat:Int = 0;
-	
+
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -220,33 +225,35 @@ class MusicBeatSubState extends FlxSubState
 		curStepFloat = Conductor.getStepAtTime();
 		_curStep = Math.floor(curStepFloat);
 
-		while(_curStep != curStep)
+		while (_curStep != curStep)
 			stepHit();
 	}
 
 	private function stepHit()
 	{
-		if(_curStep > curStep)
+		if (_curStep > curStep)
 			curStep++;
 		else
 		{
 			curStep = _curStep;
 		}
 
-		if(curStep % 4 == 0)
+		if (curStep % 4 == 0)
 			beatHit();
 
 		function loopGroup(group:FlxGroup):Void
 		{
-			if(group == null) return;
-			for(item in group.members)
+			if (group == null)
+				return;
+			for (item in group.members)
 			{
-				if(item == null) continue;
-				if(Std.isOfType(item, FlxGroup))
+				if (item == null)
+					continue;
+				if (Std.isOfType(item, FlxGroup))
 					loopGroup(cast item);
-	
+
 				/*if (item._stepHit != null)
-					item._stepHit(curStep);*/
+					item._stepHit(curStep); */
 			}
 		}
 		loopGroup(this);
@@ -258,4 +265,3 @@ class MusicBeatSubState extends FlxSubState
 		curBeat = Math.floor(curStep / 4);
 	}
 }
-

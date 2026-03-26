@@ -7,12 +7,12 @@ package doido.system;
 	<lib name="psapi.lib" />
 </target>
 ')
-
 @:cppFileCode('
 #include <dwmapi.h>
 #include <psapi.h>
 ')
-class Windows {
+class Windows
+{
 	@:functionCode('
 		int darkMode = enable ? 1 : 0;
 
@@ -28,10 +28,11 @@ class Windows {
 		}
 		UpdateWindow(window);
 	')
-	public static function setDarkMode(title:String, enable:Bool) {
-        flixel.FlxG.stage.window.borderless = true;
+	public static function setDarkMode(title:String, enable:Bool)
+	{
+		flixel.FlxG.stage.window.borderless = true;
 		flixel.FlxG.stage.window.borderless = false;
-    }
+	}
 
 	@:functionCode('
 		PROCESS_MEMORY_COUNTERS_EX pmc;
@@ -41,7 +42,8 @@ class Windows {
 
 		return 0;
 	')
-	public static function getMem():cpp.SizeT {
+	public static function getMem():cpp.SizeT
+	{
 		return 0;
 	};
 }

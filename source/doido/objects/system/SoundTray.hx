@@ -29,11 +29,12 @@ class SoundTray extends FlxSoundTray
 	var bg:Bitmap;
 	var text:TextField;
 	var bars:Array<Bitmap>;
+
 	@:keep
 	public function new()
 	{
 		super();
-    	removeChildren(); //yikes!
+		removeChildren(); // yikes!
 
 		visible = false;
 		scaleX = defaultScale;
@@ -56,7 +57,7 @@ class SoundTray extends FlxSoundTray
 
 		var bar:Bitmap;
 		bars = new Array();
-		
+
 		for (i in 0...10)
 		{
 			bar = new Bitmap(new BitmapData(4, i + 1, false, defaultColor));
@@ -84,7 +85,7 @@ class SoundTray extends FlxSoundTray
 			{
 				visible = false;
 				active = false;
-    		}
+			}
 		}
 	}
 
@@ -98,7 +99,7 @@ class SoundTray extends FlxSoundTray
 		y = 0;
 		visible = true;
 		active = true;
-		
+
 		final numBars = Math.round(volume * 10);
 		for (i in 0...bars.length)
 			bars[i].alpha = i < numBars ? 1.0 : 0.5;
@@ -107,7 +108,7 @@ class SoundTray extends FlxSoundTray
 		traySize();
 
 		Save.data.volume = FlxG.sound.volume;
-		Save.data.muted  = FlxG.sound.muted;
+		Save.data.muted = FlxG.sound.muted;
 		Save.save();
 	}
 
@@ -123,10 +124,10 @@ class SoundTray extends FlxSoundTray
 	{
 		if (text.textWidth + 10 > bg.width)
 			text.width = text.textWidth + 10;
-			
+
 		bg.width = text.textWidth + 10 > defaultWidth ? text.textWidth + 10 : defaultWidth;
 		bgWidth = bg.width;
-		
+
 		text.width = bg.width;
 
 		var bx:Int = Std.int(bg.width / 2 - 30);
@@ -138,7 +139,7 @@ class SoundTray extends FlxSoundTray
 			bx += 6;
 			by--;
 		}
-		
+
 		screenCenter();
 	}
 }

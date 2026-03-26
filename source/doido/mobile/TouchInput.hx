@@ -11,17 +11,20 @@ import flixel.FlxSprite;
 
 class TouchInput extends FlxSpriteGroup
 {
-    var buttonMap:Map<String, DoidoHitbox> = [];
+	var buttonMap:Map<String, DoidoHitbox> = [];
 	var wide:Bool;
-    public function new(strumline:Strumline)
-    {
-        super();
-		this.wide = strumline.wide;
-        var directions = NoteUtil.directions;
 
-		if(wide) {
+	public function new(strumline:Strumline)
+	{
+		super();
+		this.wide = strumline.wide;
+		var directions = NoteUtil.directions;
+
+		if (wide)
+		{
 			var buttonSize = NoteUtil.noteWidth(true);
-			for (i in 0...directions.length) {
+			for (i in 0...directions.length)
+			{
 				var button = new DoidoHitbox(0, 0, buttonSize + 50, buttonSize - 10, 0);
 				buttonMap.set(directions[i], button);
 				add(button);
@@ -30,10 +33,12 @@ class TouchInput extends FlxSpriteGroup
 				button.y = strumline.strums[i].y - (button.height / 2);
 			}
 		}
-		else {
-			var buttonWidth = (FlxG.width/directions.length);
-			for (i in 0...directions.length) {
-				var button = new DoidoHitbox(i*buttonWidth, 0, buttonWidth, FlxG.height, 0);
+		else
+		{
+			var buttonWidth = (FlxG.width / directions.length);
+			for (i in 0...directions.length)
+			{
+				var button = new DoidoHitbox(i * buttonWidth, 0, buttonWidth, FlxG.height, 0);
 				buttonMap.set(directions[i], button);
 				add(button);
 
@@ -49,14 +54,19 @@ class TouchInput extends FlxSpriteGroup
 				hint.x = button.x;
 				add(hint);
 
-				button.onUp.add(() -> {hint.animation.play("idle");});
-				button.onDown.add(() -> {hint.animation.play("pressed");});
+				button.onUp.add(() ->
+				{
+					hint.animation.play("idle");
+				});
+				button.onDown.add(() ->
+				{
+					hint.animation.play("pressed");
+				});
 			}
 		}
-        
-    }
+	}
 
-    public inline function justPressed(direction:String):Bool
+	public inline function justPressed(direction:String):Bool
 		return checkButton(direction, JUST_PRESSED);
 
 	public inline function pressed(direction:String):Bool
@@ -65,12 +75,13 @@ class TouchInput extends FlxSpriteGroup
 	public inline function released(direction:String):Bool
 		return checkButton(direction, JUST_RELEASED);
 
-    public function checkButton(direction:String, inputState:FlxInputState):Bool
-	{		
+	public function checkButton(direction:String, inputState:FlxInputState):Bool
+	{
 		var button = buttonMap.get(direction);
-		if(button != null)
+		if (button != null)
 		{
-			switch(inputState) {
+			switch (inputState)
+			{
 				case PRESSED:
 					return button.pressed;
 				case JUST_PRESSED:
@@ -87,7 +98,7 @@ class TouchInput extends FlxSpriteGroup
 #else
 class TouchInput extends FlxSpriteGroup
 {
-    public function new(strumline:Strumline)
+	public function new(strumline:Strumline)
 		super();
 
 	public inline function justPressed(direction:String):Bool

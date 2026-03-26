@@ -1,7 +1,6 @@
 package doido.system;
 
 import lime.app.Application;
-
 #if DISCORD_RPC
 import Sys.sleep;
 import hxdiscord_rpc.Discord;
@@ -28,18 +27,20 @@ import hxdiscord_rpc.Types;
 	Another feature is that you can now toggle Discord RPC from the Options Menu!
 
 	- teles
-*/
-
+ */
 class DiscordIO
 {
 	public static var lastDetails:String = "In the Menus";
+
 	public static function initialize()
 	{
 		#if DISCORD_RPC
-		if (!DiscordAPI.isInitialized) {
+		if (!DiscordAPI.isInitialized)
+		{
 			DiscordAPI.initialize();
-			
-			Application.current.window.onClose.add(function() {
+
+			Application.current.window.onClose.add(function()
+			{
 				DiscordAPI.shutdown();
 			});
 
@@ -60,7 +61,7 @@ class DiscordIO
 	{
 		#if DISCORD_RPC
 		DiscordAPI.changePresence(details, state);
-		if(log)
+		if (log)
 			Logs.print("changed RPC to " + details);
 		lastDetails = details;
 		#end
@@ -69,9 +70,9 @@ class DiscordIO
 	public static function check()
 	{
 		#if DISCORD_RPC
-		//if(SaveData.data.get("Discord RPC"))
-			DiscordAPI.initialize();
-		//else
+		// if(SaveData.data.get("Discord RPC"))
+		DiscordAPI.initialize();
+		// else
 		//	shutdown();
 		#end
 	}
@@ -85,34 +86,38 @@ class DiscordAPI
 	public static var clientID(default, set):String = _defaultID;
 	private static var presence:DiscordRichPresence = DiscordRichPresence.create();
 
-	public dynamic static function shutdown() {
-		if(isInitialized)
+	public dynamic static function shutdown()
+	{
+		if (isInitialized)
 			Discord.Shutdown();
 		isInitialized = false;
 	}
-	
-	private static function onReady(request:cpp.RawConstPointer<DiscordUser>):Void {
+
+	private static function onReady(request:cpp.RawConstPointer<DiscordUser>):Void
+	{
 		var requestPtr:cpp.Star<DiscordUser> = cpp.ConstPointer.fromRaw(request).ptr;
 
-		if (Std.parseInt(cast(requestPtr.discriminator, String)) != 0) //New Discord IDs/Discriminator system
-			Logs.print('(Discord) Connected to User (${cast(requestPtr.username, String)}#${cast(requestPtr.discriminator, String)})');
-		else //Old discriminators
-			Logs.print('(Discord) Connected to User (${cast(requestPtr.username, String)})');
+		if (Std.parseInt(cast(requestPtr.discriminator, String)) != 0) // New Discord IDs/Discriminator system
+			Logs.print('(Discord) Connected to User (${cast (requestPtr.username, String)}#${cast (requestPtr.discriminator, String)})');
+		else // Old discriminators
+			Logs.print('(Discord) Connected to User (${cast (requestPtr.username, String)})');
 
 		changePresence(DiscordIO.lastDetails);
 	}
 
-	private static function onError(errorCode:Int, message:cpp.ConstCharStar):Void {
-		Logs.print('Discord: Error ($errorCode: ${cast(message, String)})', ERROR);
+	private static function onError(errorCode:Int, message:cpp.ConstCharStar):Void
+	{
+		Logs.print('Discord: Error ($errorCode: ${cast (message, String)})', ERROR);
 	}
 
-	private static function onDisconnected(errorCode:Int, message:cpp.ConstCharStar):Void {
-		Logs.print('Discord: Disconnected ($errorCode: ${cast(message, String)})');
+	private static function onDisconnected(errorCode:Int, message:cpp.ConstCharStar):Void
+	{
+		Logs.print('Discord: Disconnected ($errorCode: ${cast (message, String)})');
 	}
 
 	public static function initialize()
 	{
-		if(isInitialized) //stop!
+		if (isInitialized) // stop!
 			return;
 
 		var discordHandlers:DiscordEventHandlers = DiscordEventHandlers.create();
@@ -140,11 +145,14 @@ class DiscordAPI
 		isInitialized = true;
 	}
 
-	public static function changePresence(?details:String = 'In the Menus', ?state:Null<String>, ?smallImageKey : String, ?hasStartTimestamp : Bool, ?endTimestamp: Float)
+	public static function changePresence(?details:String = 'In the Menus', ?state:Null<String>, ?smallImageKey:String, ?hasStartTimestamp:Bool,
+			?endTimestamp:Float)
 	{
 		var startTimestamp:Float = 0;
-		if (hasStartTimestamp) startTimestamp = Date.now().getTime();
-		if (endTimestamp > 0) endTimestamp = startTimestamp + endTimestamp;
+		if (hasStartTimestamp)
+			startTimestamp = Date.now().getTime();
+		if (endTimestamp > 0)
+			endTimestamp = startTimestamp + endTimestamp;
 
 		presence.details = details;
 		presence.state = state;
@@ -157,11 +165,13 @@ class DiscordAPI
 		updatePresence();
 	}
 
-	public static function updatePresence() {
+	public static function updatePresence()
+	{
 		Discord.UpdatePresence(cpp.RawConstPointer.addressOf(presence));
 	}
-	
-	public static function resetClientID() {
+
+	public static function resetClientID()
+	{
 		clientID = _defaultID;
 	}
 
@@ -170,7 +180,7 @@ class DiscordAPI
 		var change:Bool = (clientID != newID);
 		clientID = newID;
 
-		if(change && isInitialized)
+		if (change && isInitialized)
 		{
 			shutdown();
 			initialize();

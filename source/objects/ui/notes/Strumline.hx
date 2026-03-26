@@ -17,15 +17,15 @@ class Strumline extends FlxGroup
 	public var hasModchart:Bool = false;
 
 	public var strumlineData:Int = 0;
-	
+
 	public var scrollSpeed:Float = 1.0;
 
 	public var holdingNotes:Array<Bool> = [];
-	
+
 	// use these to access the actual data
 	public var strums:Array<StrumNote> = [];
 	public var notes:Array<Note> = [];
-	
+
 	public function new(xOffset:Float, downscroll:Bool = false, isPlayer:Bool = false, botplay:Bool = false, wide:Bool = false)
 	{
 		super();
@@ -35,9 +35,10 @@ class Strumline extends FlxGroup
 		this.botplay = botplay;
 		this.wide = wide;
 
-		for (i in 0...4) holdingNotes.push(false);
-		
-		for(i in 0...NoteUtil.directions.length)
+		for (i in 0...4)
+			holdingNotes.push(false);
+
+		for (i in 0...NoteUtil.directions.length)
 		{
 			var strum = new StrumNote();
 			strum.reloadStrum(i);
@@ -45,11 +46,11 @@ class Strumline extends FlxGroup
 			strums.push(strum);
 			add(strum);
 		}
-		
+
 		recalculateX();
 		recalculateY();
 	}
-	
+
 	public function addNote(noteData:NoteData)
 	{
 		var note:Note = cast recycle(Note);
@@ -57,14 +58,15 @@ class Strumline extends FlxGroup
 		note.reloadSprite();
 		note.setZ(2);
 		notes.push(note);
-		if (!members.contains(note)) add(note);
-		
+		if (!members.contains(note))
+			add(note);
+
 		// searchs for hold notes
-		if(noteData.length > 0)
+		if (noteData.length > 0)
 		{
 			var holdLength:Int = Math.ceil(noteData.length + 1);
 			var holdIndex:Float = 0.0;
-			for(i in 0...holdLength)
+			for (i in 0...holdLength)
 			{
 				var hold:Note = cast recycle(Note);
 				hold.loadData(noteData);
@@ -73,9 +75,10 @@ class Strumline extends FlxGroup
 				hold.isHoldEnd = (i == holdLength - 1);
 				if (i == holdLength - 2)
 				{
-					//(i == holdLength - 2 ? endDiff : 1.0)
+					// (i == holdLength - 2 ? endDiff : 1.0)
 					var endDiff:Float = noteData.length - Math.floor(noteData.length);
-					if (endDiff <= 0.0) endDiff = 1.0; // oh well
+					if (endDiff <= 0.0)
+						endDiff = 1.0; // oh well
 					hold.holdStep = endDiff;
 				}
 				else if (hold.isHoldEnd)
@@ -89,7 +92,8 @@ class Strumline extends FlxGroup
 				hold.holdParent = note;
 				hold.setZ(1);
 				notes.push(hold);
-				if (!members.contains(hold)) add(hold);
+				if (!members.contains(hold))
+					add(hold);
 
 				holdIndex += hold.holdStep;
 			}
@@ -97,18 +101,18 @@ class Strumline extends FlxGroup
 
 		sort(ZIndex.sort);
 	}
-	
+
 	public function killNote(note:Note)
 	{
 		notes.remove(note);
 		note.kill();
 	}
-	
+
 	public function updateNotes(curStepFloat:Float)
 	{
 		var downMult:Int = (downscroll ? -1 : 1);
 
-		for(note in notes)
+		for (note in notes)
 		{
 			var strum = strums[note.data.lane];
 			var noteSpeed:Float = note.noteSpeed ?? scrollSpeed;
@@ -122,7 +126,8 @@ class Strumline extends FlxGroup
 			var offsetY = (noteTime) * Conductor.stepCrochet * (noteSpeed * 0.45);
 			var angle = note.noteAngle ?? strum.strumAngle;
 
-			if (downscroll) angle += 180;
+			if (downscroll)
+				angle += 180;
 
 			if (note.isHold)
 			{
@@ -133,10 +138,7 @@ class Strumline extends FlxGroup
 			}
 
 			note.updateOffsets();
-			NoteUtil.setNotePos(
-				note, strum, angle * downMult,
-				offsetX, offsetY
-			);
+			NoteUtil.setNotePos(note, strum, angle * downMult, offsetX, offsetY);
 		}
 	}
 
@@ -148,7 +150,8 @@ class Strumline extends FlxGroup
 		splash.x = strums[note.data.lane].x;
 		splash.y = strums[note.data.lane].y;
 		splash.reloadSplash();
-		if (!members.contains(splash)) add(splash);
+		if (!members.contains(splash))
+			add(splash);
 		sort(ZIndex.sort);
 	}
 
@@ -162,10 +165,11 @@ class Strumline extends FlxGroup
 		cover.strum = strums[note.data.lane];
 		cover.isPlayer = isPlayer;
 		cover.reloadSplash();
-		if (!members.contains(cover)) add(cover);
+		if (!members.contains(cover))
+			add(cover);
 		sort(ZIndex.sort);
 	}
-	
+
 	public function recalculateX()
 	{
 		for (strum in strums)
@@ -173,15 +177,16 @@ class Strumline extends FlxGroup
 			strum.x = x;
 			strum.x += NoteUtil.noteWidth(wide) * strum.lane;
 			strum.x -= (NoteUtil.noteWidth(wide) * (strums.length - 1)) / 2;
-			if(wide) strum.x += (strum.lane < (NoteUtil.directions.length/2) ? -100 : 100);
-			
+			if (wide)
+				strum.x += (strum.lane < (NoteUtil.directions.length / 2) ? -100 : 100);
+
 			strum.initialPos.x = strum.x;
 		}
 	}
-		
+
 	public function recalculateY()
 	{
-		for(strum in strums)
+		for (strum in strums)
 		{
 			strum.y = (!downscroll ? 110 : FlxG.height - 110);
 			strum.initialPos.y = strum.y;

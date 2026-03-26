@@ -2,30 +2,33 @@ package doido.objects;
 
 import animate.FlxAnimate;
 
-typedef Animation = {
-    var name:String;
-    var prefix:String;
-    var ?framerate:Int;
-    var ?loop:Bool;
-    var ?offset:DoidoPoint;
-    var ?indices:Array<Int>;
-    var ?flipX:Bool;
-    var ?flipY:Bool;
+typedef Animation =
+{
+	var name:String;
+	var prefix:String;
+	var ?framerate:Int;
+	var ?loop:Bool;
+	var ?offset:DoidoPoint;
+	var ?indices:Array<Int>;
+	var ?flipX:Bool;
+	var ?flipY:Bool;
 }
 
-enum SpriteType {
-    SPARROW;
+enum SpriteType
+{
+	SPARROW;
 	ATLAS;
 	PACKER;
 	ASEPRITE;
 	MULTISPARROW;
-	FONT; //ONLY USE FOR FONTS!!!
+	FONT; // ONLY USE FOR FONTS!!!
 }
 
-enum AtlasType {
+enum AtlasType
+{
 	SYMBOL;
-    FRAMELABEL;
-	TIMELINE; //WEIRD AND DANGEROUS
+	FRAMELABEL;
+	TIMELINE; // WEIRD AND DANGEROUS
 }
 
 class DoidoSprite extends FlxAnimate
@@ -37,116 +40,73 @@ class DoidoSprite extends FlxAnimate
 	public var animList:Array<String> = [];
 
 	public var spriteType:SpriteType = SPARROW;
-    public var atlasType:AtlasType = SYMBOL;
-	
+	public var atlasType:AtlasType = SYMBOL;
+
 	public function new(x:Float = 0, y:Float = 0)
 	{
 		super(x, y);
 	};
-	
-	public function addOffset(animName:String, offset:DoidoPoint) {
+
+	public function addOffset(animName:String, offset:DoidoPoint)
+	{
 		animOffsets.set(animName, offset);
 	}
 
-	public function getOffset(animName:String):DoidoPoint {
-		if (!animExists(animName)) return {x: 0, y: 0};
+	public function getOffset(animName:String):DoidoPoint
+	{
+		if (!animExists(animName))
+			return {x: 0, y: 0};
 		return animOffsets.get(animName);
 	}
 
-	public function addToOffset(animName:String, x:Float = 0, y:Float = 0) {
-		if (!animExists(animName)) return;
+	public function addToOffset(animName:String, x:Float = 0, y:Float = 0)
+	{
+		if (!animExists(animName))
+			return;
 		animOffsets.get(animName).x += x;
 		animOffsets.get(animName).y += y;
 	}
 
-	public function addAnim(animData:Animation) {
-		if(spriteType == ATLAS) {
-			switch (atlasType) {
+	public function addAnim(animData:Animation)
+	{
+		if (spriteType == ATLAS)
+		{
+			switch (atlasType)
+			{
 				case TIMELINE:
-					if((animData.indices ?? []).length > 0)
-						anim.addByTimelineIndices(
-							animData.name,
-							library.timeline,
-							animData.indices,
-							animData.framerate ?? 24,
-							animData.loop ?? false,
-							animData.flipX ?? false,
-							animData.flipY ?? false
-						);
+					if ((animData.indices ?? []).length > 0)
+						anim.addByTimelineIndices(animData.name, library.timeline, animData.indices, animData.framerate ?? 24, animData.loop ?? false,
+							animData.flipX ?? false, animData.flipY ?? false);
 					else
-						anim.addByTimeline(
-							animData.name,
-							library.timeline,
-							animData.framerate ?? 24,
-							animData.loop ?? false,
-							animData.flipX ?? false,
-							animData.flipY ?? false
-						);
+						anim.addByTimeline(animData.name, library.timeline, animData.framerate ?? 24, animData.loop ?? false, animData.flipX ?? false,
+							animData.flipY ?? false);
 				case FRAMELABEL:
-					if((animData.indices ?? []).length > 0)
-						anim.addByFrameLabelIndices(
-							animData.name,
-							animData.prefix,
-							animData.indices,
-							animData.framerate ?? 24,
-							animData.loop ?? false,
-							animData.flipX ?? false,
-							animData.flipY ?? false
-						);
+					if ((animData.indices ?? []).length > 0)
+						anim.addByFrameLabelIndices(animData.name, animData.prefix, animData.indices, animData.framerate ?? 24, animData.loop ?? false,
+							animData.flipX ?? false, animData.flipY ?? false);
 					else
-						anim.addByFrameLabel(
-							animData.name,
-							animData.prefix,
-							animData.framerate ?? 24,
-							animData.loop ?? false,
-							animData.flipX ?? false,
-							animData.flipY ?? false
-						);
-				default: //SYMBOL
-					if((animData.indices ?? []).length > 0)
-						anim.addBySymbolIndices(
-							animData.name,
-							animData.prefix,
-							animData.indices,
-							animData.framerate ?? 24,
-							animData.loop ?? false,
-							animData.flipX ?? false,
-							animData.flipY ?? false
-						);
+						anim.addByFrameLabel(animData.name, animData.prefix, animData.framerate ?? 24, animData.loop ?? false, animData.flipX ?? false,
+							animData.flipY ?? false);
+				default: // SYMBOL
+					if ((animData.indices ?? []).length > 0)
+						anim.addBySymbolIndices(animData.name, animData.prefix, animData.indices, animData.framerate ?? 24, animData.loop ?? false,
+							animData.flipX ?? false, animData.flipY ?? false);
 					else
-						anim.addBySymbol(
-							animData.name,
-							animData.prefix,
-							animData.framerate ?? 24,
-							animData.loop ?? false,
-							animData.flipX ?? false,
-							animData.flipY ?? false
-						);
+						anim.addBySymbol(animData.name, animData.prefix, animData.framerate ?? 24, animData.loop ?? false, animData.flipX ?? false,
+							animData.flipY ?? false);
 			}
 		}
-		else {
-			if((animData.indices ?? []).length > 0)
-				anim.addByIndices(
-					animData.name,
-					animData.prefix,
-					animData.indices, "",
-					animData.framerate ?? 24,
-					animData.loop ?? false,
-					animData.flipX ?? false,
-					animData.flipY ?? false
-				);
+		else
+		{
+			if ((animData.indices ?? []).length > 0)
+				anim.addByIndices(animData.name, animData.prefix, animData.indices, "", animData.framerate ?? 24, animData.loop ?? false,
+					animData.flipX ?? false, animData.flipY ?? false);
 			else
-				anim.addByPrefix(
-					animData.name,
-					animData.prefix,
-					animData.framerate ?? 24,
-					animData.loop ?? false,
-					animData.flipX ?? false,
-					animData.flipY ?? false
-				);
+				anim.addByPrefix(animData.name, animData.prefix, animData.framerate ?? 24, animData.loop ?? false, animData.flipX ?? false,
+					animData.flipY ?? false);
 		}
 
-		if(animData.offset != null)
+		if (animData.offset != null)
 			addOffset(animData.name, animData.offset);
 
 		animList.push(animData.name);
@@ -154,23 +114,24 @@ class DoidoSprite extends FlxAnimate
 
 	public function playAnim(animName:String, forced:Bool = true, frame:Int = 0)
 	{
-		if (!animExists(animName)) return;
+		if (!animExists(animName))
+			return;
 		anim.play(animName, forced, false, frame);
 		curAnimName = animName;
-		
+
 		updateOffset();
 	}
-	
+
 	// use this to modify the sprite's origin
 	public function preUpdateOffset()
 	{
 		offset.set(0, 0);
 	}
-	
+
 	public function updateOffset()
 	{
 		preUpdateOffset();
-		if(animOffsets.exists(curAnimName))
+		if (animOffsets.exists(curAnimName))
 		{
 			var daOffset = animOffsets.get(curAnimName);
 			offset.x += daOffset.x * scale.x;
@@ -178,23 +139,27 @@ class DoidoSprite extends FlxAnimate
 		}
 	}
 
-	public function spriteTypeFromString(type:Null<String>) {
-        spriteType = switch((type ?? "").toUpperCase()) {
-            case "ATLAS" | "SPRITEMAP" | "ANIMATE": ATLAS;
+	public function spriteTypeFromString(type:Null<String>)
+	{
+		spriteType = switch ((type ?? "").toUpperCase())
+		{
+			case "ATLAS" | "SPRITEMAP" | "ANIMATE": ATLAS;
 			case "PACKER": PACKER;
 			case "ASEPRITE": ASEPRITE;
 			case "MULTISPARROW": MULTISPARROW;
-            default: SPARROW;
-        }
-    }
+			default: SPARROW;
+		}
+	}
 
-	public function atlasTypeFromString(type:Null<String>) {
-        atlasType = switch((type ?? "").toUpperCase()) {
-            case "FRAMELABEL": FRAMELABEL;
+	public function atlasTypeFromString(type:Null<String>)
+	{
+		atlasType = switch ((type ?? "").toUpperCase())
+		{
+			case "FRAMELABEL": FRAMELABEL;
 			case "TIMELINE": TIMELINE;
-            default: SYMBOL;
-        }
-    }
+			default: SYMBOL;
+		}
+	}
 
 	public function animExists(animName:String):Bool
 		return (anim.getByName(animName) != null);

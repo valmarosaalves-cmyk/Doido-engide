@@ -7,7 +7,7 @@ import doido.utils.SpriteUtil;
 import doido.system.Logs;
 import doido.utils.MathUtil;
 import doido.utils.MathUtil.DoidoPoint;
-import Main.Paths; //just to help
+import Main.Paths; // just to help
 
 using StringTools;
 using doido.utils.SpriteUtil;

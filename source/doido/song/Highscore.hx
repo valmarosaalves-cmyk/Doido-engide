@@ -1,6 +1,7 @@
 package doido.song;
 
-typedef ScoreData = {
+typedef ScoreData =
+{
 	var score:Float;
 	var accuracy:Float;
 	var misses:Int;
@@ -14,15 +15,15 @@ class Highscore
 	{
 		var oldScore:ScoreData = getScore(song);
 
-		if((newScore.score > oldScore.score))
+		if ((newScore.score > oldScore.score))
 			scores.set(song, newScore);
-		
+
 		save();
 	}
 
 	public static function getScore(song:String):ScoreData
 	{
-		if(!scores.exists(song))
+		if (!scores.exists(song))
 			return {score: 0, accuracy: 0, misses: 0};
 		else
 			return scores.get(song);
@@ -30,7 +31,7 @@ class Highscore
 
 	public static function save(?file:DoidoSave)
 	{
-		if(file == null)
+		if (file == null)
 			file = new DoidoSave("highscore");
 
 		file.data.scores = scores;
@@ -41,7 +42,7 @@ class Highscore
 	{
 		var file = new DoidoSave("highscore");
 
-		if(file.data.scores == null)
+		if (file.data.scores == null)
 			file.data.scores = scores;
 		scores = file.data.scores;
 

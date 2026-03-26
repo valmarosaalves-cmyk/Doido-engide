@@ -18,12 +18,12 @@ class PlayField extends FlxGroup
 {
 	public var spawnNotes:Array<NoteData> = [];
 	public var curSpawnNote:Int = 0;
-	
+
 	public var strumlines:Array<Strumline> = [];
 	public var dadStrumline:Strumline;
 	public var bfStrumline:Strumline;
 	public var touchInput:TouchInput;
-	
+
 	public function new(spawnNotes:Array<NoteData>, speed:Float, downscroll:Bool, middlescroll:Bool)
 	{
 		super();
@@ -33,16 +33,16 @@ class PlayField extends FlxGroup
 		var wide:Bool = #if TOUCH_CONTROLS Save.data.modernControls #else false #end;
 
 		var strumPos:Array<Float> = [-FlxG.width / 4, FlxG.width / 4];
-		if(middlescroll)
+		if (middlescroll)
 			strumPos = [-FlxG.width, 0];
-		
+
 		dadStrumline = new Strumline(strumPos[0], downscroll, false, true, false);
 		strumlines.push(dadStrumline);
 
 		bfStrumline = new Strumline(strumPos[1], downscroll, true, false, wide);
 		strumlines.push(bfStrumline);
-		
-		for(strumline in strumlines)
+
+		for (strumline in strumlines)
 		{
 			strumline.scrollSpeed = speed;
 			add(strumline);
@@ -52,43 +52,57 @@ class PlayField extends FlxGroup
 		add(touchInput);
 	}
 
-	public var pressed:Array<Bool> 		= [];
-	public var justPressed:Array<Bool> 	= [];
-	public var released:Array<Bool> 	= [];
+	public var pressed:Array<Bool> = [];
+	public var justPressed:Array<Bool> = [];
+	public var released:Array<Bool> = [];
 	public var curStepFloat:Float = 0.0;
-	
+
 	public function updateNotes(curStepFloat:Float)
 	{
 		this.curStepFloat = curStepFloat;
 		pressed = [
-			Controls.pressed(LEFT) 		|| touchInput.pressed("left"),
-			Controls.pressed(DOWN) 		|| touchInput.pressed("down"),
-			Controls.pressed(UP) 		|| touchInput.pressed("up"),
-			Controls.pressed(RIGHT) 	|| touchInput.pressed("right"),
+			Controls.pressed(LEFT)
+			|| touchInput.pressed("left"),
+			Controls.pressed(DOWN)
+			|| touchInput.pressed("down"),
+			Controls.pressed(UP)
+			|| touchInput.pressed("up"),
+			Controls.pressed(RIGHT)
+			|| touchInput.pressed("right"),
 		];
 		justPressed = [
-			Controls.justPressed(LEFT) 	|| touchInput.justPressed("left"),
-			Controls.justPressed(DOWN) 	|| touchInput.justPressed("down"),
-			Controls.justPressed(UP) 	|| touchInput.justPressed("up"),
-			Controls.justPressed(RIGHT) || touchInput.justPressed("right"),
+			Controls.justPressed(LEFT)
+			|| touchInput.justPressed("left"),
+			Controls.justPressed(DOWN)
+			|| touchInput.justPressed("down"),
+			Controls.justPressed(UP)
+			|| touchInput.justPressed("up"),
+			Controls.justPressed(RIGHT)
+			|| touchInput.justPressed("right"),
 		];
 		released = [
-			Controls.released(LEFT)  	|| touchInput.released("left"),
-			Controls.released(DOWN)  	|| touchInput.released("down"),
-			Controls.released(UP) 	 	|| touchInput.released("up"),
-			Controls.released(RIGHT) 	|| touchInput.released("right"),
+			Controls.released(LEFT)
+			|| touchInput.released("left"),
+			Controls.released(DOWN)
+			|| touchInput.released("down"),
+			Controls.released(UP)
+			|| touchInput.released("up"),
+			Controls.released(RIGHT)
+			|| touchInput.released("right"),
 		];
 
-		if (!pressed.contains(true)) playerHolding = false;
+		if (!pressed.contains(true))
+			playerHolding = false;
 
 		// spawning notes
 		if (curSpawnNote < spawnNotes.length)
 		{
 			var spawnStep:Float = 32; // spawns notes 32 steps ahead
 
-			for(i in 0...spawnNotes.length)
+			for (i in 0...spawnNotes.length)
 			{
-				if (i < curSpawnNote) continue;
+				if (i < curSpawnNote)
+					continue;
 
 				var noteData = spawnNotes[curSpawnNote];
 				if (noteDiffStep(noteData) < spawnStep)
@@ -100,7 +114,7 @@ class PlayField extends FlxGroup
 			}
 		}
 
-		for(strumline in strumlines)
+		for (strumline in strumlines)
 		{
 			// deleting notes
 			for (note in strumline.notes)
@@ -128,7 +142,7 @@ class PlayField extends FlxGroup
 			}
 
 			// updating strums
-			for(strum in strumline.strums)
+			for (strum in strumline.strums)
 			{
 				if (strumline.botplay)
 				{
@@ -139,21 +153,21 @@ class PlayField extends FlxGroup
 				{
 					if (strumline.isPlayer)
 					{
-						if(pressed[strum.lane])
+						if (pressed[strum.lane])
 						{
-							if(!["pressed", "confirm"].contains(strum.animation.curAnim.name))
+							if (!["pressed", "confirm"].contains(strum.animation.curAnim.name))
 								strum.playAnim("pressed");
 						}
 						else
 							strum.playAnim("static");
-						
+
 						/*if(strum.animation.curAnim.name == "confirm")
-							playerSinging = true;*/
+							playerSinging = true; */
 					}
 				}
 			}
 
-			for(i in 0...strumline.holdingNotes.length)
+			for (i in 0...strumline.holdingNotes.length)
 				strumline.holdingNotes[i] = false;
 
 			// updating notes
@@ -162,44 +176,45 @@ class PlayField extends FlxGroup
 			// updating player inputs
 			if (strumline.isPlayer && !strumline.botplay)
 			{
-				if(justPressed.contains(true))
+				if (justPressed.contains(true))
 				{
-					for(i in 0...justPressed.length)
+					for (i in 0...justPressed.length)
 					{
-						if(justPressed[i])
+						if (justPressed[i])
 						{
 							var possibleHitNotes:Array<Note> = []; // gets the possible ones
 							var canHitNote:Note = null;
-							
-							for(note in strumline.notes)
+
+							for (note in strumline.notes)
 							{
-								if(note.isHold) continue;
+								if (note.isHold)
+									continue;
 								var noteDiff:Float = noteDiff(note.data);
-								
+
 								var minTiming:Float = Timings.minTiming;
 								/*if(note.mustMiss)
-									minTiming = Timings.getTimings("good")[1];*/
-								
-								if(noteDiff <= minTiming && !note.missed && !note.gotHit && note.data.lane == i)
+									minTiming = Timings.getTimings("good")[1]; */
+
+								if (noteDiff <= minTiming && !note.missed && !note.gotHit && note.data.lane == i)
 								{
 									// disables "mustMiss" notes when they are too late to hit
 									/*if(note.mustMiss
-									&& Conductor.songPos >= note.songTime + Timings.getTimings("sick")[1])
-									{
-										continue;
+										&& Conductor.songPos >= note.songTime + Timings.getTimings("sick")[1])
+										{
+											continue;
 									}*/
-									
+
 									possibleHitNotes.push(note);
 									canHitNote = note;
 								}
 							}
-							
+
 							// if the note actually exists then you got it
-							if(canHitNote != null)
+							if (canHitNote != null)
 							{
-								for(note in possibleHitNotes)
+								for (note in possibleHitNotes)
 								{
-									if(note.data.stepTime < canHitNote.data.stepTime)
+									if (note.data.stepTime < canHitNote.data.stepTime)
 										canHitNote = note;
 								}
 
@@ -209,11 +224,11 @@ class PlayField extends FlxGroup
 							{
 								onGhostTap(i, NoteUtil.directions[i]);
 								/*if(startedCountdown)
-								{
-									if(ghostTapping == "NEVER" || (ghostTapping == "WHILE IDLING" && !isIdling))
 									{
-										onGhostTap(i, NoteUtil.directions[i]);
-									}
+										if(ghostTapping == "NEVER" || (ghostTapping == "WHILE IDLING" && !isIdling))
+										{
+											onGhostTap(i, NoteUtil.directions[i]);
+										}
 								}*/
 							}
 						}
@@ -221,11 +236,12 @@ class PlayField extends FlxGroup
 				}
 			}
 
-			for(hold in strumline.notes)
+			for (hold in strumline.notes)
 			{
-				if (!hold.isHold) continue;
+				if (!hold.isHold)
+					continue;
 				var holdParent = hold.holdParent;
-				if(holdParent != null)
+				if (holdParent != null)
 				{
 					if (holdParent.gotHit && !holdParent.missed)
 					{
@@ -236,7 +252,8 @@ class PlayField extends FlxGroup
 						if (!hold.missed && !hold.gotHit)
 						{
 							hold.holdHitPercent = holdPercent;
-							if(hold.holdParent != null) hold.holdParent.holdHitPercent = holdPercent;
+							if (hold.holdParent != null)
+								hold.holdParent.holdHitPercent = holdPercent;
 
 							var isPressing:Bool = false;
 							if (strumline.botplay)
@@ -246,61 +263,56 @@ class PlayField extends FlxGroup
 
 							if (holdPercent >= 1.0)
 								isPressing = false;
-			
-							if(hold.isHoldEnd && isPressing)
+
+							if (hold.isHoldEnd && isPressing)
 								_onNoteHold(hold, strumline);
-							
-							if(!isPressing)
+
+							if (!isPressing)
 							{
-								if(holdPercent > Timings.getTiming("shit").hold)
+								if (holdPercent > Timings.getTiming("shit").hold)
 									_onNoteHit(hold, strumline);
 								else
 									_onNoteMiss(hold, strumline);
 							}
 						}
-						
+
 						// calculating the clipping by how much you held the note
-						//if (!strumline.pauseNotes)
+						// if (!strumline.pauseNotes)
 						if (true)
 						{
-							var daRect = new FlxRect(
-								0, 0,
-								hold.frameWidth,
-								hold.frameHeight
-							);
-							
+							var daRect = new FlxRect(0, 0, hold.frameWidth, hold.frameHeight);
+
 							var rawSize:Float = holdHitLength - hold.holdIndex;
 							if (rawSize > 0)
 							{
-								daRect.y = FlxMath.remapToRange(
-									rawSize,
-									0.0, hold.holdStep,
-									0.0, hold.frameHeight
-								);
+								daRect.y = FlxMath.remapToRange(rawSize, 0.0, hold.holdStep, 0.0, hold.frameHeight);
 								if (daRect.y > daRect.height)
 									daRect.y = daRect.height;
 							}
-							
+
 							hold.clipRect = daRect;
 						}
 					}
-					
-					if(holdParent.missed && !hold.missed)
+
+					if (holdParent.missed && !hold.missed)
 						_onNoteMiss(hold, strumline);
 				}
 			}
 		}
 	}
 
-	inline public function noteDiffStep(note:NoteData):Float {
+	inline public function noteDiffStep(note:NoteData):Float
+	{
 		return (note.stepTime - curStepFloat);
 	}
 
-	inline public function noteDiff(note:NoteData):Float {
+	inline public function noteDiff(note:NoteData):Float
+	{
 		return noteDiffStep(note) * Conductor.stepCrochet;
 	}
 
-	public var onNoteHit:(note:Note, strumline:Strumline)->Void = null;
+	public var onNoteHit:(note:Note, strumline:Strumline) -> Void = null;
+
 	private function _onNoteHit(note:Note, strumline:Strumline)
 	{
 		var strum = strumline.strums[note.data.lane];
@@ -324,10 +336,10 @@ class PlayField extends FlxGroup
 				strum.playAnim("confirm");
 			}
 
-			if(diff <= Timings.getTiming("sick").diff)
+			if (diff <= Timings.getTiming("sick").diff)
 				strumline.addSplash(note);
 
-			if(note.data.length > 0)
+			if (note.data.length > 0)
 				strumline.addCover(note);
 		}
 		else
@@ -339,12 +351,14 @@ class PlayField extends FlxGroup
 				note.alpha = 0.4;
 		}
 
-		if (onNoteHit != null) onNoteHit(note, strumline);
+		if (onNoteHit != null)
+			onNoteHit(note, strumline);
 	}
 
 	public var canPlayHoldAnims:Bool = true;
 	public var playerHolding:Bool = false;
-	public var onNoteHold:(note:Note, strumline:Strumline)->Void = null;
+	public var onNoteHold:(note:Note, strumline:Strumline) -> Void = null;
+
 	private function _onNoteHold(note:Note, strumline:Strumline)
 	{
 		var strum = strumline.strums[note.data.lane];
@@ -354,22 +368,25 @@ class PlayField extends FlxGroup
 
 		strumline.holdingNotes[strum.lane] = true;
 
-		if (onNoteHold != null) onNoteHold(note, strumline);
+		if (onNoteHold != null)
+			onNoteHold(note, strumline);
 		canPlayHoldAnims = false;
 	}
 
-	public var onNoteMiss:(note:Note, strumline:Strumline)->Void = null;
+	public var onNoteMiss:(note:Note, strumline:Strumline) -> Void = null;
+
 	private function _onNoteMiss(note:Note, strumline:Strumline)
 	{
 		note.missed = true;
-		//note.visible = false;
+		// note.visible = false;
 		note.alpha = 0.2;
 
-		if (onNoteMiss != null) onNoteMiss(note, strumline);
+		if (onNoteMiss != null)
+			onNoteMiss(note, strumline);
 	}
 
-	public var onGhostTap:(lane:Int, direction:String)->Void;
-	
+	public var onGhostTap:(lane:Int, direction:String) -> Void;
+
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -381,7 +398,9 @@ class PlayField extends FlxGroup
 	}
 
 	public static var modchartAllowed(get, never):Bool;
-	public static function get_modchartAllowed():Bool {
+
+	public static function get_modchartAllowed():Bool
+	{
 		return #if TOUCH_CONTROLS !Save.data.modernControls #else true #end;
 	}
 }

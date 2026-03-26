@@ -29,32 +29,35 @@ class FPSCounter extends Sprite
 		fpsField = new CounterField(x, y, 22, 100, "", Main.globalFont, 0xFFFFFF);
 		addChild(fpsField);
 
-		labelField = new CounterField(x-30, y+9, 12, 100, "FPS", Main.globalFont, 0xFFFFFF);
+		labelField = new CounterField(x - 30, y + 9, 12, 100, "FPS", Main.globalFont, 0xFFFFFF);
 		addChild(labelField);
 
-		memField = new CounterField(x, y+21, 14, 300, "", Main.globalFont, 0xFFFFFF);
+		memField = new CounterField(x, y + 21, 14, 300, "", Main.globalFont, 0xFFFFFF);
 		addChild(memField);
 
 		visible = Save.data.fpsCounter;
-		//watermark = 'DE-Pudim ${Main.internalVer}';
-				
+		// watermark = 'DE-Pudim ${Main.internalVer}';
+
 		times = [];
 	}
 
 	private override function __enterFrame(deltaTime:Float)
 	{
-		if(!visible) return;
-		
+		if (!visible)
+			return;
+
 		final now:Float = Timer.stamp() * 1000;
 		times.push(now);
-		while (times[0] < now - 1000) times.shift();
-		
+		while (times[0] < now - 1000)
+			times.shift();
+
 		// prevents the overlay from updating every frame, why would you need to anyways @crowplexus
-		if (deltaTimeout < 50) {
+		if (deltaTimeout < 50)
+		{
 			deltaTimeout += deltaTime;
 			return;
 		}
-		
+
 		var fps:Int = times.length;
 		if (fps > FlxG.updateFramerate)
 			fps = FlxG.updateFramerate;
@@ -65,7 +68,8 @@ class FPSCounter extends Sprite
 		memField.text = FlxStringUtil.formatBytes(System.totalMemoryNumber);
 
 		#if windows
-		if(taskMem) memField.text == '\n${FlxStringUtil.formatBytes(doido.system.Windows.getMem())}';
+		if (taskMem)
+			memField.text == '\n${FlxStringUtil.formatBytes(doido.system.Windows.getMem())}';
 		#end
 
 		#if debug
@@ -73,18 +77,15 @@ class FPSCounter extends Sprite
 		#end
 
 		memField.text += '\n${watermark}';
-		
-		if(fps < 30 || fps > 360)
+
+		if (fps < 30 || fps > 360)
 			fpsField.textColor = 0xFF0000;
 		else
 			fpsField.textColor = 0xFFFFFF;
 
 		graphics.clear();
 
-		var bgWidth:Float = Math.max(
-			fpsField.textWidth + labelField.textWidth + 5,
-			memField.textWidth
-		) + 20;
+		var bgWidth:Float = Math.max(fpsField.textWidth + labelField.textWidth + 5, memField.textWidth) + 20;
 		var bgHeight:Float = memField.y + memField.textHeight + 16;
 
 		// draw background
@@ -103,7 +104,7 @@ class CounterField extends TextField
 		this.y = y;
 		this.text = initText;
 
-		if(width != 0)
+		if (width != 0)
 			this.width = width;
 
 		selectable = false;

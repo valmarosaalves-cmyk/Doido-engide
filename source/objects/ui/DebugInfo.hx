@@ -10,7 +10,7 @@ class DebugInfo extends FlxGroup
 {
 	public var daText:FlxBitmapText;
 	public var curState:MusicBeatState;
-	
+
 	public function new(curState:MusicBeatState)
 	{
 		super();
@@ -22,13 +22,14 @@ class DebugInfo extends FlxGroup
 		daText.alignment = LEFT;
 		add(daText);
 	}
-	
+
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		if (FlxG.keys.justPressed.F1) visible = !visible;
+		if (FlxG.keys.justPressed.F1)
+			visible = !visible;
 	}
-	
+
 	override function draw()
 	{
 		if (visible)
@@ -38,8 +39,9 @@ class DebugInfo extends FlxGroup
 			text += "\nStep: " + Math.floor(curState.curStepFloat * 100) / 100;
 			text += "\nBeat: " + Math.floor(curState.curStepFloat / 4 * 100) / 100;
 			text += "\nBPM: " + Math.floor(Conductor.bpm * 1000) / 1000;
-			
-			if (daText.text != text) {
+
+			if (daText.text != text)
+			{
 				daText.text = text;
 				daText.y = FlxG.height - daText.height - 10;
 			}

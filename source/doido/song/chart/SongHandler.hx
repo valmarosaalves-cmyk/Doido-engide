@@ -12,10 +12,10 @@ typedef DoidoSong =
 
 typedef DoidoMeta =
 {
-    var ?player1:String;
-    var ?player2:String;
-    var ?gf:String;
-    var ?stage:String;
+	var ?player1:String;
+	var ?player2:String;
+	var ?gf:String;
+	var ?stage:String;
 	var ?composer:String;
 	var ?charter:String;
 }
@@ -26,18 +26,18 @@ typedef DoidoChart =
 	var notes:Array<NoteData>;
 	var bpm:Float;
 	var speed:Float;
-
 	/* deprecated
-	var player1:String;
-	var player2:String;
-	*/
+		var player1:String;
+		var player2:String;
+	 */
 }
 
-typedef NoteData = {
+typedef NoteData =
+{
 	var stepTime:Float;
 	var lane:Int;
 	var strumline:Int;
-    var type:String;
+	var type:String;
 	var length:Float;
 }
 
@@ -51,22 +51,21 @@ typedef EventData =
 	var name:String;
 	var stepTime:Float;
 	var data:Array<Dynamic>;
-	//var isCamera:Bool;
+	// var isCamera:Bool;
 }
 
 class SongHandler
 {
 	/*public static final allEvents:Map<String, Dynamic> = [
-		"BPM Change" => [],
-		"BPM Tween" => [],
+			"BPM Change" => [],
+			"BPM Tween" => [],
 
-	];*/
-
-    inline public static function loadChart(jsonInput:String, ?diff:String = "normal"):DoidoChart
-	{		
+		]; */
+	inline public static function loadChart(jsonInput:String, ?diff:String = "normal"):DoidoChart
+	{
 		Logs.print('Chart Loaded: ' + '$jsonInput/$diff');
 
-		if(!Assets.fileExists('songs/$jsonInput/chart/$diff.json'))
+		if (!Assets.fileExists('songs/$jsonInput/chart/$diff.json'))
 			diff = "normal";
 
 		return parseChart(Assets.json('songs/$jsonInput/chart/$diff'));
@@ -75,13 +74,13 @@ class SongHandler
 	inline public static function loadEvents(jsonInput:String, ?diff:String = "normal"):DoidoEvents
 	{
 		var eventPath:String = 'songs/$jsonInput/chart/events-$diff';
-		if(!Assets.fileExists('$eventPath.json'))
+		if (!Assets.fileExists('$eventPath.json'))
 			eventPath = eventPath.replace('-$diff', "");
-		
-		if(!Assets.fileExists('$eventPath.json'))
+
+		if (!Assets.fileExists('$eventPath.json'))
 		{
 			Logs.print('Events not found: ${eventPath}');
-			return {events:[]};
+			return {events: []};
 		}
 
 		Logs.print('Events Loaded: ' + '$jsonInput/$eventPath');
@@ -98,15 +97,15 @@ class SongHandler
 			stage: "stage",
 			composer: "Unknown",
 			charter: "Unknown"
-			//difficulties: ["normal"]
+			// difficulties: ["normal"]
 		};
 
 		var metaPath:String = 'songs/$jsonInput/meta';
-		if(Assets.fileExists('$metaPath.json'))
+		if (Assets.fileExists('$metaPath.json'))
 			meta = mergeMetas(meta, cast Assets.json(metaPath));
-		if(Assets.fileExists('$metaPath-$diff.json'))
+		if (Assets.fileExists('$metaPath-$diff.json'))
 			meta = mergeMetas(meta, cast Assets.json('$metaPath-$diff'));
-			
+
 		return meta;
 	}
 
@@ -114,47 +113,47 @@ class SongHandler
 	{
 		var rawChart:Dynamic = cast content;
 		var CHART:DoidoChart = null;
-		
-        if (!Std.isOfType(rawChart.song, String))
-            CHART = Legacy.getChartFromLegacy(rawChart.song);
-		else
-        	CHART = cast rawChart;
 
-        return formatChart(CHART);
+		if (!Std.isOfType(rawChart.song, String))
+			CHART = Legacy.getChartFromLegacy(rawChart.song);
+		else
+			CHART = cast rawChart;
+
+		return formatChart(CHART);
 	}
 
-    // Removes duplicated notes from a chart.
+	// Removes duplicated notes from a chart.
 	inline private static function formatChart(CHART:DoidoChart):DoidoChart
 	{
 		// Normalize song name to use only lowercases and no spaces
 		CHART.song = CHART.song.toLowerCase();
-		if(CHART.song.contains(' '))
+		if (CHART.song.contains(' '))
 			CHART.song = CHART.song.replace(' ', '-');
 
 		// cleaning multiple notes at the same place
 		var removed:Int = 0;
-		for(note in CHART.notes)
+		for (note in CHART.notes)
 		{
-			for(doubleNote in CHART.notes)
+			for (doubleNote in CHART.notes)
 			{
-				if(note != doubleNote
-				&& note.strumline == doubleNote.strumline
-                && note.stepTime == doubleNote.stepTime
-                && note.lane == doubleNote.lane)
+				if (note != doubleNote
+					&& note.strumline == doubleNote.strumline
+					&& note.stepTime == doubleNote.stepTime
+					&& note.lane == doubleNote.lane)
 				{
 					CHART.notes.remove(doubleNote);
 					removed++;
 				}
 			}
 		}
-		if(removed > 0)
+		if (removed > 0)
 			Logs.print('removed $removed duplicated notes');
 
 		/*if(CHART.gfVersion == null)
-			CHART.gfVersion = "stage-set";*/
+			CHART.gfVersion = "stage-set"; */
 
 		CHART.notes.sort(NoteUtil.sortNotes);
-		
+
 		return CHART;
 	}
 
@@ -164,15 +163,16 @@ class SongHandler
 		return EVENTS;
 	}
 
-	static function mergeMetas(a:DoidoMeta, b:DoidoMeta):DoidoMeta {
-        var meta:DoidoMeta = {};
-        meta.player1 = (b.player1 ?? a.player1);
-        meta.player2 = (b.player2 ?? a.player2);
-        meta.gf = (b.gf ?? a.gf);
-        meta.stage = (b.stage ?? a.stage);
+	static function mergeMetas(a:DoidoMeta, b:DoidoMeta):DoidoMeta
+	{
+		var meta:DoidoMeta = {};
+		meta.player1 = (b.player1 ?? a.player1);
+		meta.player2 = (b.player2 ?? a.player2);
+		meta.gf = (b.gf ?? a.gf);
+		meta.stage = (b.stage ?? a.stage);
 		meta.composer = (b.composer ?? a.composer);
 		meta.charter = (b.charter ?? a.charter);
-        //meta.difficulties = (b.difficulties ?? a.difficulties);
-        return meta;
-    }
+		// meta.difficulties = (b.difficulties ?? a.difficulties);
+		return meta;
+	}
 }
