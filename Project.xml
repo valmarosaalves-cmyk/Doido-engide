@@ -3,11 +3,11 @@
 
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="FNF: Doido Engine" file="DoidoEngine" packageName="com.diogotv.doidoengine" package="com.diogotv.doidoengine" main="Main" version="3.4.1" company="DiogoTV" />
+	<app title="FNF: Doido Engine" file="DoidoEngine" packageName="com.diogotv.doidoengine" package="com.diogotv.doidoengine" main="Main" version="0.0.1" company="DiogoTV" />
 	
 	<!--The flixel preloader is not accurate in Chrome. You can use it regularly if you embed the swf into a html file
 		or you can set the actual size of your file manually at "FlxPreloaderBase-onUpdate-bytesTotal"-->
-	<app preloader="backend.game.DoidoPreloader" />
+	<app preloader="flixel.system.FlxPreloader"/>
 
 	<!--Minimum without FLX_NO_GAMEPAD: 11.8, without FLX_NO_NATIVE_CURSOR: 11.2-->
 	<set name="SWF_VERSION" value="11.8" />
@@ -29,14 +29,9 @@
 	<!-- _____________________________ Custom Defines ___________________________ -->
 
 	<define name="DISCORD_RPC" 			if="cpp" unless="mobile" />
-	<define name="PRELOAD_SONG" 		if="cpp" unless="debug" />
-	<define name="RENAME_UNDERSCORE" 	if="html5 || mobile"/>
 	<define name="ENABLE_PRINTING" 		if="cpp || hl || html5"/>
-	<define name="ROUND_ICON" 			if="mac"/>
 	<define name="TOUCH_CONTROLS"		if="mobile"/>
-	<!--Uncomment-this-to-use-videos-in-your-mod!!-->
-	<!--<define name="VIDEOS_ALLOWED" 		if="desktop || android || html5"/>-->
-	<define name="HXVLC_NO_SHARE_DIRECTORY" if="desktop || android" />
+	<define name="SCREENSHOT_FEATURE" 	if="cpp" unless="mobile"/>
 
 	<!-- _____________________________ Path Settings ____________________________ -->
 
@@ -45,16 +40,7 @@
 	<set name="BUILD_DIR" value="export/release" unless="debug" />
 
 	<source path="source" />
-	<assets path="assets" /> <!-- if="VIDEOS_ALLOWED" /> -->
-	<!--<assets path="assets" exclude="videos" unless="VIDEOS_ALLOWED" />-->
-	<assets path="art/mobile" rename="assets/images/mobile" if="TOUCH_CONTROLS" />
-
-	<!-- RENAME UNDERSCORE FOLDERS -->
-	<section if="RENAME_UNDERSCORE">
-		<assets path="assets/images/stages/_scripts" 	rename="assets/images/stages/scripts"/>
-		<assets path="assets/images/characters/_offsets" 	rename="assets/images/characters/offsets"/>
-		<assets path="assets/images/notes/_other" 			rename="assets/images/notes/other"/>
-	</section>
+	<assets path="assets" />
 
 	<!-- OpenAL config -->
 	<section if="desktop">
@@ -64,18 +50,17 @@
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
-	<haxelib name="flixel" />
-	<haxelib name="flixel-addons" />
-	<haxelib name="flixel-ui" />
-	<haxelib name="hscript" if="debug" /> <!--Used only for flixel's debugger!-->
+	<haxelib name="flixel" version="6.1.2" />
+	<haxelib name="flixel-addons" version="4.0.1" />
+	<haxelib name="flixel-ui" version="2.6.4" />
+	
 	<haxelib name="hscript-iris" />
 	<haxedef name="hscriptPos" />
+	
 	<haxelib name="hxdiscord_rpc" if="DISCORD_RPC" />
-	<haxelib name="hxvlc" if="VIDEOS_ALLOWED" unless="html5" />
 	
 	<!-- ______ Custom Doido Libraries ______ -->
-	<haxelib name="flxanimate-doido"/>
-	<haxelib name="tjson"/>
+	<haxelib name="flixel-animate" version="1.4.0" />
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
@@ -86,26 +71,18 @@
 
 	<haxedef name="HXCPP_CHECK_POINTER" if="release" />
 	<haxedef name="HXCPP_STACK_LINE" 	if="release" />
+	
+	<haxedef name="FLX_NO_SAVE" /> <!-- disables default FlxG.save -->
 
 	<!-- _________________________________ Custom _______________________________ -->
 
-	<section if="ROUND_ICON">
-		<icon path="art/icon/macOS/icon16.png" 	size='16'  />
-		<icon path="art/icon/macOS/icon32.png" 	size='32'  />
-		<icon path="art/icon/macOS/icon64.png" 	size='64'  />
-		<icon path="art/icon/macOS/icon128.png" 	size='128' />
-		<icon path="art/icon/macOS/icon256.png" 	size='256' />
-		<icon path="art/icon/macOS/icon512.png"/>
-	</section>
+	<!-- <haxeflag name="macro" value="addMetadata('@:build(doido.system.DoidoMacro.buildFlxBasic())', 'flixel.FlxBasic')" /> -->
 
-	<section unless="ROUND_ICON">
-		<icon path="art/icon/icon16.png" 	size='16'  />
-		<icon path="art/icon/icon32.png" 	size='32'  />
-		<icon path="art/icon/icon64.png" 	size='64'  />
-		<icon path="art/icon/icon128.png" 	size='128' />
-		<icon path="art/icon/icon256.png" 	size='256' />
-		<icon path="art/icon/icon512.png" 	size='512' />
-		<icon path="art/icon/iconOG.png" />
-	</section>
-
+	<icon path="art/icon/icon16.png" 	size='16'  />
+	<icon path="art/icon/icon32.png" 	size='32'  />
+	<icon path="art/icon/icon64.png" 	size='64'  />
+	<icon path="art/icon/icon128.png" 	size='128' />
+	<icon path="art/icon/icon256.png" 	size='256' />
+	<icon path="art/icon/icon512.png" 	size='512' />
+	<icon path="art/icon/iconOG.png" />
 </project>

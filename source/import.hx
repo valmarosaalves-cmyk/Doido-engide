@@ -1,9 +1,16 @@
 import flixel.FlxG;
-import backend.game.Controls;
-import backend.game.SaveData;
-import backend.utils.CoolUtil;
-import backend.system.Discord.DiscordIO;
-import backend.system.Logs;
+import doido.Assets;
+import doido.Controls;
+import doido.MusicBeat;
+import doido.Save;
+import doido.utils.SpriteUtil;
+import doido.system.Logs;
+import doido.utils.MathUtil;
+import doido.utils.MathUtil.DoidoPoint;
+import Main.Paths; // just to help
 
 using StringTools;
+using doido.utils.SpriteUtil;
+using doido.utils.TextUtil;
+using doido.utils.ZIndex;
 using flixel.util.FlxArrayUtil;

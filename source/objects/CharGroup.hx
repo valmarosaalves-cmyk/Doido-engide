@@ -1,63 +1,188 @@
 package objects;
 
-import flixel.group.FlxGroup;
+import objects.Character.SingType;
+import flixel.math.FlxPoint;
+import doido.utils.NoteUtil;
+import objects.ui.notes.Note;
+import flixel.group.FlxGroup.FlxTypedGroup;
+import objects.ui.notes.Strumline;
 
 class CharGroup extends FlxTypedGroup<Character>
 {
-    public var loadedChars:Array<String> = [];
-    public var isPlayer:Bool = false;
-    public var curChar:String = 'bf';
-    public var char:Character;
-    
-    public function new(isPlayer:Bool = false, curChar:String = "bf")
-    {
-        super();
-        this.isPlayer = isPlayer;
-        this.curChar = curChar;
-        addChar(curChar);
-        reload();
-    }
+	public var char:Character;
+	public var isPlayer:Bool = false;
+	public var strumline:Strumline;
 
-    public function addChar(charName:String)
-    {
-        if(!loadedChars.contains(charName))
-        {
-            loadedChars.push(charName);
-            var char = new Character(charName, isPlayer);
-            add(char);
-            if(isPlayer)
-                addChar(char.deathChar);
-        }
-    }
-    
-    public function setPos(x:Float = 0, y:Float = 0)
-    {
-        for(char in members)
-        {
-            char.x = x - (char.width / 2);
-            char.y = y - char.height;
-            char.x += char.globalOffset.x;
-            char.y += char.globalOffset.y;
-        }
-    }
+	public function new(isPlayer:Bool = false)
+	{
+		super();
+		this.isPlayer = isPlayer;
+	}
 
-    public function reload()
-    {
-        for(i in members)
-        {
-            if(i.curChar != curChar)
-                i.alpha = 0.0001;
-            else
-                char = i;
-        }
-        
-        // avoids crashing ig
-        if(char == null)
-        {
-            curChar = members[0].curChar;
-            reload();
-            return;
-        } 
-        char.alpha = 1.0;
-    }
+	public function addChar(charName:String, isActive:Bool = false)
+	{
+		var newChar = new Character(charName, isPlayer);
+		add(newChar);
+
+		if (isActive)
+			setActive(charName);
+	}
+
+	public function setActive(charName:String)
+	{
+		char = null;
+		for (char in members)
+		{
+			char.alpha = 0.0001;
+			if (char.curChar == charName)
+				this.char = char;
+		}
+		if (char == null)
+		{
+			// char = members[0];
+			addChar(charName, true);
+			Logs.print(charName + " DOESN'T EXIST, ADDING", WARNING);
+			return;
+		}
+		char.alpha = 1.0;
+		updateChar();
+	}
+
+	public function updateChar()
+	{
+		char.x = x - char.width / 2 + char.globalOffset.x;
+		char.y = y - char.height + char.globalOffset.y;
+		char.scrollFactor.set(scrollFactorX, scrollFactorY);
+	}
+
+	public var x(default, set):Float = 0.0;
+
+	public function set_x(v:Float):Float
+	{
+		x = v;
+		updateChar();
+		return x;
+	}
+
+	public var y(default, set):Float = 0.0;
+
+	public function set_y(v:Float):Float
+	{
+		y = v;
+		updateChar();
+		return y;
+	}
+
+	public function setPos(x:Float = 0, y:Float = 0)
+	{
+		this.x = x;
+		this.y = y;
+	}
+
+	public var scrollFactorX(default, set):Float = 1.0;
+
+	public function set_scrollFactorX(v:Float):Float
+	{
+		scrollFactorX = v;
+		updateChar();
+		return scrollFactorX;
+	}
+
+	public var scrollFactorY(default, set):Float = 1.0;
+
+	public function set_scrollFactorY(v:Float):Float
+	{
+		scrollFactorY = v;
+		updateChar();
+		return scrollFactorY;
+	}
+
+	public function setScrollFactor(x:Float = 0, y:Float = 0)
+	{
+		scrollFactorX = x;
+		scrollFactorY = y;
+	}
+
+	public function playSingAnim(note:Note, miss:Bool = false)
+	{
+		resetSingStep();
+		playAnim(NoteUtil.getSingAnims(4)[note.data.lane] + (miss ? "miss" : ""), true);
+	}
+
+	public function resetSingStep()
+	{
+		char.singStep = char.singLength;
+	}
+
+	public function playAnim(animName:String, forced:Bool = true, frame:Int = 0)
+		char.playAnim(animName, forced, frame);
+
+	public function dance(forced:Bool = false)
+		char.dance(forced);
+
+	public var width(get, never):Float;
+
+	public function get_width():Float
+		return char.width;
+
+	public var height(get, never):Float;
+
+	public function get_height():Float
+		return char.height;
+
+	public var frameWidth(get, never):Float;
+
+	public function get_frameWidth():Float
+		return char.frameWidth;
+
+	public var frameHeight(get, never):Float;
+
+	public function get_frameHeight():Float
+		return char.frameHeight;
+
+	public var curChar(get, never):String;
+
+	public function get_curChar():String
+		return char.curChar;
+
+	public var curAnimName(get, never):String;
+
+	public function get_curAnimName():String
+		return char.curAnimName;
+
+	public var curAnimFrame(get, never):Int;
+
+	public function get_curAnimFrame():Int
+		return char.curAnimFrame;
+
+	public function getMidpoint(?point:Null<FlxPoint>):FlxPoint
+		return char.getMidpoint(point);
+
+	public var cameraOffset(get, never):DoidoPoint;
+
+	public function get_cameraOffset():DoidoPoint
+		return char.cameraOffset;
+
+	public var singStep(get, never):Float;
+
+	public function get_singStep():Float
+		return char.singStep;
+
+	public var singType(get, never):SingType;
+
+	public function get_singType():SingType
+		return char.singType;
+
+	public var singLoop(get, never):Int;
+
+	public function get_singLoop():Int
+		return char.singLoop;
+
+	public var quickDancer(get, never):Bool;
+
+	public function get_quickDancer():Bool
+		return char.quickDancer;
+
+	public function animExists(animName:String):Bool
+		return char.animExists(animName);
 }

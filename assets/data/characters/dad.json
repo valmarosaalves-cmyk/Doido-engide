@@ -1,0 +1,70 @@
+{
+    "spritesheet": "dad",
+    "spriteType": "ATLAS",
+    "quickDancer": false,
+    "idleAnims": ["idle"],
+    "globalOffset": {"x": 60, "y": 0},
+    "anims": [
+        {
+            "name": "idle",
+            "prefix": "Dad idle dance",
+            "offset": {"x": 0, "y": 0}
+        },
+        {
+            "name": "idle-loop",
+            "prefix": "Dad idle dance",
+            "framerate": 12,
+            "indices": [10, 12],
+            "loop": true,
+            "offset": {"x": 0, "y": 0}
+        },
+
+        {
+            "name": "singLEFT",
+            "prefix": "dad sing note right",
+            "offset": {"x": 41, "y": 8}
+        },
+        {
+            "name": "singLEFT-loop",
+            "prefix": "dad sing note right",
+            "framerate": 12,
+            "indices": [2, 4],
+            "loop": true,
+            "offset": {"x": 41, "y": 8}
+        },
+
+        {
+            "name": "singDOWN",
+            "prefix": "Dad Sing Note DOWN",
+            "offset": {"x": 0, "y": -8}
+        },
+
+        {
+            "name": "singUP",
+            "prefix": "Dad Sing note UP",
+            "offset": {"x": 0, "y": 66}
+        },
+        {
+            "name": "singUP-loop",
+            "prefix": "Dad Sing note UP",
+            "framerate": 12,
+            "indices": [2, 4],
+            "loop": true,
+            "offset": {"x": 0, "y": 66}
+        },
+
+        {
+            "name": "singRIGHT",
+            "prefix": "Dad Sing Note LEFT",
+            "offset": {"x": -6, "y": 26}
+        },
+        {
+            "name": "singRIGHT-loop",
+            "prefix": "Dad Sing Note LEFT",
+            "framerate": 12,
+            "indices": [2, 4],
+            "loop": true,
+            "offset": {"x": -6, "y": 26}
+        }
+    ]
+}

@@ -1,8 +1,10 @@
 package;
 
-import backend.game.MusicBeatData.MusicBeatState;
+import doido.Cache;
+import doido.MusicBeat.MusicBeatState;
+import doido.song.Highscore;
+import doido.system.Discord.DiscordIO;
 import flixel.FlxG;
-import flixel.FlxSprite;
 import flixel.graphics.FlxGraphic;
 import states.*;
 
@@ -11,42 +13,32 @@ class Init extends MusicBeatState
 	override function create()
 	{
 		super.create();
-		SaveData.init();
+		Save.init();
+		Controls.load();
+		Highscore.load();
 		DiscordIO.check();
-		
+
 		FlxG.fixedTimestep = false;
 		FlxG.mouse.useSystemCursor = true;
-		FlxG.mouse.visible = false;
+		// FlxG.mouse.visible = false;
+
 		FlxGraphic.defaultPersist = true;
-		
-		for(i in 0...Paths.dumpExclusions.length)
-			Paths.preloadGraphic(Paths.dumpExclusions[i].replace('.png', ''));
+		openfl.Assets.cache.enabled = false;
+		Cache.initCache();
+		flagState();
 
-		firstState();
-	}
-
-	function firstState()
-	{
-		var openWarningMenu:Bool = #if html5 true #else false #end;
-
-		if(FlxG.save.data.beenWarned == null || openWarningMenu)
-			Main.switchState(new WarningState());
-		else
-			flagState();
+		#if android
+		FlxG.android.preventDefaultKeys = [BACK];
+		#end
 	}
 
 	/*
-	* A function to call some of the engines build flags from
-	* other states.
-	*/
+	 * A function to call some of the engines build flags from
+	 * other states.
+	 */
 	public static function flagState()
 	{
-		#if MENU
-		Main.switchState(new states.menu.MainMenuState());
-		#elseif FREEPLAY
-		Main.switchState(new states.menu.FreeplayState());
-		#else
-		Main.switchState(new TitleState());
-		#end
+		MusicBeat.switchState(new DebugMenu());
+		// MusicBeat.switchState(new DebugMenu.TouchTest());
 	}
 }

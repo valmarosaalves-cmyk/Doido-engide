@@ -1,0 +1,1056 @@
+package states;
+
+import doido.song.Highscore;
+import doido.song.Highscore.ScoreData;
+import doido.objects.Alphabet;
+import doido.song.Week.WeekData;
+import doido.Cache;
+import doido.song.chart.Legacy;
+import doido.song.chart.SongHandler;
+import flixel.FlxSprite;
+import flixel.text.FlxText;
+import flixel.math.FlxMath;
+import flixel.input.keyboard.FlxKey;
+import flixel.input.gamepad.FlxGamepadInputID as FlxPad;
+import haxe.Json;
+import openfl.media.Sound;
+import states.editors.ChartingState;
+import doido.song.Week;
+import doido.song.Timings;
+import flixel.util.FlxStringUtil;
+import doido.objects.ui.QuickButton.TextButton;
+
+using doido.utils.TextUtil;
+
+class DebugMenu extends MusicBeatState
+{
+	var options:Array<String> = [
+		"Play",
+		"Controls",
+		"Options",
+		"Credits",
+		#if !mobile "Offset Editor", "Crash Handler", "Chart Converter" #end
+	];
+	var text:FlxText;
+	var title:FlxText;
+	var ver:FlxText;
+	var cur:Int = 0;
+	var butt:TextButton;
+
+	override function create()
+	{
+		super.create();
+		DiscordIO.changePresence("In the Main Menu");
+
+		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+		bg.screenCenter();
+		add(bg);
+
+		var doidoText = "<wave intensity=10 speed=3>DOIDO</wave> <shake intensity=2 speed=10><color value=#FF0000>ENGINE</color></shake>";
+		doidoText += "\n<rainbow speed=6 offset=8><wave intensity=15 speed=20>PUDIM</wave></rainbow>";
+
+		var alphabet = new Alphabet(FlxG.width / 2, 50, doidoText, true, CENTER);
+		add(alphabet);
+
+		var doidoText = "Here's a test for bitmap fonts in the alphabet...\n";
+		doidoText += "It can even have the same <rainbow speed=3><wave intensity=5 speed=3>WACKY</wave></rainbow> <shake intensity=2 speed=10>effects</shake>!\n";
+		var alphabet = new Alphabet(FlxG.width / 2, alphabet.y + alphabet.height + 20, doidoText, false, CENTER, "vcr");
+		alphabet.scale.set(2, 2);
+		alphabet.updateHitbox();
+		alphabet.pixel = true;
+		add(alphabet);
+
+		text = new FlxText(10, 0, 0, '');
+		text.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);
+		text.setOutline(0xFF000000, 3);
+		add(text);
+		drawText();
+		text.y = FlxG.height - text.height - 10;
+
+		title = new FlxText(10, 0, 0, 'DE-Pudim');
+		title.setFormat(Main.globalFont, 100, 0xFFFFFFFF, LEFT);
+		title.setOutline(0xFF000000, 5);
+		title.y = text.y - title.height;
+		add(title);
+
+		ver = new FlxText(10, 0, 0, Main.internalVer);
+		ver.setFormat(Main.globalFont, 32, 0xFFFFFFFF, LEFT);
+		ver.setOutline(0xFF000000, 2.5);
+		ver.x = title.x + title.width + 5;
+		ver.y = text.y - ver.height;
+		add(ver);
+
+		// zindex test...
+		var bg2 = new FlxSprite().loadGraphic(Assets.image('menuDesat'));
+		bg2.setZ(-1);
+		add(bg2);
+
+		butt = new TextButton("Random Text", false, (btn) ->
+		{
+			Logs.print("kuri");
+		});
+		butt.x = 300;
+		butt.y = 300;
+		add(butt);
+
+		sort(ZIndex.sort);
+	}
+
+	function drawText()
+	{
+		text.text = "";
+		for (i in 0...options.length)
+			text.text += (i == cur ? "> " : "") + options[i] + "\n";
+	}
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		if (Controls.justPressed(UI_UP))
+			changeSelection(-1);
+		if (Controls.justPressed(UI_DOWN))
+			changeSelection(1);
+
+		if (Controls.justPressed(ACCEPT))
+		{
+			switch (options[cur].toLowerCase())
+			{
+				case "options":
+					MusicBeat.switchState(new DebugOptions());
+				case "controls":
+					MusicBeat.switchState(new DebugControls());
+				case "crash handler":
+					null.draw();
+				case "chart converter":
+					MusicBeat.switchState(new ChartConverter());
+				case "credits":
+					MusicBeat.switchState(new Credits());
+				case "offset editor":
+					MusicBeat.switchState(new OffsetSel());
+				default:
+					MusicBeat.switchState(new Freeplay());
+			}
+		}
+	}
+
+	public function changeSelection(change:Int = 0)
+	{
+		if (change != 0)
+			FlxG.sound.play(Assets.sound('scroll'));
+
+		cur += change;
+		cur = FlxMath.wrap(cur, 0, options.length - 1);
+		drawText();
+	}
+}
+
+typedef CreditData =
+{
+	var name:String;
+	var ?icon:String;
+	var ?info:String;
+	var ?link:Null<String>;
+}
+
+class Credits extends MusicBeatState
+{
+	var creditList:Array<CreditData> = [];
+	var text:FlxText;
+	var title:FlxText;
+	var cur:Int = 0;
+
+	function addCredit(name:String, icon:String = "", color:Dynamic, info:String = "", ?link:Null<String>)
+	{
+		creditList.push({
+			name: name,
+			icon: icon,
+			// color: color, // unused
+			info: info,
+			link: link,
+		});
+	}
+
+	override function create()
+	{
+		super.create();
+		DiscordIO.changePresence("In the Main Menu");
+
+		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+		bg.screenCenter();
+		add(bg);
+
+		final nikoo:Bool = (FlxG.random.bool(1));
+		addCredit('DiogoTV', 'diogotv', 0xFFC385FF, "Doido Engine's Owner and Main Coder", 'https://bsky.app/profile/diogotv.bsky.social');
+		addCredit('teles', 'teles', 0xFFFF95AC, "Doido Engine's Additional Coder", 'https://youtube.com/@telesfnf');
+		addCredit('GoldenFoxy', 'anna', 0xFFFFE100, "Main designer of Doido Engine's chart editor", 'https://bsky.app/profile/goldenfoxy.bsky.social');
+		addCredit('JulianoBeta', 'juyko', 0xFF0BA5FF, "Composed Doido Engine's offset menu music", 'https://www.youtube.com/@prodjuyko');
+		addCredit('crowplexus', 'crowplexus', 0xFF313538, "Creator of HScript Iris", 'https://github.com/crowplexus/hscript-iris');
+		addCredit('yoisabo', 'yoisabo', 0xFF56EF19, "Chart Editor's Event Icons Artist", 'https://bsky.app/profile/yoisabo.bsky.social');
+		addCredit('mochoco', 'coco', 0xFF56EF19, "Mobile Button Artist", 'https://x.com/mochocofrappe');
+		if (nikoo)
+			addCredit('doubleonikoo', 'nikoo', 0xFF60458A, "Hey! What are you doing here?!", 'https://bsky.app/profile/doubleonikoo.bsky.social');
+
+		text = new FlxText(10, 0, 0, '');
+		text.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);
+		text.setOutline(0xFF000000, 3);
+		add(text);
+		drawText();
+		text.y = FlxG.height - text.height - 10;
+
+		title = new FlxText(10, 0, 0, 'Credits');
+		title.setFormat(Main.globalFont, 100, 0xFFFFFFFF, LEFT);
+		title.setOutline(0xFF000000, 5);
+		title.y = text.y - title.height;
+		add(title);
+	}
+
+	function drawText()
+	{
+		text.text = "";
+		for (i in 0...creditList.length)
+			text.text += (i == cur ? "> " : "") + creditList[i].name + "\n";
+	}
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		if (Controls.justPressed(UI_UP))
+			changeSelection(-1);
+		if (Controls.justPressed(UI_DOWN))
+			changeSelection(1);
+
+		if (Controls.justPressed(BACK))
+			MusicBeat.switchState(new states.DebugMenu());
+
+		if (Controls.justPressed(ACCEPT))
+			FlxG.openURL(creditList[cur].link);
+	}
+
+	public function changeSelection(change:Int = 0)
+	{
+		if (change != 0)
+			FlxG.sound.play(Assets.sound('scroll'));
+
+		cur += change;
+		cur = FlxMath.wrap(cur, 0, creditList.length - 1);
+		drawText();
+	}
+}
+
+class OffsetSel extends MusicBeatState
+{
+	var options:Array<String> = [];
+	var text:FlxText;
+	var ver:FlxText;
+	var title:FlxText;
+	var cur:Int = 0;
+
+	override function create()
+	{
+		super.create();
+		options = Assets.list("data/characters/", true, JSON);
+		DiscordIO.changePresence("In the Offset Editor");
+
+		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+		bg.screenCenter();
+		add(bg);
+
+		text = new FlxText(10, 0, 0, '');
+		text.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);
+		text.setOutline(0xFF000000, 3);
+		add(text);
+		drawText();
+		text.y = FlxG.height - text.height - 10;
+
+		title = new FlxText(10, 0, 0, 'Offset Editor');
+		title.setFormat(Main.globalFont, 100, 0xFFFFFFFF, LEFT);
+		title.setOutline(0xFF000000, 5);
+		title.y = text.y - title.height;
+		add(title);
+
+		ver = new FlxText(10, 0, 0, "Press SHIFT for player");
+		ver.setFormat(Main.globalFont, 32, 0xFFFFFFFF, LEFT);
+		ver.setOutline(0xFF000000, 2.5);
+		ver.x = title.x + title.width + 5;
+		ver.y = text.y - ver.height;
+		add(ver);
+	}
+
+	function drawText()
+	{
+		text.text = "";
+		for (i in 0...options.length)
+			text.text += (i == cur ? "> " : "") + options[i] + "\n";
+	}
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		if (Controls.justPressed(UI_UP))
+			changeSelection(-1);
+		if (Controls.justPressed(UI_DOWN))
+			changeSelection(1);
+
+		if (Controls.justPressed(BACK))
+			MusicBeat.switchState(new states.DebugMenu());
+
+		if (Controls.justPressed(ACCEPT) || FlxG.keys.justPressed.SHIFT)
+			MusicBeat.switchState(new OffsetEditor(options[cur], FlxG.keys.justPressed.SHIFT));
+	}
+
+	public function changeSelection(change:Int = 0)
+	{
+		if (change != 0)
+			FlxG.sound.play(Assets.sound('scroll'));
+
+		cur += change;
+		cur = FlxMath.wrap(cur, 0, options.length - 1);
+		drawText();
+	}
+}
+
+typedef FreeplaySong =
+{
+	var name:String;
+	var ?icon:String;
+	var ?diffs:Array<String>;
+}
+
+class Freeplay extends MusicBeatState
+{
+	var options:Array<FreeplaySong> = [];
+	var text:FlxText;
+	var title:FlxText;
+	var score:FlxText;
+	var curSong:Int = 0;
+	var curDiff:Int = 1;
+
+	override function create()
+	{
+		super.create();
+		DiscordIO.changePresence("In the Freeplay Menu");
+
+		for (week in Week.weekList(false, true))
+		{
+			for (song in week.songs)
+			{
+				options.push({
+					name: song.song,
+					icon: song.icon,
+					diffs: week.diffs,
+				});
+			}
+		}
+
+		#if !mobile
+		// options.push({name: "Load Other"});
+		#end
+
+		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+		bg.screenCenter();
+		add(bg);
+
+		text = new FlxText(10, 0, 0, '');
+		text.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);
+		text.setOutline(0xFF000000, 3);
+		add(text);
+		drawText();
+		text.y = FlxG.height - text.height - 10;
+
+		title = new FlxText(10, 0, 0, 'Freeplay');
+		title.setFormat(Main.globalFont, 100, 0xFFFFFFFF, LEFT);
+		title.setOutline(0xFF000000, 5);
+		title.y = text.y - title.height;
+		add(title);
+
+		score = new FlxText(10, 10, 0, "");
+		score.setFormat(Main.globalFont, 36, 0xFFFFFFFF, RIGHT);
+		score.setOutline(0xFF000000, 2);
+		score.alpha = 1;
+		add(score);
+		drawScore();
+	}
+
+	function drawText()
+	{
+		text.text = "";
+		for (i in 0...options.length)
+			text.text += (i == curSong ? "> " : "") + options[i].name + "\n";
+	}
+
+	function drawScore()
+	{
+		var newscore:ScoreData = Highscore.getScore(options[curSong].name);
+		var rank = Timings.getRank(newscore.accuracy, newscore.misses, false, true);
+		score.text = "";
+		if (options[curSong].name == "Load Other")
+			return;
+		score.text += "SCORE: " + FlxStringUtil.formatMoney(Math.floor(newscore.score), false, true);
+		score.text += "\nACCURACY: " + (Math.floor(newscore.accuracy * 100) / 100) + "%" + ' [$rank]';
+		score.text += "\nMISSES: " + Math.floor(newscore.misses);
+		score.text += '\n< ${options[curSong].diffs[curDiff].toUpperCase()} >';
+		score.x = FlxG.width - score.width - 10;
+	}
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		if (Controls.justPressed(UI_UP))
+			changeSelection(-1);
+		if (Controls.justPressed(UI_DOWN))
+			changeSelection(1);
+		if (Controls.justPressed(UI_LEFT))
+			changeDiff(-1);
+		if (Controls.justPressed(UI_RIGHT))
+			changeDiff(1);
+
+		if (Controls.justPressed(BACK))
+			MusicBeat.switchState(new states.DebugMenu());
+
+		if (Controls.justPressed(ACCEPT) || FlxG.keys.justPressed.SHIFT || FlxG.keys.justPressed.SEVEN)
+		{
+			if (options[curSong].name == "Load Other")
+			{
+				// MusicBeat.switchState(new states.LoadOther());
+			}
+			else
+			{
+				try
+				{
+					PlayState.loadSong(options[curSong].name, options[curSong].diffs[curDiff]);
+
+					if (FlxG.keys.justPressed.SEVEN)
+					{
+						MusicBeat.switchState(new ChartingState(PlayState.SONG));
+					}
+					else
+					{
+						if (FlxG.keys.justPressed.SHIFT)
+							PlayState.skip = true;
+						else
+							PlayState.skip = false;
+
+						MusicBeat.switchState(new states.PlayState());
+					}
+				}
+				catch (e)
+				{
+					FlxG.sound.play(Assets.sound('beep'));
+					Logs.print(e);
+				}
+			}
+		}
+	}
+
+	public function changeSelection(change:Int = 0)
+	{
+		if (change != 0)
+			FlxG.sound.play(Assets.sound('scroll'));
+
+		curSong += change;
+		curSong = FlxMath.wrap(curSong, 0, options.length - 1);
+		drawText();
+		drawScore();
+		changeDiff();
+	}
+
+	public function changeDiff(change:Int = 0)
+	{
+		if (options[curSong].name == "Load Other")
+			return;
+
+		curDiff += change;
+
+		var maxDiff:Int = options[curSong].diffs.length - 1;
+		if (change == 0)
+			curDiff = Math.floor(FlxMath.bound(curDiff, 0, maxDiff));
+		else
+			curDiff = FlxMath.wrap(curDiff, 0, maxDiff);
+
+		drawScore();
+	}
+}
+
+// TO BE REDONE
+
+/*
+	class LoadOther extends MusicBeatState
+	{
+	var options:Array<String> = ["Load Chart", "Load Inst", "Load Voices (Optional)", "Load Player (Optional)", "Load Opponent (Optional)", "Play"];
+	var fileNames:Array<String> = ["", "", "", "", "", ""];
+	var text:FlxText;
+	var title:FlxText;
+	var ver:FlxText;
+	var cur:Int = 0;
+
+	override function create()
+	{
+		super.create();
+		DiscordIO.changePresence("Loading Custom Song");
+
+		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+		bg.screenCenter();
+		add(bg);
+
+		text = new FlxText(10, 0, 0, '');
+		text.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);
+		text.setOutline(0xFF000000, 3);
+		add(text);
+		drawText();
+		text.y = FlxG.height - text.height - 10;
+
+		title = new FlxText(10, 0, 0, 'Custom Song');
+		title.setFormat(Main.globalFont, 100, 0xFFFFFFFF, LEFT);
+		title.setOutline(0xFF000000, 5);
+		title.y = text.y - title.height;
+		add(title);
+	}
+
+	function drawText() {
+		text.text = "";
+		for(i in 0...options.length)
+		{
+			text.text += (i == cur ? "> " : "") + options[i];
+			if (fileNames[i] != "")
+				text.text += ' - "${fileNames[i]}"';
+
+			text.text += "\n";
+		}
+	}
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		if(Controls.justPressed(UI_UP))
+			changeSelection(-1);
+		if(Controls.justPressed(UI_DOWN))
+			changeSelection(1);
+
+		if(Controls.justPressed(ACCEPT)) {
+			switch(options[cur].toLowerCase()) {
+				case "load chart":
+					loadChart();
+				case "load inst":
+					loadAudio("Inst");
+				case "load voices (optional)":
+					loadAudio("Voices");
+				case "load player (optional)":
+					loadAudio("Voices-player");
+				case "load opponent (optional)":
+					loadAudio("Voices-opponent");
+				default:
+					if(chartLoaded && Cache.permanent.sounds.get('assets/songs/${PlayState.CHART.song}/audio/Inst.ogg') != null)
+						MusicBeat.switchState(new states.PlayState());
+					else
+						FlxG.sound.play(Assets.sound('beep'));
+			}
+		}
+
+		if (Controls.justPressed(BACK))
+			MusicBeat.switchState(new states.DebugMenu());
+	}
+
+	public function changeSelection(change:Int = 0)
+	{
+		if(change != 0) FlxG.sound.play(Assets.sound('scroll'));
+		
+		cur += change;
+		cur = FlxMath.wrap(cur, 0, options.length - 1);
+		drawText();
+	}
+
+	var chartLoaded:Bool = false;
+	function loadChart()
+	{
+		Assets.fileBrowse(
+			(fr) -> {
+				var bytes = fr.data;
+				var text = bytes.readUTFBytes(bytes.length);
+				var legacySong:LegacySong = cast Json.parse(text).song;
+				PlayState.CHART = Legacy.getChartFromLegacy(legacySong);
+				PlayState.EVENTS = Legacy.getEventsFromLegacy(legacySong);
+				chartLoaded = true;
+
+				fileNames[0] = fr.name;
+				drawText();
+			},
+			new openfl.net.FileFilter("Any Charts", "*.json"),
+			(err) -> {
+				Logs.print("File load error", WARNING);
+			}
+		);
+	}
+
+	function loadAudio(file:String = "Inst")
+	{
+		if(!chartLoaded) {
+			FlxG.sound.play(Assets.sound('beep'));
+			return;
+		}
+		Assets.fileBrowse(
+			(fr) -> {
+				var bytes = fr.data;
+				bytes.position = 0;
+				var sound = new Sound();
+				sound.loadCompressedDataFromByteArray(bytes, bytes.length);
+				var key:String = 'assets/songs/${PlayState.CHART.song}/audio/$file.ogg';
+				Cache.permanent.sounds.set(key, sound);
+
+				switch(file)
+				{
+					case "Inst": fileNames[1] = fr.name;
+					case "Voices": fileNames[2] = fr.name;
+					case "Voices-player": fileNames[3] = fr.name;
+					case "Voices-opponent": fileNames[4] = fr.name;
+				}
+				drawText();
+			},
+			new openfl.net.FileFilter("Audio File", "*.ogg"),
+			(err) -> {
+				Logs.print("File load error", WARNING);
+			}
+		);
+	}
+	}
+ */
+class ChartConverter extends MusicBeatState
+{
+	var options:Array<String> = ["FNF 2 Doido", "Old Doido 2 Doido", "Doido 2 FNF"];
+	var text:FlxText;
+	var title:FlxText;
+	var ver:FlxText;
+	var cur:Int = 0;
+
+	override function create()
+	{
+		super.create();
+		DiscordIO.changePresence("In the Main Menu");
+
+		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+		bg.screenCenter();
+		add(bg);
+
+		text = new FlxText(10, 0, 0, '');
+		text.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);
+		text.setOutline(0xFF000000, 3);
+		add(text);
+		drawText();
+		text.y = FlxG.height - text.height - 10;
+
+		title = new FlxText(10, 0, 0, "Chart Converter");
+		title.setFormat(Main.globalFont, 100, 0xFFFFFFFF, LEFT);
+		title.setOutline(0xFF000000, 5);
+		title.y = text.y - title.height;
+		add(title);
+	}
+
+	function drawText()
+	{
+		text.text = "";
+		for (i in 0...options.length)
+			text.text += (i == cur ? "> " : "") + options[i] + "\n";
+	}
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		if (Controls.justPressed(UI_UP))
+			changeSelection(-1);
+		if (Controls.justPressed(UI_DOWN))
+			changeSelection(1);
+
+		if (Controls.justPressed(BACK))
+			MusicBeat.switchState(new states.DebugMenu());
+
+		if (Controls.justPressed(ACCEPT))
+		{
+			switch (options[cur])
+			{
+				case "FNF 2 Doido":
+					fnf2doido();
+				case "Old Doido 2 Doido":
+					FlxG.camera.shake(0.05, 0.05);
+				case "Doido 2 FNF":
+					FlxG.camera.shake(0.05, 0.05);
+			}
+		}
+	}
+
+	function fnf2doido()
+	{
+		Assets.fileBrowse((fr) ->
+		{
+			var bytes = fr.data;
+			var text = bytes.readUTFBytes(bytes.length);
+
+			var legacySong:LegacySong = cast Json.parse(text).song;
+			var CHART = Legacy.getChartFromLegacy(legacySong);
+			var EVENTS = Legacy.getEventsFromLegacy(legacySong);
+
+			var data:String = Json.stringify(EVENTS, "\t");
+			if (data != null && data.length > 0)
+			{
+				Assets.fileSave(data.trim(), 'events.json');
+			}
+
+			var data:String = Json.stringify(CHART, "\t");
+			if (data != null && data.length > 0)
+			{
+				Assets.fileSave(data.trim(), '${fr.name.replace(".json", "-converted.json")}');
+			}
+		}, new openfl.net.FileFilter("Legacy Charts", "*.json"), (err) ->
+			{
+				Logs.print("File load error", WARNING);
+			});
+	}
+
+	function doido2fnf()
+	{
+		// later :P
+	}
+
+	public function changeSelection(change:Int = 0)
+	{
+		if (change != 0)
+			FlxG.sound.play(Assets.sound('scroll'));
+
+		cur += change;
+		cur = FlxMath.wrap(cur, 0, options.length - 1);
+		drawText();
+	}
+}
+
+class DebugControls extends MusicBeatState
+{
+	public static var pad:Bool = false;
+
+	var options:Array<DoidoKey> = [];
+	var text:FlxText;
+	var title:FlxText;
+	var curV:Int = 0;
+	var curH:Int = 0;
+
+	override function create()
+	{
+		super.create();
+		DiscordIO.changePresence("In the Controls Menu");
+		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+		bg.screenCenter();
+		add(bg);
+
+		for (label => key in Controls.bindMap)
+		{
+			if (key.rebindable)
+				options.push(label);
+		}
+
+		text = new FlxText(10, 0, 0, '');
+		text.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);
+		text.setOutline(0xFF000000, 3);
+		add(text);
+		drawText();
+		text.y = FlxG.height - text.height - 10;
+
+		title = new FlxText(10, 0, 0, 'Controls');
+		title.setFormat(Main.globalFont, 100, 0xFFFFFFFF, LEFT);
+		title.setOutline(0xFF000000, 5);
+		title.y = text.y - title.height;
+		add(title);
+	}
+
+	function drawText()
+	{
+		text.text = "";
+		for (i in 0...options.length)
+		{
+			var name:String = (cast options[i]).toUpperCase();
+			var bind0:String = "";
+			var bind1:String = "";
+
+			if (pad)
+			{
+				bind0 = Controls.bindMap.get(options[i]).gamepad[0].toString();
+				bind1 = Controls.bindMap.get(options[i]).gamepad[1].toString();
+			}
+			else
+			{
+				bind0 = Controls.bindMap.get(options[i]).keyboard[0].toString();
+				bind1 = Controls.bindMap.get(options[i]).keyboard[1].toString();
+			}
+
+			bind0 = '${curH == 0 && curV == i ? "> " : ""}${Controls.formatKey(bind0, pad)}${curH == 0 && curV == i ? " <" : ""}';
+			bind1 = '${curH == 1 && curV == i ? "> " : ""}${Controls.formatKey(bind1, pad)}${curH == 1 && curV == i ? " <" : ""}';
+
+			text.text += '$name $bind0 $bind1\n';
+		}
+
+		// um bonus bem grande assim
+		var name:String = "DEVICE";
+		var bind0:String = "KEYBOARD";
+		var bind1:String = "GAMEPAD";
+
+		if (curV == options.length)
+		{
+			if (curH == 0)
+				bind0 = '> $bind0 <';
+			else
+				bind1 = '> $bind1 <';
+		}
+
+		text.text += '$name $bind0 $bind1\n';
+	}
+
+	var waitingInput:Bool = false;
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		if (waitingInput)
+		{
+			if (pad && FlxG.gamepads.lastActive.justPressed.ANY)
+			{
+				waitingInput = false;
+				var daKey:FlxPad = FlxG.gamepads.lastActive.firstJustPressedID();
+
+				if (FlxG.gamepads.lastActive.analog.value.LEFT_STICK_X < 0)
+					daKey = FlxPad.LEFT_STICK_DIGITAL_LEFT;
+				if (FlxG.gamepads.lastActive.analog.value.LEFT_STICK_X > 0)
+					daKey = FlxPad.LEFT_STICK_DIGITAL_RIGHT;
+				if (FlxG.gamepads.lastActive.analog.value.LEFT_STICK_Y < 0)
+					daKey = FlxPad.LEFT_STICK_DIGITAL_UP;
+				if (FlxG.gamepads.lastActive.analog.value.LEFT_STICK_Y > 0)
+					daKey = FlxPad.LEFT_STICK_DIGITAL_DOWN;
+
+				if (FlxG.gamepads.lastActive.analog.value.RIGHT_STICK_X < 0)
+					daKey = FlxPad.RIGHT_STICK_DIGITAL_LEFT;
+				if (FlxG.gamepads.lastActive.analog.value.RIGHT_STICK_X > 0)
+					daKey = FlxPad.RIGHT_STICK_DIGITAL_RIGHT;
+				if (FlxG.gamepads.lastActive.analog.value.RIGHT_STICK_Y < 0)
+					daKey = FlxPad.RIGHT_STICK_DIGITAL_UP;
+				if (FlxG.gamepads.lastActive.analog.value.RIGHT_STICK_Y > 0)
+					daKey = FlxPad.RIGHT_STICK_DIGITAL_DOWN;
+
+				Controls.bindMap.get(options[curV]).gamepad[curH] = daKey;
+				Controls.save();
+				drawText();
+			}
+			else if (FlxG.keys.justPressed.ANY)
+			{
+				waitingInput = false;
+				var daKey:FlxKey = FlxG.keys.firstJustPressed();
+				Controls.bindMap.get(options[curV]).keyboard[curH] = daKey;
+				Controls.save();
+				drawText();
+			}
+		}
+		else
+		{
+			if (Controls.justPressed(UI_UP))
+				changeSelection(-1);
+			if (Controls.justPressed(UI_DOWN))
+				changeSelection(1);
+			if (Controls.justPressed(UI_LEFT))
+				changeBind(-1);
+			if (Controls.justPressed(UI_RIGHT))
+				changeBind(1);
+
+			if (Controls.justPressed(ACCEPT))
+			{
+				if (curV == options.length)
+				{
+					pad = curH == 1;
+					MusicBeat.switchState(new DebugControls());
+				}
+				else
+					waitingInput = true;
+			}
+			if (Controls.justPressed(BACK))
+				MusicBeat.switchState(new states.DebugMenu());
+		}
+	}
+
+	public function changeSelection(change:Int = 0)
+	{
+		if (change != 0)
+			FlxG.sound.play(Assets.sound('scroll'));
+
+		curV += change;
+		curV = FlxMath.wrap(curV, 0, options.length);
+		drawText();
+	}
+
+	public function changeBind(change:Int = 0)
+	{
+		if (change != 0)
+			FlxG.sound.play(Assets.sound('scroll'));
+
+		curH += change;
+		curH = FlxMath.wrap(curH, 0, 1);
+		drawText();
+	}
+}
+
+// fodei
+typedef Option =
+{
+	var name:String;
+	var get:Void->Dynamic;
+	var set:Dynamic->Void;
+}
+
+class DebugOptions extends MusicBeatState
+{
+	var options:Array<Option> = [];
+	var text:FlxText;
+	var title:FlxText;
+	var cur:Int = 0;
+
+	override function create()
+	{
+		super.create();
+		DiscordIO.changePresence("In the Options Menu");
+
+		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+		bg.screenCenter();
+		add(bg);
+
+		options = [
+			{
+				name: "Downscroll",
+				get: () -> Save.data.downscroll,
+				set: (b:Bool) -> Save.data.downscroll = b
+			},
+			{
+				name: "Middlescroll",
+				get: () -> Save.data.middlescroll,
+				set: (b:Bool) -> Save.data.middlescroll = b
+			},
+			{
+				name: "Low Quality",
+				get: () -> Save.data.lowQuality,
+				set: (b:Bool) -> Save.data.lowQuality = b
+			},
+			#if desktop
+			{
+				name: "FPS Counter",
+				get: () -> Save.data.fpsCounter,
+				set: (b:Bool) -> Save.data.fpsCounter = b
+			}, {
+				name: "FPS",
+				get: () -> Save.data.fps,
+				set: (i:Int) -> Save.data.fps = FlxMath.wrap(i, 30, 144)
+			}, {
+				name: "GPU Caching",
+				get: () -> Save.data.gpuCaching,
+				set: (b:Bool) -> Save.data.gpuCaching = b
+			},
+			#end
+			#if TOUCH_CONTROLS
+			{
+				name: "Modern Controls",
+				get: () -> Save.data.modernControls,
+				set: (b:Bool) -> Save.data.modernControls = b
+			}, {
+				name: "Invert Swipe X",
+				get: () -> Save.data.invertX,
+				set: (b:Bool) -> Save.data.invertX = b
+			}, {
+				name: "Invert Swipe Y",
+				get: () -> Save.data.invertY,
+				set: (b:Bool) -> Save.data.invertY = b
+			},
+			#end
+			{
+				name: "Antialiasing",
+				get: () -> Save.data.antialiasing,
+				set: (b:Bool) -> Save.data.antialiasing = b
+			},
+		];
+
+		text = new FlxText(10, 0, 0, '');
+		text.setFormat(Main.globalFont, 48, 0xFFFFFFFF, LEFT);
+		text.setOutline(0xFF000000, 3);
+		add(text);
+		drawText();
+		text.y = FlxG.height - text.height - 10;
+
+		title = new FlxText(10, 0, 0, 'Options');
+		title.setFormat(Main.globalFont, 100, 0xFFFFFFFF, LEFT);
+		title.setOutline(0xFF000000, 5);
+		title.y = text.y - title.height;
+		add(title);
+	}
+
+	function drawText()
+	{
+		text.text = "";
+		for (i in 0...options.length)
+			text.text += '${(i == cur ? "> " : "")}${options[i].name} ${options[i].get()}\n';
+	}
+
+	var holdTimer:Float = 0;
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+
+		if (Controls.justPressed(UI_UP))
+			changeSelection(-1);
+		if (Controls.justPressed(UI_DOWN))
+			changeSelection(1);
+
+		if (Controls.justPressed(BACK))
+			MusicBeat.switchState(new states.DebugMenu());
+
+		var holdMax:Float = 0.4;
+		if (Controls.justPressed(UI_LEFT) || Controls.justPressed(UI_RIGHT) || holdTimer >= holdMax)
+		{
+			var selChange:Int = -(Controls.pressed(UI_LEFT) ? 1 : 0) + (Controls.pressed(UI_RIGHT) ? 1 : 0);
+			if (selChange != 0)
+				changeOption(selChange);
+
+			if (holdTimer >= holdMax)
+				holdTimer = holdMax - 0.005; // 0.02
+		}
+
+		if (Controls.pressed(UI_LEFT) || Controls.pressed(UI_RIGHT) && holdTimer <= holdMax)
+			holdTimer += elapsed;
+		if (Controls.released(UI_LEFT) || Controls.released(UI_RIGHT))
+			holdTimer = 0;
+	}
+
+	public function changeSelection(change:Int = 0)
+	{
+		if (change != 0)
+			FlxG.sound.play(Assets.sound('scroll'));
+
+		cur += change;
+		cur = FlxMath.wrap(cur, 0, options.length - 1);
+		drawText();
+	}
+
+	public function changeOption(change:Int = 0)
+	{
+		if (change != 0)
+			FlxG.sound.play(Assets.sound('scroll'));
+
+		var option = options[cur];
+		if (Std.isOfType(option.get(), Int))
+		{
+			option.set(option.get() + change);
+		}
+		else if (Std.isOfType(option.get(), Bool))
+		{
+			option.set(!option.get());
+		}
+		Save.save();
+		drawText();
+	}
+}

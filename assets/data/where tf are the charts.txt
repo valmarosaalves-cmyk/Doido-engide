@@ -1,0 +1,1 @@
+charts are located at "assets/songs/SONG_NAME/chart"

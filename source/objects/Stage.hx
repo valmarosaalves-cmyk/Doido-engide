@@ -1,290 +1,133 @@
 package objects;
 
-import crowplexus.iris.Iris;
-import flixel.FlxSprite;
-import flixel.group.FlxGroup;
-import flixel.math.FlxPoint;
+import flixel.FlxObject;
+import flixel.FlxBasic;
 import states.PlayState;
+import flixel.FlxSprite;
+import hscript.iris.Iris;
+import doido.utils.MathUtil;
 
-class Stage extends FlxGroup
+class Stage
 {
-	public static var instance:Stage;
+	public var playState:PlayState;
+
+	final lowQuality:Bool;
+
+	public function new(playState:PlayState)
+	{
+		this.playState = playState;
+		lowQuality = Save.data.lowQuality;
+	}
 
 	public var curStage:String = "";
-	public var gfVersion:String = "no-gf";
-	public var camZoom:Float = 1;
+	public var stageItems:Array<FlxObject> = [];
 
-	// things to help your stage get better
-	public var bfPos:FlxPoint  = new FlxPoint();
-	public var dadPos:FlxPoint = new FlxPoint();
-	public var gfPos:FlxPoint  = new FlxPoint();
+	public var camZoom:Float = 0.9;
+	public var gfVersion:String = "";
 
-	public var bfCam:FlxPoint  = new FlxPoint();
-	public var dadCam:FlxPoint = new FlxPoint();
-	public var gfCam:FlxPoint  = new FlxPoint();
+	public var bfCam:DoidoPoint;
+	public var dadCam:DoidoPoint;
+	public var gfCam:DoidoPoint;
 
-	public var foreground:FlxGroup;
+	public var bfPos:DoidoPoint;
+	public var dadPos:DoidoPoint;
+	public var gfPos:DoidoPoint;
 
-	var loadedScripts:Array<Iris> = [];
-	var scripted:Array<String> = [];
+	public var bfScrollFactor:DoidoPoint;
+	public var dadScrollFactor:DoidoPoint;
+	public var gfScrollFactor:DoidoPoint;
 
-	var lowQuality:Bool = false;
-
-	var gfSong:String = "stage-set";
-
-	public function new() {
-		super();
-		foreground = new FlxGroup();
-		instance = this;
-	}
-
-	public function reloadStageFromSong(song:String = "test", gfSong:String = "stage-set"):Void
+	public function reloadStage(curStage:String)
 	{
-		var stageList:Array<String> = [];
-		
-		stageList = switch(song)
+		this.curStage = curStage;
+		stageItems = [];
+
+		// default data values
+		camZoom = 0.9;
+		gfVersion = "";
+
+		dadPos = {x: 300, y: FlxG.height - 50};
+		bfPos = {x: FlxG.width - 200, y: FlxG.height - 50};
+		gfPos = {x: FlxG.width / 2 + 100, y: FlxG.height - 150};
+
+		dadCam = {x: 0, y: 0};
+		bfCam = {x: 0, y: 0};
+		gfCam = {x: 0, y: 0};
+
+		bfScrollFactor = {x: 1.0, y: 1.0};
+		dadScrollFactor = {x: 1.0, y: 1.0};
+		gfScrollFactor = {x: 1.0, y: 1.0};
+
+		// loading the script
+		var scriptPath:String = 'data/stages/$curStage';
+		if (Assets.fileExists(scriptPath, SCRIPT))
+			loadScript(scriptPath);
+		else
 		{
-			default: ["stage"];
-			
-			case "collision": ["mugen"];
-			
-			case "senpai"|"roses": 	["school"];
-			case "thorns": 			["school-evil"];
-			
-			//case "template": ["preload1", "preload2", "starting-stage"];
-		};
-
-		//this stops you from fucking stuff up by changing this mid song
-		lowQuality = SaveData.data.get("Low Quality");
-
-		this.gfSong = gfSong;
-
-		/*
-		*	makes changing stages easier by preloading
-		*	a bunch of stages at the create function
-		*	(remember to put the starting stage at the last spot of the array)
-		*/
-		for(i in stageList) {
-			preloadScript(i);
-			reloadStage(i);
+			loadedScript = null;
+			loadCode(curStage);
 		}
 	}
 
-	public function reloadStage(curStage:String = "")
+	function loadScript(path:String)
 	{
-		this.clear();
-		foreground.clear();
-		this.curStage = curStage;
-		
-		gfPos.set(660, 580);
-		dadPos.set(260, 700);
-		bfPos.set(1100, 700);
-		
-		if(scripted.contains(curStage))
-			callScript("create");
-		else
-			loadCode(curStage);
-
-		PlayState.defaultCamZoom = camZoom;
+		loadedScript = new Iris(Assets.getAsset(path, SCRIPT), this, {name: path, autoRun: false, autoPreset: true});
+		loadedScript.set("Paths", Assets);
+		loadedScript.set("Assets", Assets);
+		loadedScript.set("FlxSprite", FlxSprite);
+		loadedScript.set("MathUtil", MathUtil);
+		loadedScript.set("PlayState", PlayState);
+		loadedScript.set("add", stageItems.push);
+		loadedScript.execute();
+		callScript("create");
 	}
 
-	public function preloadScript(stage:String = "")
+	function loadCode(cur:String)
 	{
-		var path:String = 'images/stages/_scripts/$stage';
-		
-		if(Paths.fileExists('$path.hxc'))
-			path += '.hxc';
-		else if(Paths.fileExists('$path.hx'))
-			path += '.hx';
-		else
-			return;
-
-		var newScript:Iris = new Iris(Paths.script('$path'), {name: path, autoRun: false, autoPreset: true});
-
-		// variables to be used inside the scripts
-		newScript.set("FlxSprite", FlxSprite);
-		newScript.set("Paths", Paths);
-		newScript.set("this", instance);
-
-		newScript.set("add", add);
-		newScript.set("foreground", foreground);
-
-		newScript.set("bfPos", bfPos);
-		newScript.set("dadPos", dadPos);
-		newScript.set("gfPos", gfPos);
-
-		newScript.set("bfCam", bfCam);
-		newScript.set("dadCam", dadCam);
-		newScript.set("gfCam", gfCam);
-
-		newScript.set("lowQuality", lowQuality);
-
-		newScript.execute();
-
-		loadedScripts.push(newScript);
-		scripted.push(stage);
-	}
-
-	// Hardcode your stages here!
-	public function loadCode(curStage:String = "")
-	{
-		gfVersion = getGfVersion(curStage);
-		switch(curStage)
+		switch (cur)
 		{
 			default:
-				this.curStage = "stage";
-				camZoom = 0.9;
-				
-				var bg = new FlxSprite(-600, -600).loadGraphic(Paths.image("stages/stage/stageback"));
-				bg.scrollFactor.set(0.6,0.6);
-				add(bg);
-				
-				var front = new FlxSprite(-580, 440);
-				front.loadGraphic(Paths.image("stages/stage/stagefront"));
-				add(front);
-				
-				if(!lowQuality) {
-					var curtains = new FlxSprite(-600, -400).loadGraphic(Paths.image("stages/stage/stagecurtains"));
-					curtains.scrollFactor.set(1.4,1.4);
-					foreground.add(curtains);
-				}
-				
-			case "school":
-				bfPos.x -= 70;
-				dadPos.x += 50;
-				gfPos.x += 20;
-				gfPos.y += 50;
-				
-				var bgSky = new FlxSprite().loadGraphic(Paths.image('stages/school/weebSky'));
-				bgSky.scrollFactor.set(0.1, 0.1);
-				add(bgSky);
-				
-				var bgSchool:FlxSprite = new FlxSprite(-200, 0).loadGraphic(Paths.image('stages/school/weebSchool'));
-				bgSchool.scrollFactor.set(0.6, 0.90);
-				add(bgSchool);
-				
-				var bgStreet:FlxSprite = new FlxSprite(-200).loadGraphic(Paths.image('stages/school/weebStreet'));
-				bgStreet.scrollFactor.set(0.95, 0.95);
-				add(bgStreet);
-				
-				var fgTrees:FlxSprite = new FlxSprite(-200 + 170, 130).loadGraphic(Paths.image('stages/school/weebTreesBack'));
-				fgTrees.scrollFactor.set(0.9, 0.9);
-				add(fgTrees);
-				
-				var bgTrees:FlxSprite = new FlxSprite(-200 - 380, -1100);
-				bgTrees.frames = Paths.getPackerAtlas('stages/school/weebTrees');
-				bgTrees.animation.add('treeLoop', CoolUtil.intArray(18), 12);
-				bgTrees.animation.play('treeLoop');
-				bgTrees.scrollFactor.set(0.85, 0.85);
-				add(bgTrees);
-
-				if(!lowQuality) {
-					var treeLeaves:FlxSprite = new FlxSprite(-200, -40);
-					treeLeaves.frames = Paths.getSparrowAtlas('stages/school/petals');
-					treeLeaves.animation.addByPrefix('leaves', 'PETALS ALL', 24, true);
-					treeLeaves.animation.play('leaves');
-					treeLeaves.scrollFactor.set(0.85, 0.85);
-					add(treeLeaves);
-					
-					var bgGirls = new FlxSprite(-100, 175); // 190
-					bgGirls.frames = Paths.getSparrowAtlas('stages/school/bgFreaks');
-					bgGirls.scrollFactor.set(0.9, 0.9);
-					
-					var girlAnim:String = "girls group";
-					if(PlayState.SONG.song == 'roses')
-						girlAnim = 'fangirls dissuaded';
-					
-					bgGirls.animation.addByIndices('danceLeft',  'BG $girlAnim', CoolUtil.intArray(14),		"", 24, false);
-					bgGirls.animation.addByIndices('danceRight', 'BG $girlAnim', CoolUtil.intArray(30, 15), "", 24, false);
-					bgGirls.animation.play('danceLeft');
-					bgGirls._stepHit = function(curStep:Int)
-					{
-						if(curStep % 4 == 0)
-						{
-							if(bgGirls.animation.curAnim.name == 'danceLeft')
-								bgGirls.animation.play('danceRight', true);
-							else
-								bgGirls.animation.play('danceLeft', true);
-						}
-					}
-					add(bgGirls);
-				}
-				
-				// easier to manage
-				for(rawItem in members)
-				{
-					if(Std.isOfType(rawItem, FlxSprite))
-					{
-						var item:FlxSprite = cast rawItem;
-						item.antialiasing = false;
-						item.isPixelSprite = true;
-						item.scale.set(6,6);
-						item.updateHitbox();
-						item.x -= 170;
-						item.y -= 145;
-					}
-				}
-				
-			case "school-evil":
-				bfPos.x -= 70;
-				dadPos.x += 50;
-				gfPos.x += 20;
-				gfPos.y += 50;
-				
-				var bg:FlxSprite = new FlxSprite(400, 100);
-				bg.frames = Paths.getSparrowAtlas('stages/school/animatedEvilSchool');
-				bg.animation.addByPrefix('idle', 'background 2', 24);
-				bg.animation.play('idle');
-				bg.scrollFactor.set(0.8, 0.9);
-				bg.antialiasing = false;
-				bg.scale.set(6,6);
+				var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
+				bg.scale.set(1.15, 1.15);
+				bg.updateHitbox();
+				bg.scrollFactor.set();
+				bg.screenCenter();
+				bg.setZ(0);
 				add(bg);
 		}
 	}
 
-	public function getGfVersion(curStage:String)
+	public function add(obj:FlxSprite)
 	{
-		if(gfSong != "stage-set")
-			return gfSong;
+		stageItems.push(obj);
+	}
 
-		return switch(curStage)
-		{
-			case "mugen": "no-gf";
-			case "school"|"school-evil": "gf-pixel";
-			default: "gf";
-		}
-	}
-	
-	override function update(elapsed:Float)
-	{
-		super.update(elapsed);
-		callScript("update", [elapsed]);
-	}
-	
-	public function stepHit(curStep:Int = -1)
-	{
-		// beat hit
-		// if(curStep % 4 == 0)
+	inline function getZ(bas:FlxBasic)
+		ZIndex.getZ(bas);
 
-		callScript("stepHit", [curStep]);
-	}
+	inline function setZ(bas:FlxBasic, val:Int)
+		ZIndex.setZ(bas, val);
+
+	inline function removeZ(bas:FlxBasic)
+		ZIndex.removeZ(bas);
+
+	// Scripts
+	public var loadedScript:Iris = null;
 
 	public function callScript(fun:String, ?args:Array<Dynamic>)
 	{
-		for(i in 0...loadedScripts.length) {
-			if(scripted[i] != curStage)
-				continue;
-
-			var script:Iris = loadedScripts[i];
-
-			@:privateAccess {
-				var ny: Dynamic = script.interp.variables.get(fun);
-				try {
-					if(ny != null && Reflect.isFunction(ny))
-						script.call(fun, args);
-				} catch(e) {
-					Logs.print('error parsing script: ' + e, ERROR);
-				}
+		if (loadedScript == null)
+			return;
+		@:privateAccess {
+			var ny:Dynamic = loadedScript.interp.variables.get(fun);
+			try
+			{
+				if (ny != null && Reflect.isFunction(ny))
+					loadedScript.call(fun, args);
+			}
+			catch (e)
+			{
+				Logs.print('error parsing stage script: ' + e, ERROR);
 			}
 		}
 	}

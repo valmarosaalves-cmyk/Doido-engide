@@ -1,95 +1,51 @@
 package;
 
-import backend.game.*;
-import backend.system.FPSCounter;
+import doido.objects.system.*;
 import flixel.FlxG;
 import flixel.FlxGame;
-import flixel.FlxState;
 import flixel.input.keyboard.FlxKey;
 import haxe.CallStack;
 import haxe.io.Path;
-import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.UncaughtErrorEvent;
-import flixel.util.typeLimit.NextState;
-
-#if desktop
-import backend.system.ALSoftConfig;
-#end
-
-#if !html5
+#if sys
 import sys.FileSystem;
 import sys.io.File;
 #end
 
-using StringTools;
-
 class Main extends Sprite
 {
-	public static var fpsCounter:FPSCounter;
+	// later we should have the window size options be determined automatically, probably
+	var gameWidth:Int = 1280;
+	var gameHeight:Int = 720;
+	var framerate:Int = 60;
+	var skipSplash:Bool = true;
 
-	// Use these to customize your mod further!
-	public static final savePath:String = "DiogoTV/DoidoEngine";
-	public static var gFont:String = Paths.font("vcr.ttf");
+	public static final savePath:String = "DiogoTV/DEPudim";
+	public static final internalVer:String = "Alpha 1";
+	public static var fpsCounter:FPSCounter;
+	public static var globalFont:String;
 
 	public function new()
 	{
 		super();
-		// thanks @sqirradotdev
-		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
-
-		var ws:Array<String> = SaveData.displaySettings.get("Window Size")[0].split("x");
-		var windowSize:Array<Int> = [Std.parseInt(ws[0]),Std.parseInt(ws[1])];
-
-		addChild(new FlxGame(windowSize[0], windowSize[1], Init, 120, 120, true));
-
-		#if android
-		FlxG.android.preventDefaultKeys = [BACK];
-		#elseif desktop
-		addChild(fpsCounter = new FPSCounter(5, 3));
-		#end
-
-		#if ENABLE_PRINTING
-		Logs.init();
-		#end
-
-		// shader coords fix
-		FlxG.signals.focusGained.add(function() {
-			resetCamCache();
-		});
-		FlxG.signals.gameResized.add(function(w, h) {
-			resetCamCache();
-		});
-		// Prevent flixel from listening to key inputs when switching fullscreen mode
-		// also lets you fullscreen with F11
-		// thanks @nebulazorua, @crowplexus, @diogotvv
-		FlxG.stage.addEventListener(openfl.events.KeyboardEvent.KEY_DOWN, (e) ->
-		{
-			if (e.keyCode == FlxKey.F11)
-				FlxG.fullscreen = !FlxG.fullscreen;
-			
-			if (e.keyCode == FlxKey.ENTER && e.altKey)
-				e.stopImmediatePropagation();
-		}, false, 100);
+		initGame();
+		addChild(fpsCounter = new FPSCounter(5, 5));
+		fixes();
 	}
-	
-	function resetCamCache()
+
+	function initGame()
 	{
-		if(FlxG.cameras != null) {
-			for(cam in FlxG.cameras.list) {
-				if(cam != null && cam.filters != null)
-					resetSpriteCache(cam.flashSprite);
-			}
-		}
-		if(FlxG.game != null)
-			resetSpriteCache(FlxG.game);
-	}
+		// adding the crash handler
+		openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 
-	static function resetSpriteCache(sprite:Sprite):Void {
-		@:privateAccess {
-			sprite.__cacheBitmap 	 = null;
-			sprite.__cacheBitmapData = null;
-		}
+		Logs.init(); // custom logging shit
+
+		var game:FlxGame = new FlxGame(gameWidth, gameHeight, Init, framerate, framerate, skipSplash);
+		globalFont = Assets.font("vcr"); // we need to initialize this before the font ever gets used, otherwise it wont be found
+		@:privateAccess
+		game._customSoundTray = SoundTray;
+		addChild(game);
 	}
 
 	function onUncaughtError(e:UncaughtErrorEvent):Void
@@ -121,61 +77,77 @@ class Main extends Sprite
 		#end
 
 		FlxG.bitmap.clearCache();
-		CoolUtil.playMusic();
+		// CoolUtil.playMusic();
 
-		Main.skipTrans = true;
-		Main.switchState(new CrashHandlerState(stackTraceString + '\n\nCrash log created at: "${normalPath}"'));
+		MusicBeat.skipTrans = true;
+		MusicBeat.switchState(new doido.system.CrashHandler('Crash log created at: "${normalPath}"\n\n' + stackTraceString));
 	}
-	
-	public static var activeState:FlxState;
-	
-	public static var skipClearMemory:Bool = false; // dont
-	public static var skipTrans:Bool = true; // starts on but it turns false inside Init
-	public static var lastTransition:String = '';
-	public static function switchState(?target:NextState, transition:String = 'funkin'):Void
+
+	function fixes()
 	{
-		lastTransition = transition;
-		var trans = new GameTransition(false, transition);
-		trans.finishCallback = function()
+		// shader coords fix
+		FlxG.signals.focusGained.add(resetCamCache);
+		FlxG.signals.gameResized.add((w, h) ->
 		{
-			if(target != null)		
-				FlxG.switchState(target);
-			else
-				FlxG.resetState();
-		};
+			resetCamCache();
+		});
 
-		if(skipTrans)
-			return trans.finishCallback();
-		
-		//FlxG.state.openSubState(trans);
-		if(activeState != null)
-			activeState.openSubState(trans);
-	}
-	
-	// you could just do Main.switchState() but whatever
-	public static function resetState(transition:String = 'funkin'):Void
-		return switchState(null, transition);
+		// fullscreen bind fix
+		FlxG.stage.addEventListener(openfl.events.KeyboardEvent.KEY_DOWN, keyDown, false, 100);
 
-	// so you dont have to type it every time
-	public static function skipStuff(?ohreally:Bool = true):Void
-	{
-		skipClearMemory = ohreally;
-		skipTrans = ohreally;
+		#if SCREENSHOT_FEATURE
+		// screenshots!!
+		FlxG.plugins.addPlugin(new doido.system.Screenshot());
+		#end
+
+		#if debug
+		FlxG.debugger.toggleKeys = [];
+		#end
 	}
 
-	public static function changeFramerate(rawFps:Float = 120)
+	function keyDown(e:openfl.events.KeyboardEvent)
 	{
-		var newFps:Int = Math.floor(rawFps);
-
-		if(newFps > FlxG.updateFramerate)
+		if (e.keyCode == FlxKey.F3)
 		{
-			FlxG.updateFramerate = newFps;
-			FlxG.drawFramerate   = newFps;
+			Save.data.fpsCounter = !Save.data.fpsCounter;
+			fpsCounter.visible = Save.data.fpsCounter;
+			Save.save();
 		}
-		else
+
+		if (e.keyCode == FlxKey.F11)
+			FlxG.fullscreen = !FlxG.fullscreen;
+
+		if (e.keyCode == FlxKey.ENTER && e.altKey)
+			e.stopImmediatePropagation();
+
+		#if debug
+		if (e.keyCode == FlxKey.F2 && e.shiftKey)
+			FlxG.debugger.visible = !FlxG.debugger.visible;
+		#end
+	}
+
+	function resetCamCache()
+	{
+		if (FlxG.cameras != null)
 		{
-			FlxG.drawFramerate   = newFps;
-			FlxG.updateFramerate = newFps;
+			for (cam in FlxG.cameras.list)
+			{
+				if (cam != null && cam.filters != null)
+					resetSpriteCache(cam.flashSprite);
+			}
+		}
+		if (FlxG.game != null)
+			resetSpriteCache(FlxG.game);
+	}
+
+	static function resetSpriteCache(sprite:Sprite):Void
+	{
+		@:privateAccess {
+			sprite.__cacheBitmap = null;
+			sprite.__cacheBitmapData = null;
 		}
 	}
 }
+
+@:deprecated("Paths was moved to Assets")
+typedef Paths = doido.Assets;

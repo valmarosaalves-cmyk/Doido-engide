@@ -1,0 +1,169 @@
+package modchart.backend.standalone.adapters.doido;
+
+import doido.song.Conductor;
+import modchart.Manager;
+import modchart.backend.standalone.IAdapter;
+import flixel.FlxSprite;
+import objects.ui.notes.Note;
+import states.PlayState;
+import flixel.FlxCamera;
+import doido.utils.NoteUtil;
+
+class Doido implements IAdapter {
+
+    public function new() {}
+
+    private inline function fromSteps(steps:Float) {
+		return steps * Conductor.stepCrochet / 1000;
+	}
+
+    public function onModchartingDispose() {}
+
+	public function onModchartingInitialization() {}
+
+    public function getSongPosition():Float
+        return Conductor.songPos;
+
+    public function getCurrentBeat():Float {
+		return Conductor.songPos / Conductor.crochet;
+	}
+
+	public function getCurrentCrochet():Float {
+		return Conductor.stepCrochet;
+	}
+
+    public function getCurrentScrollSpeed():Float {
+		return PlayState.instance.playField.bfStrumline.scrollSpeed * 0.45;
+	}
+
+    public function getBeatFromStep(step:Float):Float {
+		return step * 4;
+	}
+
+	private function __getStrumlineFromPlayer(player:Int):objects.ui.notes.Strumline {
+		return player == 1 ? PlayState.instance.playField.bfStrumline : PlayState.instance.playField.dadStrumline;
+	}
+
+	function getStrumPosition(lane:Int, player:Int):Array<Float> {
+		var strumline = __getStrumlineFromPlayer(player);
+		var x:Float = strumline.x;
+		x += NoteUtil.noteWidth(false) * lane;
+		x -= (NoteUtil.noteWidth(false) * (getKeyCount() - 1)) / 2;
+		return [x, (!strumline.downscroll ? 110 : FlxG.height - 110)];
+	}
+
+    public function getDefaultReceptorX(lane:Int, player:Int):Float {
+		return getStrumPosition(lane, player)[0];
+	}
+
+	public function getDefaultReceptorY(lane:Int, player:Int):Float {
+		return getStrumPosition(lane, player)[1];
+	}
+
+    public function getTimeFromArrow(arrow:FlxSprite):Float {
+        if(arrow is Note) {
+            final note:Note = cast arrow;
+			return fromSteps(note.data.length);
+        }
+        return 0;
+    }
+
+    public function isTapNote(arrow:FlxSprite) {
+		return arrow is Note;
+	}
+
+    public function isHoldEnd(arrow:FlxSprite) {
+		if (arrow is Note) {
+			final note:Note = cast arrow;
+			return note.isHoldEnd;
+		}
+		return false;
+	}
+
+    public function arrowHit(arrow:FlxSprite) {
+		if (arrow is Note) {
+			final note:Note = cast arrow;
+			return note.gotHit;
+		}
+		return false;
+	}
+
+    public function getHoldParentTime(sprite:FlxSprite) {
+        if(sprite is Note) {
+            final note:Note = cast sprite;
+			if(note.holdParent != null)
+                return fromSteps(note.holdParent.data.length);
+        }
+        return 0;
+    }
+
+    public function getHoldLength(item:FlxSprite):Float
+		return Conductor.stepCrochet;
+
+    public function getLaneFromArrow(arrow:FlxSprite) {
+		if (arrow is Note) {
+			final note:Note = cast arrow;
+			return note.data.lane;
+		}
+
+		return arrow.ID;
+	}
+
+    public function getPlayerFromArrow(arrow:FlxSprite) {
+		if (arrow is Note) {
+			final castedNote:Note = cast arrow;
+			return castedNote.data.strumline;
+		}
+
+		return 0;
+	}
+
+    public function getKeyCount(?player:Int):Int
+        return 4;
+	public function getPlayerCount():Int
+        return 2;
+
+	@:privateAccess public function getArrowCamera():Array<FlxCamera> {
+        return [PlayState.instance.camStrum];
+    }
+
+	public function getHoldSubdivisions(item:FlxSprite):Int
+        return 4; //???
+	public function getDownscroll():Bool
+        return PlayState.instance.playField.bfStrumline.downscroll;
+
+	/**
+	 * Get the every arrow/lane indexed by player.
+	 * Example:
+	 * [
+	 *      [ // Player 0
+	 *          [strum1, strum2...],
+	 *          [arrow1, arrow2...],
+	 *          [hold1, hold2....],
+	 * 			[splash1, splash2....]
+	 *      ],
+	 *      [ // Player 2
+	 *          [strum1, strum2...],
+	 *          [arrow1, arrow2...],
+	 *          [hold1, hold2....],
+	 * 			[splash1, splash2....]
+	 *      ]
+	 * ]
+	 * @return Array<Array<Array<FlxSprite>>>
+	 */
+	public function getArrowItems():Array<Array<Array<FlxSprite>>> {
+        var pspr:Array<Array<Array<FlxSprite>>> = [[[], [], []], [[], [], []]];
+        final strums = [PlayState.instance.playField.dadStrumline, PlayState.instance.playField.bfStrumline];
+
+        for (i in 0...strums.length) {
+            for(strum in strums[i].strums)
+                pspr[i][0].push(strum);
+            for(note in strums[i].notes) {
+                if(note.isHold) pspr[i][2].push(note);
+                else pspr[i][1].push(note);
+            }
+        } 
+
+        return pspr;
+    }
+}
