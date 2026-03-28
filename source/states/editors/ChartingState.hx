@@ -1,5 +1,7 @@
 package states.editors;
 
+import doido.objects.ui.DoidoWindow.BaseWindow;
+import doido.objects.ui.DoidoWindow.MenuWindow;
 import doido.objects.ui.*;
 import flixel.util.FlxStringUtil;
 import flixel.util.FlxTimer;
@@ -67,6 +69,7 @@ class ChartingState extends MusicBeatState
 
 	// windows!!
 	public var timeWindow:TimeWindow;
+	public var menuBox:DoidoBox;
 
 	public function new(SONG:DoidoSong)
 	{
@@ -114,6 +117,8 @@ class ChartingState extends MusicBeatState
 		selectSquare.alpha = 0.5;
 		add(selectSquare);
 
+		addMenu();
+
 		timeWindow = new TimeWindow(this);
 		add(timeWindow);
 
@@ -128,6 +133,50 @@ class ChartingState extends MusicBeatState
 		cursorTxt.updateHitbox();
 
 		scrollBall = new FlxSprite(0, 0).loadImage("editors/charting/scrollBall");
+	}
+
+	function addMenu()
+	{
+		var x = 20;
+		var y = 20;
+		var width = 318;
+		var height = 22;
+
+		var fileWindow = new MenuWindow(x, y + 30, width, this);
+		fileWindow.title = "File";
+		// fileWindow.addButton("New", "Ctrl + N");
+		// fileWindow.addSeparator();
+		// fileWindow.addButton("Open Chart", "Ctrl + O");
+		// fileWindow.addButton("Open Events", "Ctrl + Alt + O");
+		// fileWindow.addSeparator();
+		fileWindow.addButton("Save Chart as...", "Ctrl + S", (btn) -> save(false));
+		fileWindow.addButton("Save Events as...", "Ctrl + Alt + S", (btn) -> save(true));
+		fileWindow.addSeparator();
+		// fileWindow.addButton("Reload Chart", "Ctrl + Shift + Alt + R");
+		// fileWindow.addSeparator();
+		// fileWindow.addButton("Preview", "ESC");
+		fileWindow.addButton("Playtest", "Enter", (btn) -> play());
+		fileWindow.updateBg();
+
+		var editWindow = new MenuWindow(x, y + 30, width, this);
+		editWindow.title = "Edit";
+		// editWindow.addButton("Undo", "Ctrl + Z");
+		// editWindow.addButton("Redo", "Ctrl + Y");
+		// editWindow.addSeparator();
+		editWindow.addButton("Select All", "Ctrl + A", (btn) -> selectAll());
+		editWindow.updateBg();
+
+		var viewWindow = new MenuWindow(x, y + 30, width, this);
+		viewWindow.title = "View";
+		// viewWindow.addButton("Go to Section...");
+		// viewWindow.addSeparator();
+		viewWindow.addButton("Go to Song Start", "Ctrl + R", (btn) -> goToSong(0));
+		viewWindow.addButton("Go to Song End", null, (btn) -> goToSong(audio.length - 1));
+		// viewWindow.addButton("Go to...");
+		viewWindow.updateBg();
+
+		menuBox = new DoidoBox(x, y, width, height, [fileWindow, editWindow, viewWindow], this);
+		add(menuBox);
 	}
 
 	public var tweeningSongPos:Bool = false;
@@ -486,31 +535,22 @@ class ChartingState extends MusicBeatState
 			{
 				var wasA:Bool = FlxG.keys.justPressed.A;
 				if (wasA && FlxG.keys.pressed.CONTROL)
-				{
-					selectedNotes = [];
-					for (note in CHART.notes)
-						selectedNotes.push(note);
-				}
+					selectAll();
 				else
-				{
 					changeSection(wasA ? -1 : 1);
-				}
 			}
 
 			if (FlxG.keys.justPressed.R)
 				resetSection();
 
 			if (FlxG.keys.justPressed.ENTER)
-			{
-				PlayState.SONG = SONG;
-				MusicBeat.switchState(new PlayState());
-			}
+				play();
 
 			if (FlxG.keys.justPressed.EIGHT || FlxG.keys.justPressed.NUMPADEIGHT)
 				noFunAllowed = !noFunAllowed;
 
 			if (FlxG.keys.justPressed.S && FlxG.keys.pressed.CONTROL)
-				save();
+				save(FlxG.keys.pressed.ALT);
 		}
 
 		if (playingSong)
@@ -545,7 +585,8 @@ class ChartingState extends MusicBeatState
 				if (autoScrolling)
 				{
 					scrollAutoY = FlxG.mouse.getWorldPosition().y;
-					scrollBall.setPosition(FlxG.mouse.getWorldPosition().x - (scrollBall.width / 2), FlxG.mouse.getWorldPosition().y - (scrollBall.height / 2));
+					scrollBall.setPosition(FlxG.mouse.getWorldPosition()
+						.x - (scrollBall.width / 2), FlxG.mouse.getWorldPosition().y - (scrollBall.height / 2));
 				}
 			}
 
@@ -564,19 +605,37 @@ class ChartingState extends MusicBeatState
 		}
 	}
 
-	function save()
+	public function save(saveEvents:Bool = false)
 	{
-		var data:String = Json.stringify(CHART, "\t");
-		if (data != null && data.length > 0)
+		if (!saveEvents)
 		{
-			Assets.fileSave(data.trim(), '${CHART.song}.json');
+			var data:String = Json.stringify(CHART, "\t");
+			if (data != null && data.length > 0)
+			{
+				Assets.fileSave(data.trim(), '${CHART.song}.json');
+			}
 		}
+		else
+		{
+			var data:String = Json.stringify(EVENTS, "\t");
+			if (data != null && data.length > 0)
+			{
+				Assets.fileSave(data.trim(), '${CHART.song}-events.json');
+			}
+		}
+	}
 
-		var data:String = Json.stringify(EVENTS, "\t");
-		if (data != null && data.length > 0)
-		{
-			Assets.fileSave(data.trim(), '${CHART.song}-events.json');
-		}
+	public function play()
+	{
+		PlayState.SONG = SONG;
+		MusicBeat.switchState(new PlayState());
+	}
+
+	function selectAll()
+	{
+		selectedNotes = [];
+		for (note in CHART.notes)
+			selectedNotes.push(note);
 	}
 
 	public function getMouseStep():Float
@@ -616,30 +675,35 @@ class ChartingState extends MusicBeatState
 	{
 		if (FlxG.keys.pressed.SHIFT)
 		{
-			if (!tweeningSongPos)
-			{
-				if (Conductor.songPos <= 10000 || noFunAllowed)
-					tweenSongPos(0, 0.25, FlxEase.cubeInOut);
-				else
-				{
-					FlxTween.tween(FlxG.camera, {zoom: 1.3}, 1.6, {ease: FlxEase.cubeIn, startDelay: 0.4});
-					tweenSongPos(0, 2, FlxEase.cubeIn, (twn) ->
-					{
-						playSfx("editors/clank");
-						FlxTween.completeTweensOf(FlxG.camera);
-						FlxTween.tween(FlxG.camera, {zoom: 1.0}, 0.1, {ease: FlxEase.cubeOut});
-						FlxG.camera.shake(0.02, 0.15);
-					});
-				}
-			}
-			else
-			{
-				FlxTween.completeTweensOf(Conductor);
-			}
+			goToSong(0);
 		}
 		else
 		{
 			tweenSongPos(getSectionStart());
+		}
+	}
+
+	public function goToSong(target:Float)
+	{
+		if (!tweeningSongPos)
+		{
+			if (Math.abs(Conductor.songPos - target) <= 10000 || noFunAllowed)
+				tweenSongPos(0, 0.25, FlxEase.cubeInOut);
+			else
+			{
+				FlxTween.tween(FlxG.camera, {zoom: 1.3}, 1.6, {ease: FlxEase.cubeIn, startDelay: 0.4});
+				tweenSongPos(target, 2, FlxEase.cubeIn, (twn) ->
+				{
+					playSfx("editors/clank");
+					FlxTween.completeTweensOf(FlxG.camera);
+					FlxTween.tween(FlxG.camera, {zoom: 1.0}, 0.1, {ease: FlxEase.cubeOut});
+					FlxG.camera.shake(0.02, 0.15);
+				});
+			}
+		}
+		else
+		{
+			FlxTween.completeTweensOf(Conductor);
 		}
 	}
 
@@ -1031,21 +1095,5 @@ class TimeWindow extends BaseWindow
 			return FlxStringUtil.formatTime(time, true);
 		else // old timer
 			return '${Math.floor(time * 100) / 100}';
-	}
-}
-
-class BaseWindow extends FlxGroup
-{
-	public var chartState:ChartingState;
-	public var bg:FlxSprite;
-
-	public function new(chartState:ChartingState)
-	{
-		super();
-		this.chartState = chartState;
-
-		bg = new FlxSprite().makeColor(100, 100, 0xFF000000);
-		bg.alpha = 0.5;
-		add(bg);
 	}
 }

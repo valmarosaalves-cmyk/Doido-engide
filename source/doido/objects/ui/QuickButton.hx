@@ -34,9 +34,13 @@ class QuickButton extends FlxSprite
 		var daScale:Float = idleScale;
 		if (FlxG.mouse.overlaps(this))
 		{
-			daScale = maxScale;
-			if (FlxG.mouse.pressed)
-				daScale = minScale;
+			if (maxScale != 1 || minScale != 1)
+			{
+				daScale = maxScale;
+				if (FlxG.mouse.pressed)
+					daScale = minScale;
+			}
+
 			if (FlxG.mouse.justPressed)
 				onDown.dispatch(this);
 			if (FlxG.mouse.justReleased)
@@ -53,7 +57,8 @@ class QuickButton extends FlxSprite
 			hovering = false;
 		}
 
-		scale.set(FlxMath.lerp(scale.x, daScale, elapsed * 8), FlxMath.lerp(scale.y, daScale, elapsed * 8));
+		if (maxScale != 1 || minScale != 1)
+			scale.set(FlxMath.lerp(scale.x, daScale, elapsed * 8), FlxMath.lerp(scale.y, daScale, elapsed * 8));
 	}
 }
 
@@ -81,7 +86,7 @@ class AnimatedButton extends QuickButton
 			btn.animation.play("idle");
 		});
 
-		maxScale = 1.05;
+		maxScale = 1;
 		minScale = 0.95;
 	}
 }
@@ -123,5 +128,107 @@ class TextButton extends FlxSpriteGroup
 
 		text.x = button.x + (button.width / 2) - (text.width / 2);
 		text.y = button.y + (button.height / 2) - (text.height / 2);
+	}
+}
+
+class MenuButton extends FlxSpriteGroup
+{
+	var _label:FlxBitmapText;
+	var _bind:FlxBitmapText;
+	var button:QuickButton;
+
+	public function new(label:String, ?bind:String, width:Float = 318, height:Float = 22, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
+	{
+		super();
+
+		button = new QuickButton(onUp, onDown);
+		button.makeColor(width, height, 0xFFD8DAF6);
+		button.alpha = 0;
+		button.maxScale = 1;
+		button.minScale = 1;
+		add(button);
+
+		button.onHover.add((btn) ->
+		{
+			btn.alpha = 0.2;
+		});
+		button.onOut.add((btn) ->
+		{
+			btn.alpha = 0;
+		});
+
+		_label = new FlxBitmapText(0, 0, Assets.bitmapFont("phantommuff"));
+		_label.color = 0xFFFFFFFF;
+		_label.alignment = LEFT;
+		_label.text = label;
+		_label.scale.set(0.625, 0.625);
+		_label.updateHitbox();
+		_label.setPosition(button.x + 2, button.y + ((button.height / 2) - (_label.height / 2)));
+		add(_label);
+
+		if (bind != null)
+		{
+			_bind = new FlxBitmapText(0, 0, Assets.bitmapFont("phantommuff"));
+			_bind.color = 0xFF557BA0;
+			_bind.alignment = RIGHT;
+			_bind.text = '($bind)';
+			_bind.scale.set(0.625, 0.625);
+			_bind.updateHitbox();
+			_bind.setPosition(button.x + button.width - _bind.width - 2, button.y + ((button.height / 2) - (_bind.height / 2)));
+			add(_bind);
+		}
+	}
+}
+
+class BoxLabel extends FlxSpriteGroup
+{
+	var text:FlxBitmapText;
+	var bg:FlxSprite;
+	var button:QuickButton;
+	var toggled:Bool = false;
+
+	public function new(label:String, width:Float = 318, height:Float = 22, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
+	{
+		super();
+
+		bg = new FlxSprite().makeColor(width, height, 0xFFFFFFFF);
+		bg.alpha = 0.5;
+		add(bg);
+
+		button = new QuickButton(onUp, onDown);
+		button.makeColor(width, height, 0xFFD8DAF6);
+		button.alpha = 0;
+		button.maxScale = 1;
+		button.minScale = 1;
+		add(button);
+
+		button.onHover.add((btn) ->
+		{
+			btn.alpha = 0.2;
+		});
+		button.onOut.add((btn) ->
+		{
+			btn.alpha = 0;
+		});
+
+		text = new FlxBitmapText(0, 0, Assets.bitmapFont("phantommuff"));
+		text.color = 0xFFFFFFFF;
+		text.alignment = LEFT;
+		text.text = label;
+		text.scale.set(0.625, 0.625);
+		text.updateHitbox();
+		text.setPosition(button.x + 2, button.y + ((button.height / 2) - (text.height / 2)));
+		add(text);
+	}
+
+	public var selected(default, set):Bool;
+
+	public function set_selected(b:Bool):Bool
+	{
+		selected = b;
+		text.color = (selected ? 0xFF20222D : 0xFFD8DAF6);
+		bg.color = (selected ? 0xFFD8DAF6 : 0xFF000000);
+		bg.alpha = (selected ? 1 : 0.5);
+		return selected;
 	}
 }
