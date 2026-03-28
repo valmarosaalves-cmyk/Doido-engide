@@ -84,7 +84,7 @@ class ChartingState extends MusicBeatState
 		audio = new AudioHandler(CHART.song);
 
 		if (NoteUtil.directions.length == 0)
-			NoteUtil.setUpDirections(8);
+			NoteUtil.setUpDirections(4);
 
 		var bg = new FlxSprite().loadGraphic(Assets.image('menuChartEditor'));
 		bg.screenCenter();
@@ -534,7 +534,7 @@ class ChartingState extends MusicBeatState
 		// {
 		// 	timeBar.y = FlxG.mouse.y
 		// }
-		
+
 		if(!playingSong) {
 			if(FlxG.mouse.justPressedMiddle) {
 				autoScrolling = !autoScrolling;
