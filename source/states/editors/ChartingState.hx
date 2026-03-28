@@ -534,14 +534,11 @@ class ChartingState extends MusicBeatState
 			playingSong = false;
 		}
 
-		// if (FlxG.mouse.pressedMiddle)
-		// {
-		// 	timeBar.y = FlxG.mouse.y
-		// }
-
 		if (!playingSong)
 		{
-			if (FlxG.mouse.justPressedMiddle)
+			if (FlxG.mouse.pressedMiddle && FlxG.keys.pressed.CONTROL)
+				timeBar.y = (FlxG.keys.pressed.SHIFT ? (FlxG.height / 2) - (timeBar.height / 2) : FlxG.mouse.y);
+			else if (FlxG.mouse.justPressedMiddle)
 			{
 				autoScrolling = !autoScrolling;
 
