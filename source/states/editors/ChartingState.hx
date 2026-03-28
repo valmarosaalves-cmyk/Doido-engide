@@ -45,6 +45,7 @@ class ChartingState extends MusicBeatState
 	public var SONG:DoidoSong;
 
 	public var cursorTxt:FlxBitmapText;
+	public var scrollBall:FlxSprite;
 
 	public var grid:ChartingGrid;
 	public var timeBar:FlxSprite;
@@ -125,12 +126,17 @@ class ChartingState extends MusicBeatState
 		cursorTxt.alignment = LEFT;
 		cursorTxt.scale.set(0.7, 0.7);
 		cursorTxt.updateHitbox();
+
+		scrollBall = new FlxSprite(0, 0).loadImage("editors/charting/scrollBall");
 	}
 
 	public var tweeningSongPos:Bool = false;
 	public var curCursor:lime.ui.MouseCursor = DEFAULT;
 
 	var clickedOnWindow:Bool = false;
+
+	var autoScrolling:Bool = false;
+	var scrollAutoY:Float = 0;
 
 	override function update(elapsed:Float)
 	{
@@ -528,9 +534,23 @@ class ChartingState extends MusicBeatState
 			playingSong = false;
 		}
 
-		if (FlxG.mouse.pressedMiddle)
+		if (!playingSong)
 		{
-			timeBar.y = FlxG.mouse.y;
+			if (FlxG.mouse.pressedMiddle && FlxG.keys.pressed.CONTROL)
+				timeBar.y = (FlxG.keys.pressed.SHIFT ? (FlxG.height / 2) - (timeBar.height / 2) : FlxG.mouse.y);
+			else if (FlxG.mouse.justPressedMiddle)
+			{
+				autoScrolling = !autoScrolling;
+
+				if (autoScrolling)
+				{
+					scrollAutoY = FlxG.mouse.getWorldPosition().y;
+					scrollBall.setPosition(FlxG.mouse.getWorldPosition().x - (scrollBall.width / 2), FlxG.mouse.getWorldPosition().y - (scrollBall.height / 2));
+				}
+			}
+
+			if (autoScrolling)
+				Conductor.songPos += (FlxG.mouse.getWorldPosition().y - scrollAutoY) * 10 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1);
 		}
 
 		grid.gridY = timeBar.y + (timeBar.height / 2) - (curStepFloat * GRID_SIZE);
@@ -736,6 +756,9 @@ class ChartingState extends MusicBeatState
 			cursorTxt.setPosition(FlxG.mouse.x + 18, FlxG.mouse.y + 18);
 			cursorTxt.draw();
 		}
+
+		if (autoScrolling)
+			scrollBall.draw();
 	}
 
 	override function stepHit()
