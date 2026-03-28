@@ -84,7 +84,7 @@ class ChartingState extends MusicBeatState
 		audio = new AudioHandler(CHART.song);
 
 		if (NoteUtil.directions.length == 0)
-			NoteUtil.setUpDirections(4);
+			NoteUtil.setUpDirections(8);
 
 		var bg = new FlxSprite().loadGraphic(Assets.image('menuChartEditor'));
 		bg.screenCenter();
@@ -132,6 +132,8 @@ class ChartingState extends MusicBeatState
 
 	var clickedOnWindow:Bool = false;
 
+	var autoScrolling:Bool = false;
+	var scrollAutoY:Float = 0;
 	override function update(elapsed:Float)
 	{
 		// debug camera lol
@@ -528,9 +530,21 @@ class ChartingState extends MusicBeatState
 			playingSong = false;
 		}
 
-		if (FlxG.mouse.pressedMiddle)
-		{
-			timeBar.y = FlxG.mouse.y;
+		// if (FlxG.mouse.pressedMiddle)
+		// {
+		// 	timeBar.y = FlxG.mouse.y
+		// }
+		
+		if(!playingSong) {
+			if(FlxG.mouse.justPressedMiddle) {
+				autoScrolling = !autoScrolling;
+				scrollAutoY = FlxG.mouse.getWorldPosition().y;
+			}
+
+			if(autoScrolling) {
+				Conductor.songPos += (FlxG.mouse.getWorldPosition().y - scrollAutoY) * 10 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1);
+				curCursor = MOVE;
+			}
 		}
 
 		grid.gridY = timeBar.y + (timeBar.height / 2) - (curStepFloat * GRID_SIZE);
