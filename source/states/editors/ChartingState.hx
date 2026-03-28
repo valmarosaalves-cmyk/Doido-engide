@@ -69,6 +69,7 @@ class ChartingState extends MusicBeatState
 
 	// windows!!
 	public var timeWindow:TimeWindow;
+	public var gridWindow:GridWindow;
 	public var menuBox:DoidoBox;
 
 	public function new(SONG:DoidoSong)
@@ -121,6 +122,9 @@ class ChartingState extends MusicBeatState
 
 		timeWindow = new TimeWindow(this);
 		add(timeWindow);
+
+		gridWindow = new GridWindow(this);
+		add(gridWindow);
 
 		var debugInfo = new DebugInfo(this);
 		// debugInfo.visible = true;
@@ -958,6 +962,17 @@ class ChartingGrid extends FlxSprite
 			}
 		}
 		midLine.draw();
+	}
+}
+
+class GridWindow extends BaseWindow
+{
+	public function new(chartState:ChartingState)
+	{
+		super(chartState);
+		bg.scale.set(190, 104);
+		bg.updateHitbox();
+		bg.setPosition(18, FlxG.height - bg.height - 18);
 	}
 }
 
