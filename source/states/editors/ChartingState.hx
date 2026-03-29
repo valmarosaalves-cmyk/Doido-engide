@@ -1,5 +1,6 @@
 package states.editors;
 
+import doido.objects.ui.PsychUIInputText.PsychUIEvent;
 import doido.objects.ui.DoidoWindow.BaseWindow;
 import doido.objects.ui.DoidoWindow.MenuWindow;
 import doido.objects.ui.*;
@@ -191,6 +192,11 @@ class ChartingState extends MusicBeatState
 	var autoScrolling:Bool = false;
 	var scrollAutoY:Float = 0;
 
+	var typing(get, never):Bool;
+
+	function get_typing():Bool
+		return PsychUIInputText.focusOn != null;
+
 	override function update(elapsed:Float)
 	{
 		// debug camera lol
@@ -202,7 +208,7 @@ class ChartingState extends MusicBeatState
 			playingSong = false;
 		else
 		{
-			if (FlxG.keys.justPressed.SPACE)
+			if (FlxG.keys.justPressed.SPACE && !typing)
 				playingSong = !playingSong;
 		}
 
@@ -225,11 +231,12 @@ class ChartingState extends MusicBeatState
 			clickedOnWindow = overlapsWindow;
 
 		var cursorText:String = "";
-		if (FlxG.keys.pressed.SHIFT)
-			cursorText = "4x";
 
-		if (!clickedOnWindow)
+		if (!clickedOnWindow && !typing)
 		{
+			if (FlxG.keys.pressed.SHIFT)
+				cursorText = "4x";
+
 			if (FlxG.mouse.pressedRight)
 				cursorText = "X";
 
@@ -973,6 +980,9 @@ class GridWindow extends BaseWindow
 		bg.scale.set(190, 104);
 		bg.updateHitbox();
 		bg.setPosition(18, FlxG.height - bg.height - 18);
+
+		var input:PsychUIInputText = new PsychUIInputText(bg.x + 10, bg.y + 10, 100, "test", 14);
+		add(input);
 	}
 }
 
