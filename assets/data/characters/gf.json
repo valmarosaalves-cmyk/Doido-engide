@@ -2,6 +2,7 @@
     "spritesheet": "gf",
     "spriteType": "ATLAS",
     "quickDancer": true,
+    "angleOrigin": {"x": 0.5, "y": 0.7},
     "idleAnims": ["danceLeft", "danceRight"],
     "anims": [
         {

@@ -22,6 +22,10 @@ function update(elapsed:Float)
         }
         i++;
     }
+
+    playState.bf.angle += 180 * elapsed;
+    playState.dad.angle += 90 * elapsed;
+    playState.gf.angle += 10 * elapsed;
 }
 
 function onNoteHit(note, strumline)

@@ -1,6 +1,7 @@
 {
     "spritesheet": "bf/BOYFRIEND",
     "flipX": true,
+    "angleOrigin": {"x": 0.5, "y": 0.5},
     "anims": [
         {
             "name": "idle",

@@ -1,6 +1,7 @@
 package doido.objects;
 
 import animate.FlxAnimate;
+import flixel.math.FlxAngle;
 
 typedef Animation =
 {
@@ -133,9 +134,17 @@ class DoidoSprite extends FlxAnimate
 		preUpdateOffset();
 		if (animOffsets.exists(curAnimName))
 		{
+			var radAngle = FlxAngle.asRadians(angle);
 			var daOffset = animOffsets.get(curAnimName);
-			offset.x += daOffset.x * scale.x;
-			offset.y += daOffset.y * scale.y;
+
+			var offsetX = daOffset.x * scale.x;
+			var offsetY = daOffset.y * scale.y;
+
+			var cosAngle = Math.cos(radAngle);
+			var sinAngle = Math.sin(radAngle);
+
+			offset.x += (offsetX * cosAngle) - (offsetY * sinAngle);
+			offset.y += (offsetX * sinAngle) + (offsetY * cosAngle);
 		}
 	}
 

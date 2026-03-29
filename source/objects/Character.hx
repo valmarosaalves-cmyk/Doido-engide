@@ -20,6 +20,9 @@ typedef DoidoCharacter =
 	var ?singLength:Float;
 	var ?singType:String;
 
+	var ?alpha:Float;
+	var ?angle:Float;
+	var ?angleOrigin:DoidoPoint;
 	var ?scale:DoidoPoint;
 	var ?pixel:Bool;
 	var ?flipX:Bool;
@@ -38,7 +41,7 @@ class Character extends DoidoSprite
 	public var curChar:String = "bf";
 	public var isPlayer:Bool = false;
 
-	var data:DoidoCharacter;
+	public var data:DoidoCharacter;
 
 	public function new(curChar:String = "bf", isPlayer:Bool = false)
 	{
@@ -107,6 +110,8 @@ class Character extends DoidoSprite
 		globalOffset = data.globalOffset ?? globalOffset;
 		cameraOffset = data.cameraOffset ?? cameraOffset;
 
+		angle = data.angle ?? 0.0;
+		alpha = data.alpha ?? 1.0;
 		data.scale ??= {x: 1, y: 1};
 		scale.set(data.scale.x, data.scale.y);
 		antialiasing = ((data.pixel == true) ? false : flixel.FlxSprite.defaultAntialiasing);
@@ -119,6 +124,8 @@ class Character extends DoidoSprite
 		playAnim(idleAnims[0]);
 
 		updateHitbox();
+		data.angleOrigin ??= {x: 0.5, y: 1.0};
+		origin.set(data.angleOrigin.x * width, data.angleOrigin.y * height);
 		scaleOffset = {x: offset.x, y: offset.y};
 
 		playAnim(idleAnims[0], true, anim.curAnim.numFrames);

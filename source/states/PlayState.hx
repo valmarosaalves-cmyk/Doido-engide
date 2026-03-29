@@ -107,6 +107,7 @@ class PlayState extends MusicBeatState implements Playable
 			var newScript:Iris = new Iris(Assets.script('$path'), instance, {name: path, autoRun: true, autoPreset: true});
 			loadedScripts.push(newScript);
 		}
+		setScript("playState", instance);
 
 		Conductor.initialBPM = CHART.bpm;
 		Conductor.mapBPMChanges(EVENTS.events);
@@ -146,8 +147,7 @@ class PlayState extends MusicBeatState implements Playable
 		characters.push(dad);
 		characters.push(bf);
 
-		for (char in characters)
-		{
+		for (char in characters) {
 			add(char);
 		}
 

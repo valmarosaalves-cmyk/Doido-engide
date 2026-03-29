@@ -94,8 +94,11 @@ class NoteUtil
 	public static function setNotePos(note:FlxSprite, strum:FlxSprite, angle:Float, offsetX:Float, offsetY:Float)
 	{
 		var radAngle = FlxAngle.asRadians(angle);
-		note.x = strum.x + (Math.cos(radAngle) * offsetX) + (Math.sin(radAngle) * offsetY);
-		note.y = strum.y + (Math.cos(radAngle) * offsetY) + (Math.sin(radAngle) * offsetX);
+		var cosAngle = Math.cos(radAngle);
+		var sinAngle = Math.sin(radAngle);
+		
+		note.x = strum.x + (cosAngle * offsetX) + (sinAngle * offsetY);
+		note.y = strum.y + (cosAngle * offsetY) + (sinAngle * offsetX);
 	}
 
 	public static function sortNotes(Obj1:NoteData, Obj2:NoteData):Int

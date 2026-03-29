@@ -44,7 +44,6 @@ class CharGroup extends FlxTypedGroup<Character>
 			Logs.print(charName + " DOESN'T EXIST, ADDING", WARNING);
 			return;
 		}
-		char.alpha = 1.0;
 		updateChar();
 	}
 
@@ -53,10 +52,11 @@ class CharGroup extends FlxTypedGroup<Character>
 		char.x = x - char.width / 2 + char.globalOffset.x;
 		char.y = y - char.height + char.globalOffset.y;
 		char.scrollFactor.set(scrollFactorX, scrollFactorY);
+		char.alpha = alpha * (char.data.alpha ?? 1.0);
+		char.angle = angle;
 	}
 
 	public var x(default, set):Float = 0.0;
-
 	public function set_x(v:Float):Float
 	{
 		x = v;
@@ -65,7 +65,6 @@ class CharGroup extends FlxTypedGroup<Character>
 	}
 
 	public var y(default, set):Float = 0.0;
-
 	public function set_y(v:Float):Float
 	{
 		y = v;
@@ -80,7 +79,6 @@ class CharGroup extends FlxTypedGroup<Character>
 	}
 
 	public var scrollFactorX(default, set):Float = 1.0;
-
 	public function set_scrollFactorX(v:Float):Float
 	{
 		scrollFactorX = v;
@@ -89,7 +87,6 @@ class CharGroup extends FlxTypedGroup<Character>
 	}
 
 	public var scrollFactorY(default, set):Float = 1.0;
-
 	public function set_scrollFactorY(v:Float):Float
 	{
 		scrollFactorY = v;
@@ -101,6 +98,23 @@ class CharGroup extends FlxTypedGroup<Character>
 	{
 		scrollFactorX = x;
 		scrollFactorY = y;
+	}
+
+	public var alpha(default, set):Float = 1.0;
+	public function set_alpha(v:Float):Float
+	{
+		alpha = v;
+		updateChar();
+		return alpha;
+	}
+
+	public var angle(default, set):Float = 0.0;
+	public function set_angle(v:Float):Float
+	{
+		angle = v;
+		updateChar();
+		char.updateOffset();
+		return angle;
 	}
 
 	public function playSingAnim(note:Note, miss:Bool = false)
@@ -159,7 +173,6 @@ class CharGroup extends FlxTypedGroup<Character>
 		return char.getMidpoint(point);
 
 	public var cameraOffset(get, never):DoidoPoint;
-
 	public function get_cameraOffset():DoidoPoint
 		return char.cameraOffset;
 
