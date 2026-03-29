@@ -4,6 +4,12 @@ import doido.objects.ui.QuickButton.AnimatedButton;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
 
+/*
+ *
+ * Code adapted from FNF: Psych Engine, with permission.
+ * https://github.com/ShadowMario/FNF-PsychEngine
+ *
+ */
 class PsychUINumericStepper extends PsychUIInputText
 {
 	public static final CHANGE_EVENT = "numericstepper_change";

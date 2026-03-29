@@ -6,6 +6,12 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import doido.objects.ui.QuickButton.AnimatedButton;
 
+/*
+ *
+ * Code adapted from FNF: Psych Engine, with permission.
+ * https://github.com/ShadowMario/FNF-PsychEngine
+ *
+ */
 class PsychUIDropDownMenu extends PsychUIInputText
 {
 	public static final CLICK_EVENT = "dropdown_click";
