@@ -1,6 +1,6 @@
 package states.editors;
 
-import doido.objects.ui.PsychUIInputText.PsychUIEvent;
+import doido.objects.ui.PsychUINumericStepper;
 import doido.objects.ui.DoidoWindow.BaseWindow;
 import doido.objects.ui.DoidoWindow.MenuWindow;
 import doido.objects.ui.*;
@@ -649,6 +649,7 @@ class ChartingState extends MusicBeatState
 			selectedNotes.push(note);
 	}
 
+	// snapping goes here
 	public function getMouseStep():Float
 	{
 		var mouseStep:Float = (FlxG.mouse.y - grid.gridY) / GRID_SIZE;
@@ -974,6 +975,14 @@ class ChartingGrid extends FlxSprite
 
 class GridWindow extends BaseWindow
 {
+	var windowTitle:FlxBitmapText;
+	var zoomTxt:FlxBitmapText;
+	var snapTxt:FlxBitmapText;
+
+	var songName:PsychUIInputText;
+	var stepper:PsychUINumericStepper;
+	var snapDrowUp:PsychUIDropDownMenu;
+
 	public function new(chartState:ChartingState)
 	{
 		super(chartState);
@@ -981,8 +990,44 @@ class GridWindow extends BaseWindow
 		bg.updateHitbox();
 		bg.setPosition(18, FlxG.height - bg.height - 18);
 
-		var input:PsychUIInputText = new PsychUIInputText(bg.x + 10, bg.y + 10, 100, "test", 14);
-		add(input);
+		windowTitle = new FlxBitmapText(bg.x + 6, bg.y + 12, Assets.bitmapFont("phantommuff"));
+		windowTitle.alignment = LEFT;
+		windowTitle.text = "Grid Settings: ";
+		windowTitle.scale.set(0.625, 0.625);
+		windowTitle.updateHitbox();
+		add(windowTitle);
+
+		zoomTxt = new FlxBitmapText(bg.x + 6, windowTitle.y + 32, Assets.bitmapFont("phantommuff"));
+		zoomTxt.alignment = LEFT;
+		zoomTxt.text = "Zoom: ";
+		zoomTxt.color = 0xFFD8DAF6;
+		zoomTxt.scale.set(0.625, 0.625);
+		zoomTxt.updateHitbox();
+		add(zoomTxt);
+
+		stepper = new PsychUINumericStepper(bg.x + 82, windowTitle.y + 30, 1, 1, -1, 4, 0);
+		stepper.onValueChange = () -> Logs.print(stepper.value);
+		add(stepper);
+
+		snapTxt = new FlxBitmapText(bg.x + 6, zoomTxt.y + 32, Assets.bitmapFont("phantommuff"));
+		snapTxt.alignment = LEFT;
+		snapTxt.text = "Snap: ";
+		snapTxt.color = 0xFFD8DAF6;
+		snapTxt.scale.set(0.625, 0.625);
+		snapTxt.updateHitbox();
+		add(snapTxt);
+
+		var snaps:Array<String> = [
+			"0th", "4th", "8th", "12th", "16th", "20th", "24th", "32th", "48th", "64th", "96th", "192th"
+		];
+		snaps.reverse();
+		snapDrowUp = new PsychUIDropDownMenu(bg.x + 82, zoomTxt.y + 30, snaps, (i, s) -> {}, 100, true);
+		snapDrowUp.selectedLabel = "16th";
+		add(snapDrowUp);
+
+		/*songName = new PsychUIInputText(bg.x + 10, 180, 100, chartState.CHART.song, 14);
+			songName.onChange.add((old, cur, input) -> chartState.CHART.song = cur);
+			add(songName); */
 	}
 }
 

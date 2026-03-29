@@ -9,6 +9,7 @@ import lime.system.Clipboard;
 import flixel.FlxSprite;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import flixel.util.FlxSignal;
 
 /*
  *
@@ -42,10 +43,10 @@ enum abstract CaseMode(Int) from Int from UInt to Int to UInt
 	var LOWER_CASE:Int = 2;
 }
 
+typedef TextSignal = FlxTypedSignal<String->String->PsychUIInputText->Void>;
+
 class PsychUIInputText extends FlxSpriteGroup
 {
-	public static final CHANGE_EVENT = "inputtext_change";
-
 	static final KEY_TILDE = 126;
 	static final KEY_ACUTE = 180;
 
@@ -57,7 +58,7 @@ class PsychUIInputText extends FlxSpriteGroup
 	public var selection:FlxSprite;
 	public var textObj:FlxText;
 	public var caret:FlxSprite;
-	public var onChange:String->String->Void;
+	public var onChange:TextSignal = new TextSignal();
 
 	public var fieldWidth(default, set):Int = 0;
 	public var maxLength(default, set):Int = 0;
@@ -74,9 +75,9 @@ class PsychUIInputText extends FlxSpriteGroup
 	{
 		super(x, y);
 		this.bg = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
-		this.behindText = new FlxSprite(1, 1).makeGraphic(1, 1, FlxColor.WHITE);
+		this.behindText = new FlxSprite(3, 3).makeGraphic(1, 1, FlxColor.WHITE);
 		this.selection = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
-		this.textObj = new FlxText(1, 1, Math.max(1, wid - 2), '', size);
+		this.textObj = new FlxText(3, 1, Math.max(1, wid - 2), '', size);
 		this.textObj.font = Assets.font("phantommuff");
 		this.caret = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
 		add(this.bg);
@@ -92,7 +93,7 @@ class PsychUIInputText extends FlxSpriteGroup
 		this.selection.color = FlxColor.BLUE;
 
 		@:bypassAccessor fieldWidth = wid;
-		setGraphicSize(wid + 2, this.textObj.height + 2);
+		setGraphicSize(wid, this.textObj.height + 2);
 		updateHitbox();
 		this.text = text;
 
@@ -151,10 +152,7 @@ class PsychUIInputText extends FlxSpriteGroup
 					var lastText = text;
 					text = text.substring(0, caretIndex) + Clipboard.text + text.substring(caretIndex);
 					caretIndex += Clipboard.text.length;
-					if (onChange != null)
-						onChange(lastText, text);
-					if (broadcastInputTextEvent)
-						PsychUIEventHandler.event(CHANGE_EVENT, this);
+					onChange.dispatch(lastText, text, this);
 
 				case BACKSPACE:
 					if (selectIndex < 0 || selectIndex == caretIndex)
@@ -175,10 +173,7 @@ class PsychUIInputText extends FlxSpriteGroup
 							caretIndex = 0;
 						}
 						selectIndex = -1;
-						if (onChange != null)
-							onChange(lastText, text);
-						if (broadcastInputTextEvent)
-							PsychUIEventHandler.event(CHANGE_EVENT, this);
+						onChange.dispatch(lastText, text, this);
 					}
 					else
 						deleteSelection();
@@ -204,10 +199,8 @@ class PsychUIInputText extends FlxSpriteGroup
 						}
 						else
 							text = text.substr(0, caretIndex);
-						if (onChange != null)
-							onChange(lastText, text);
-						if (broadcastInputTextEvent)
-							PsychUIEventHandler.event(CHANGE_EVENT, this);
+
+						onChange.dispatch(lastText, text, this);
 					}
 					else
 						deleteSelection();
@@ -312,10 +305,7 @@ class PsychUIInputText extends FlxSpriteGroup
 					var lastText = text;
 					text = text.substring(0, caretIndex - 1) + text.substring(caretIndex);
 					caretIndex--;
-					if (onChange != null)
-						onChange(lastText, text);
-					if (broadcastInputTextEvent)
-						PsychUIEventHandler.event(CHANGE_EVENT, this);
+					onChange.dispatch(lastText, text, this);
 				}
 				_nextAccent = NONE;
 
@@ -339,10 +329,7 @@ class PsychUIInputText extends FlxSpriteGroup
 				if (caretIndex >= text.length)
 					caretIndex = text.length;
 
-				if (onChange != null)
-					onChange(lastText, text);
-				if (broadcastInputTextEvent)
-					PsychUIEventHandler.event(CHANGE_EVENT, this);
+				onChange.dispatch(lastText, text, this);
 
 			case SPACE: // space or last accent pressed
 				if (_nextAccent != NONE)
@@ -531,7 +518,7 @@ class PsychUIInputText extends FlxSpriteGroup
 			return;
 
 		var textField = textObj.textField;
-		//textField.setSelection(caretIndex, caretIndex); ???
+		// textField.setSelection(caretIndex, caretIndex); ???
 		_caretTime = 0;
 		if (caret != null && caret.exists)
 		{
@@ -593,10 +580,7 @@ class PsychUIInputText extends FlxSpriteGroup
 			caretIndex = selectIndex;
 		}
 		selectIndex = -1;
-		if (onChange != null)
-			onChange(lastText, text);
-		if (broadcastInputTextEvent)
-			PsychUIEventHandler.event(CHANGE_EVENT, this);
+		onChange.dispatch(lastText, text, this);
 	}
 
 	override public function destroy()
@@ -619,7 +603,7 @@ class PsychUIInputText extends FlxSpriteGroup
 	{
 		super.setGraphicSize(width, height);
 		bg.setGraphicSize(width, height);
-		behindText.setGraphicSize(width - 2, height - 2);
+		behindText.setGraphicSize(width - 6, height - 6);
 		if (textObj != null && textObj.exists)
 		{
 			textObj.scale.x = 1;
@@ -657,10 +641,7 @@ class PsychUIInputText extends FlxSpriteGroup
 		v = Std.int(Math.max(0, v));
 		if (v > 0 && text.length > v)
 			text = text.substr(0, v);
-		if (onChange != null)
-			onChange(lastText, text);
-		if (broadcastInputTextEvent)
-			PsychUIEventHandler.event(CHANGE_EVENT, this);
+		onChange.dispatch(lastText, text, this);
 		return (maxLength = v);
 	}
 
@@ -721,8 +702,6 @@ class PsychUIInputText extends FlxSpriteGroup
 		}
 	}
 
-	public var broadcastInputTextEvent:Bool = true;
-
 	function _typeLetter(charCode:Int)
 	{
 		if (charCode < 1)
@@ -743,10 +722,7 @@ class PsychUIInputText extends FlxSpriteGroup
 				text = text.substring(0, caretIndex) + letter + text.substring(caretIndex + 1);
 
 			caretIndex += letter.length;
-			if (onChange != null)
-				onChange(lastText, text);
-			if (broadcastInputTextEvent)
-				PsychUIEventHandler.event(CHANGE_EVENT, this);
+			onChange.dispatch(lastText, text, this);
 		}
 		_caretTime = 0;
 	}
@@ -810,25 +786,4 @@ class PsychUIInputText extends FlxSpriteGroup
 		}
 		return text;
 	}
-}
-
-class PsychUIEventHandler
-{
-	public static function event(id:String, sender:Dynamic)
-	{
-		var state:Dynamic = cast FlxG.state;
-		if (state == null)
-			return;
-
-		while (state.subState != null)
-			state = cast state.subState;
-
-		if (state != null && state.UIEvent != null)
-			state.UIEvent(id, sender);
-	}
-}
-
-interface PsychUIEvent
-{
-	public function UIEvent(id:String, sender:Dynamic):Void;
 }

@@ -19,6 +19,31 @@ class QuickButton extends FlxSprite
 	public var minScale:Float = 0.9;
 	public var idleScale:Float = 1;
 
+	private var storedMax:Float = 1;
+	private var storedMin:Float = 1;
+
+	public var disabled(default, set):Bool;
+
+	public function set_disabled(b:Bool)
+	{
+		disabled = b;
+
+		if (disabled)
+		{
+			storedMax = maxScale;
+			storedMin = minScale;
+			maxScale = 1;
+			minScale = 1;
+		}
+		else
+		{
+			maxScale = storedMax;
+			minScale = storedMin;
+		}
+
+		return b;
+	}
+
 	public function new(?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
 	{
 		super();
@@ -32,33 +57,36 @@ class QuickButton extends FlxSprite
 	{
 		super.update(elapsed);
 		var daScale:Float = idleScale;
-		if (FlxG.mouse.overlaps(this))
-		{
-			if (maxScale != 1 || minScale != 1)
-			{
-				daScale = maxScale;
-				if (FlxG.mouse.pressed)
-					daScale = minScale;
-			}
 
-			if (FlxG.mouse.justPressed)
-				onDown.dispatch(this);
-			if (FlxG.mouse.justReleased)
-				onUp.dispatch(this);
-			if (!hovering)
+		if (!disabled)
+		{
+			if (FlxG.mouse.overlaps(this))
 			{
-				onHover.dispatch(this);
-				hovering = true;
+				if (maxScale != 1 || minScale != 1)
+				{
+					daScale = maxScale;
+					if (FlxG.mouse.pressed)
+						daScale = minScale;
+				}
+
+				if (FlxG.mouse.justPressed)
+					onDown.dispatch(this);
+				if (FlxG.mouse.justReleased)
+					onUp.dispatch(this);
+				if (!hovering)
+				{
+					onHover.dispatch(this);
+					hovering = true;
+				}
+			}
+			else if (hovering)
+			{
+				onOut.dispatch(this);
+				hovering = false;
 			}
 		}
-		else if (hovering)
-		{
-			onOut.dispatch(this);
-			hovering = false;
-		}
 
-		if (maxScale != 1 || minScale != 1)
-			scale.set(FlxMath.lerp(scale.x, daScale, elapsed * 8), FlxMath.lerp(scale.y, daScale, elapsed * 8));
+		scale.set(FlxMath.lerp(scale.x, daScale, elapsed * 8), FlxMath.lerp(scale.y, daScale, elapsed * 8));
 	}
 }
 
@@ -75,25 +103,36 @@ class AnimatedButton extends QuickButton
 
 		this.onUp.add((btn) ->
 		{
-			btn.animation.play("idle");
+			if (!disabled)
+				btn.animation.play("idle");
 		});
 		this.onDown.add((btn) ->
 		{
-			btn.animation.play("pressed");
+			if (!disabled)
+				btn.animation.play("pressed");
 		});
 		this.onOut.add((btn) ->
 		{
-			btn.animation.play("idle");
+			if (!disabled)
+				btn.animation.play("idle");
 		});
 
 		maxScale = 1;
 		minScale = 0.95;
 	}
+
+	override function set_disabled(b:Bool):Bool
+	{
+		super.set_disabled(b);
+		animation.play(b ? "pressed" : "idle");
+		return disabled;
+	}
 }
 
 class TextButton extends FlxSpriteGroup
 {
-	var button:AnimatedButton;
+	public var button:AnimatedButton;
+
 	var text:FlxBitmapText;
 
 	public function new(label:String = "", big:Bool = false, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
