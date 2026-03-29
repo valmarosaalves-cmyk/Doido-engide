@@ -26,6 +26,7 @@ import objects.ui.DebugInfo;
 import objects.ui.notes.Note;
 import shaders.MultiplyShader;
 import haxe.Json;
+import flixel.util.FlxColor;
 
 class ChartingNote extends Note
 {
@@ -72,6 +73,7 @@ class ChartingState extends MusicBeatState
 	public var timeWindow:TimeWindow;
 	public var gridWindow:GridWindow;
 	public var menuBox:DoidoBox;
+	public var menuMain:DoidoBox;
 
 	public function new(SONG:DoidoSong)
 	{
@@ -120,6 +122,7 @@ class ChartingState extends MusicBeatState
 		add(selectSquare);
 
 		addMenu();
+		addMain();
 
 		timeWindow = new TimeWindow(this);
 		add(timeWindow);
@@ -180,8 +183,94 @@ class ChartingState extends MusicBeatState
 		// viewWindow.addButton("Go to...");
 		viewWindow.updateBg();
 
-		menuBox = new DoidoBox(x, y, width, height, [fileWindow, editWindow, viewWindow], this);
+		menuBox = new DoidoBox(x, y, width, height, 0, false, [fileWindow, editWindow, viewWindow], this);
 		add(menuBox);
+	}
+
+	function createBasic(title:String = "test"):BaseWindow
+	{
+		var newWindow:BaseWindow = new BaseWindow(this);
+		newWindow.title = title;
+		newWindow.bg.scale.set(458, 501);
+		newWindow.bg.updateHitbox();
+		newWindow.bg.setPosition(FlxG.width - newWindow.bg.width - 18, 57);
+		return newWindow;
+	}
+
+	function createText(x:Float = 0, y:Float = 0, text:String = "", color:FlxColor = 0xFFFFFFFF):FlxBitmapText
+	{
+		var newText = new FlxBitmapText(x, y, Assets.bitmapFont("phantommuff"));
+		newText.alignment = LEFT;
+		newText.text = text;
+		newText.color = color;
+		newText.scale.set(0.625, 0.625);
+		newText.updateHitbox();
+		return newText;
+	}
+
+	var spacingH:Float = 30;
+
+	function createSongTab():BaseWindow
+	{
+		var songTab = createBasic("Song");
+
+		function getX(i:Int = 0, width:Float = 0) {
+			return switch(i) {
+				case 1: songTab.bg.x + 110;
+				case -1: songTab.bg.x + (songTab.bg.width/2) - (width/2);
+				default: songTab.bg.x + 8;
+			}
+		}
+
+		function getY(i:Int = 0)
+			return songTab.bg.y + 8 + (spacingH * i);
+
+		// chart options
+		songTab.add(createText(getX(0), getY(0), "Chart:"));
+		songTab.add(createText(getX(0), getY(1), "Name:", 0xFFD8DAF6));
+		songTab.add(createText(getX(0), getY(2), "BPM:", 0xFFD8DAF6));
+		songTab.add(createText(getX(0), getY(3), "Note Speed:", 0xFFD8DAF6));
+
+		var songName:PsychUIInputText;
+		songName = new PsychUIInputText(getX(1), getY(1), 342, CHART.song, 14);
+		songName.onChange.add((old, cur, input) -> CHART.song = cur);
+		songTab.add(songName);
+
+		var bpmStepper = new PsychUINumericStepper(getX(1), getY(2), 1, CHART.bpm, 1, 339, 0);
+		bpmStepper.onValueChange = (() ->
+		{
+			Conductor.initialBPM = bpmStepper.value;
+			CHART.bpm = Conductor.bpm;
+		});
+		songTab.add(bpmStepper);
+
+		var speedStepper = new PsychUINumericStepper(getX(1), getY(3), 0.1, CHART.speed, 0.1, 10, 1);
+		speedStepper.onValueChange = (() ->
+		{
+			CHART.speed = speedStepper.value;
+		});
+		songTab.add(speedStepper);
+
+		var balls:FlxSprite = new FlxSprite().loadImage("editors/charting/balls");
+		balls.setPosition(getX(-1, balls.width), getY(4) + 5);
+		add(balls);
+
+		// meta options
+		songTab.add(createText(getX(0), getY(5), "Meta:"));
+
+		return songTab;
+	}
+
+	function addMain()
+	{
+		menuMain = new DoidoBox(803, 19, 458, 32, 4, [
+			createBasic("Charting"),
+			createBasic("Events"),
+			createBasic("Note"),
+			createBasic("Functions"),
+			createSongTab()
+		], this);
+		add(menuMain);
 	}
 
 	public var tweeningSongPos:Bool = false;
@@ -1025,9 +1114,7 @@ class GridWindow extends BaseWindow
 		snapDrowUp.selectedLabel = "16th";
 		add(snapDrowUp);
 
-		/*songName = new PsychUIInputText(bg.x + 10, 180, 100, chartState.CHART.song, 14);
-			songName.onChange.add((old, cur, input) -> chartState.CHART.song = cur);
-			add(songName); */
+		/* */
 	}
 }
 

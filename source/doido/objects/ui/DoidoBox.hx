@@ -20,7 +20,8 @@ class DoidoBox extends FlxGroup
 	var cur:Int = -1;
 	var spacing:Float = 5;
 
-	public function new(x:Float = 0, y:Float = 0, width:Float = 100, buttonHeight:Float = 20, tabs:Array<BaseWindow>, chartState:ChartingState)
+	public function new(x:Float = 0, y:Float = 0, width:Float = 100, buttonHeight:Float = 20, startingTab:Int = -1, centerButtons:Bool = true, tabs:Array<BaseWindow>,
+			chartState:ChartingState)
 	{
 		super();
 		this.x = x;
@@ -33,8 +34,9 @@ class DoidoBox extends FlxGroup
 
 		buttonWidth = (width - ((tabs.length - 1) * spacing)) / tabs.length;
 		for (i in 0...tabs.length)
-			addButton(tabs[i].title, i);
+			addButton(tabs[i].title, i, centerButtons);
 
+		cur = startingTab;
 		toggleButtons();
 	}
 
@@ -44,9 +46,9 @@ class DoidoBox extends FlxGroup
 			button.selected = (cur == button.ID);
 	}
 
-	function addButton(title:String, i:Int)
+	function addButton(title:String, i:Int, centerButtons:Bool)
 	{
-		var newBtn = new BoxLabel(title, buttonWidth, buttonHeight, (btn) ->
+		var newBtn = new BoxLabel(title, buttonWidth, buttonHeight, centerButtons, (btn) ->
 		{
 			cur = (cur == i ? -1 : i);
 			toggleButtons();

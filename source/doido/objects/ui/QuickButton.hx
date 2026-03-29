@@ -226,7 +226,7 @@ class BoxLabel extends FlxSpriteGroup
 	var button:QuickButton;
 	var toggled:Bool = false;
 
-	public function new(label:String, width:Float = 318, height:Float = 22, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
+	public function new(label:String, width:Float = 318, height:Float = 22, center:Bool = true, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
 	{
 		super();
 
@@ -252,11 +252,11 @@ class BoxLabel extends FlxSpriteGroup
 
 		text = new FlxBitmapText(0, 0, Assets.bitmapFont("phantommuff"));
 		text.color = 0xFFFFFFFF;
-		text.alignment = LEFT;
+		text.alignment = (center ? CENTER : LEFT);
 		text.text = label;
 		text.scale.set(0.625, 0.625);
 		text.updateHitbox();
-		text.setPosition(button.x + 2, button.y + ((button.height / 2) - (text.height / 2)));
+		text.setPosition((center ? button.x + (button.width / 2) - (text.width / 2) : button.x + 2), button.y + ((button.height / 2) - (text.height / 2)));
 		add(text);
 	}
 
