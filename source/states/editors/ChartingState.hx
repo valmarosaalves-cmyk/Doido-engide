@@ -1356,6 +1356,8 @@ class TimeWindow extends BaseWindow
 	public var infoTxt:FlxBitmapText;
 	public var timeBar:DoidoBar;
 	public var timeBall:FlxSprite;
+	public var oldMark:Checkmark;
+	public var oldTxt:FlxBitmapText;
 
 	public var buttons:Array<FlxSprite> = [];
 
@@ -1415,23 +1417,23 @@ class TimeWindow extends BaseWindow
 			chartState.resetSection();
 		});
 
-		var timerMark:Checkmark = new Checkmark(false);
-		timerMark.onUp.add((btn) ->
+		oldMark = new Checkmark(false);
+		oldMark.onUp.add((btn) ->
 		{
-			oldTimer = timerMark.value;
+			oldTimer = oldMark.value;
 		});
-		timerMark.x = bg.x + bg.width - timerMark.width - 8;
-		timerMark.y = bg.y + 8;
-		add(timerMark);
+		oldMark.x = bg.x + bg.width - oldMark.width - 8;
+		oldMark.y = bg.y + 8;
+		add(oldMark);
 
-		var oldTimer = new FlxBitmapText(0, bg.y + 8 + 3, Assets.bitmapFont("phantommuff"));
-		oldTimer.color = 0xFFD8DAF6;
-		oldTimer.alignment = LEFT;
-		oldTimer.scale.set(0.625, 0.625);
-		oldTimer.updateHitbox();
-		oldTimer.text = "Old Timer:";
-		oldTimer.x = timerMark.x - oldTimer.width - 8;
-		add(oldTimer);
+		oldTxt = new FlxBitmapText(0, bg.y + 8 + 3, Assets.bitmapFont("phantommuff"));
+		oldTxt.color = 0xFFD8DAF6;
+		oldTxt.alignment = LEFT;
+		oldTxt.scale.set(0.625, 0.625);
+		oldTxt.updateHitbox();
+		oldTxt.text = "Old Timer:";
+		oldTxt.x = oldMark.x - oldMark.width - 8;
+		add(oldTxt);
 	}
 
 	override function draw()
