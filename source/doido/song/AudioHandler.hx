@@ -12,6 +12,11 @@ class AudioHandler
 
 	public function new(song:String)
 	{
+		reload(song);
+	}
+
+	public function reload(song:String)
+	{
 		inst = FlxG.sound.load(Assets.inst(song));
 		length = inst?.length;
 
@@ -20,6 +25,8 @@ class AudioHandler
 			voicesGlobal = FlxG.sound.load(Assets.voices(song, '-player'));
 		else if (Assets.fileExists('songs/${song}/audio/Voices', SOUND))
 			voicesGlobal = FlxG.sound.load(Assets.voices(song));
+		else
+			voicesGlobal = null;
 
 		if (voicesGlobal?.length < length)
 			length = voicesGlobal.length;
@@ -29,48 +36,13 @@ class AudioHandler
 			voicesOpp = FlxG.sound.load(Assets.voices(song, "-opp"));
 		else if (Assets.fileExists('songs/${song}/audio/Voices-opponent', SOUND))
 			voicesOpp = FlxG.sound.load(Assets.voices(song, "-opponent"));
+		else
+			voicesOpp = null;
 
 		if (voicesOpp?.length < length)
 			length = voicesOpp.length;
 
 		muteVoices = false;
-	}
-
-	public function reload(song:String)
-	{
-		try
-		{
-			inst = FlxG.sound.load(Assets.inst(song));
-			length = inst?.length;
-
-			// global voices
-			if (Assets.fileExists('songs/${song}/audio/Voices-player', SOUND))
-				voicesGlobal = FlxG.sound.load(Assets.voices(song, '-player'));
-			else if (Assets.fileExists('songs/${song}/audio/Voices', SOUND))
-				voicesGlobal = FlxG.sound.load(Assets.voices(song));
-			else
-				voicesGlobal = null;
-
-			if (voicesGlobal?.length < length)
-				length = voicesGlobal.length;
-
-			// opponent voices
-			if (Assets.fileExists('songs/${song}/audio/Voices-opp', SOUND))
-				voicesOpp = FlxG.sound.load(Assets.voices(song, "-opp"));
-			else if (Assets.fileExists('songs/${song}/audio/Voices-opponent', SOUND))
-				voicesOpp = FlxG.sound.load(Assets.voices(song, "-opponent"));
-			else
-				voicesOpp = null;
-
-			if (voicesOpp?.length < length)
-				length = voicesOpp.length;
-
-			muteVoices = false;
-		}
-		catch (e)
-		{
-			Logs.print("SONG NOT FOUND: e");
-		}
 	}
 
 	private function update(func:(snd:FlxSound) -> Void)
