@@ -304,3 +304,40 @@ class BoxLabel extends FlxSpriteGroup
 		return selected;
 	}
 }
+
+class ChooserButton extends FlxSpriteGroup
+{
+	var _label:FlxBitmapText;
+	var button:QuickButton;
+
+	public function new(label:String, width:Float = 318, height:Float = 22, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
+	{
+		super();
+
+		button = new QuickButton(onUp, onDown);
+		button.makeColor(width, height, 0xFFD8DAF6);
+		button.alpha = 0;
+		button.maxScale = 1;
+		button.minScale = 1;
+		button.changeScale = false;
+		add(button);
+
+		button.onHover.add((btn) ->
+		{
+			btn.alpha = 0.2;
+		});
+		button.onOut.add((btn) ->
+		{
+			btn.alpha = 0;
+		});
+
+		_label = new FlxBitmapText(0, 0, Assets.bitmapFont("phantommuff"));
+		_label.color = 0xFFFFFFFF;
+		_label.alignment = CENTER;
+		_label.text = label;
+		_label.scale.set(0.625, 0.625);
+		_label.updateHitbox();
+		_label.setPosition(button.x + ((button.width / 2) - (_label.width / 2)), button.y + ((button.height / 2) - (_label.height / 2)));
+		add(_label);
+	}
+}

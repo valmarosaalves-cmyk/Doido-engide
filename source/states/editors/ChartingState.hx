@@ -1,5 +1,6 @@
 package states.editors;
 
+import doido.objects.ui.DoidoWindow.ChooserWindow;
 import doido.objects.ui.QuickButton.Checkmark;
 import doido.objects.ui.PsychUINumericStepper;
 import doido.objects.ui.DoidoWindow.BaseWindow;
@@ -496,11 +497,33 @@ class ChartingState extends MusicBeatState
 		return songTab;
 	}
 
+	function createEventsTab()
+	{
+		var tab = createBasic("Events");
+
+		function getX(place:String = "margin_left", width:Float = 0)
+		{
+			return switch (place)
+			{
+				case "center": tab.bg.x + (tab.bg.width / 2) - (width / 2);
+				default: tab.bg.x + 8;
+			}
+		}
+
+		function getY(i:Int = 0)
+			return tab.bg.y + 8 + (spacingH * i);
+
+		var test:ChooserWindow = new ChooserWindow(getX("center", 440), getY(1), this);
+		tab.add(test);
+
+		return tab;
+	}
+
 	function addMain()
 	{
 		menuMain = new DoidoBox(803, 19, 458, 32, 4, [
 			createChartingTab(),
-			createBasic("Events"),
+			createEventsTab(),
 			createBasic("Note"),
 			createBasic("Functions"),
 			createSongTab()
