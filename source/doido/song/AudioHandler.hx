@@ -133,6 +133,8 @@ class AudioHandler
 	}
 
 	public var muteVoices(default, set):Bool;
+	public var muteOpponent(default, set):Bool;
+	public var muteInst(default, set):Bool;
 
 	function set_muteVoices(val:Bool):Bool
 	{
@@ -140,6 +142,24 @@ class AudioHandler
 			voicesGlobal.volume = (val ? 0.0 : 1.0);
 
 		muteVoices = val;
+		return val;
+	}
+
+	function set_muteOpponent(val:Bool):Bool
+	{
+		if (voicesOpp != null)
+			voicesOpp.volume = (val ? 0.0 : 1.0);
+
+		muteOpponent = val;
+		return val;
+	}
+
+	function set_muteInst(val:Bool):Bool
+	{
+		if (inst != null)
+			inst.volume = (val ? 0.0 : 1.0);
+
+		muteInst = val;
 		return val;
 	}
 }

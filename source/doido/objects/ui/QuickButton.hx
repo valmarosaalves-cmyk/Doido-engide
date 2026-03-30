@@ -131,6 +131,37 @@ class AnimatedButton extends QuickButton
 	}
 }
 
+class Checkmark extends QuickButton
+{
+	public var value(default, set):Bool;
+
+	public function set_value(b:Bool)
+	{
+		value = b;
+		animation.play((value ? "on" : "off"));
+		return value;
+	}
+
+	public function new(defVal:Bool = false, sprite:String = "editors/charting/checkmark", animation:String = "button checkmark", ?onUp:QuickButton->Void,
+			?onDown:QuickButton->Void)
+	{
+		super(onUp, onDown);
+
+		this.loadSparrow(sprite);
+		this.animation.addByPrefix("off", animation + "0000", 0, false);
+		this.animation.addByPrefix("on", animation + "0001", 0, false);
+
+		this.onUp.add((btn) ->
+		{
+			value = !value;
+		});
+
+		value = defVal;
+		maxScale = 1;
+		minScale = 0.95;
+	}
+}
+
 class TextButton extends FlxSpriteGroup
 {
 	public var button:AnimatedButton;

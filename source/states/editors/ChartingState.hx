@@ -1,5 +1,6 @@
 package states.editors;
 
+import doido.objects.ui.QuickButton.Checkmark;
 import doido.objects.ui.PsychUINumericStepper;
 import doido.objects.ui.DoidoWindow.BaseWindow;
 import doido.objects.ui.DoidoWindow.MenuWindow;
@@ -166,9 +167,9 @@ class ChartingState extends MusicBeatState
 			save(META, "meta");
 		});
 		fileWindow.addSeparator();
-		fileWindow.addButton("Save Chart as...", "Ctrl + Shift + S", (btn) -> save(CHART, "normal"));
-		fileWindow.addButton("Save Events as...", "Ctrl + Alt + S", (btn) -> save(EVENTS, "events"));
-		fileWindow.addButton("Save Meta as...", "Ctrl + Tab + S", (btn) -> save(META, "meta"));
+		fileWindow.addButton("Save Chart", "Ctrl + Shift + S", (btn) -> save(CHART, "normal"));
+		fileWindow.addButton("Save Events", "Ctrl + Alt + S", (btn) -> save(EVENTS, "events"));
+		fileWindow.addButton("Save Meta", "Ctrl + Tab + S", (btn) -> save(META, "meta"));
 		fileWindow.addSeparator();
 		// fileWindow.addButton("Reload Chart", "Ctrl + Shift + Alt + R");
 		// fileWindow.addSeparator();
@@ -220,6 +221,88 @@ class ChartingState extends MusicBeatState
 
 	var spacingH:Float = 30;
 
+	function createChartingTab():BaseWindow
+	{
+		var tab = createBasic("Charting");
+
+		function getX(place:String = "margin_left", width:Float = 0)
+		{
+			return switch (place)
+			{
+				case "margin_first": tab.bg.x + 138;
+				case "margin_right": tab.bg.x + tab.bg.width - width - 8;
+				case "center": tab.bg.x + (tab.bg.width / 2) - (width / 2);
+				default: tab.bg.x + 8;
+			}
+		}
+
+		function getY(i:Int = 0)
+			return tab.bg.y + 8 + (spacingH * i);
+
+		tab.add(createText(getX(), getY(0), "Volume:"));
+		tab.add(createText(getX(), getY(1) + 4, "Player:"));
+		tab.add(createText(getX(), getY(2) + 4, "Opponent:"));
+		tab.add(createText(getX(), getY(3) + 4, "Instrumental:"));
+
+		var playerVol:Checkmark = new Checkmark(true);
+		playerVol.onUp.add((btn) ->
+		{
+			audio.muteVoices = !playerVol.value;
+		});
+		playerVol.x = getX("margin_first");
+		playerVol.y = getY(1);
+		tab.add(playerVol);
+
+		var playerStepper = new PsychUINumericStepper(getX("margin_right", 100), getY(1), 0.01, 1, 0, 1.0, 2, 100, true);
+		playerStepper.onValueChange = (() ->
+		{
+			@:bypassAccessor audio.muteVoices = false;
+			playerVol.value = true;
+			if (audio.voicesGlobal != null)
+				audio.voicesGlobal.volume = playerStepper.value;
+		});
+		tab.add(playerStepper);
+
+		var oppVol:Checkmark = new Checkmark(true);
+		oppVol.onUp.add((btn) ->
+		{
+			audio.muteOpponent = !oppVol.value;
+		});
+		oppVol.x = getX("margin_first");
+		oppVol.y = getY(2);
+		tab.add(oppVol);
+
+		var oppStepper = new PsychUINumericStepper(getX("margin_right", 100), getY(2), 0.01, 1, 0, 1.0, 2, 100, true);
+		oppStepper.onValueChange = (() ->
+		{
+			@:bypassAccessor audio.muteOpponent = false;
+			oppVol.value = true;
+			if (audio.voicesOpp != null)
+				audio.voicesOpp.volume = oppStepper.value;
+		});
+		tab.add(oppStepper);
+
+		var instVol:Checkmark = new Checkmark(true);
+		instVol.onUp.add((btn) ->
+		{
+			audio.muteInst = !instVol.value;
+		});
+		instVol.x = getX("margin_first");
+		instVol.y = getY(3);
+		tab.add(instVol);
+
+		var instStepper = new PsychUINumericStepper(getX("margin_right", 100), getY(3), 0.01, 1, 0, 1.0, 2, 100, true);
+		instStepper.onValueChange = (() ->
+		{
+			@:bypassAccessor audio.muteInst = false;
+			instVol.value = true;
+			audio.inst.volume = instStepper.value;
+		});
+		tab.add(instStepper);
+
+		return tab;
+	}
+
 	function createSongTab():BaseWindow
 	{
 		var songTab = createBasic("Song");
@@ -240,9 +323,9 @@ class ChartingState extends MusicBeatState
 
 		// chart options
 		songTab.add(createText(getX(), getY(0), "Chart:"));
-		songTab.add(createText(getX(), getY(1), "Name:", 0xFFD8DAF6));
-		songTab.add(createText(getX(), getY(2), "BPM:", 0xFFD8DAF6));
-		songTab.add(createText(getX(), getY(3), "Note Speed:", 0xFFD8DAF6));
+		songTab.add(createText(getX(), getY(1) + 4, "Name:", 0xFFD8DAF6));
+		songTab.add(createText(getX(), getY(2) + 4, "BPM:", 0xFFD8DAF6));
+		songTab.add(createText(getX(), getY(3) + 4, "Note Speed:", 0xFFD8DAF6));
 
 		var songName:PsychUIInputText;
 		songName = new PsychUIInputText(getX("margin_first"), getY(1), 342, CHART.song, 14);
@@ -272,7 +355,7 @@ class ChartingState extends MusicBeatState
 		});
 		reloadButton.x = getX("margin_right", reloadButton.width);
 		reloadButton.y = getY(3) - 9;
-		reloadButton.button.setColorTransform(0.59,0.78,1);
+		reloadButton.button.setColorTransform(0.59, 0.78, 1);
 		reloadButton.text.color = 0xFFFFFFFF;
 		songTab.add(reloadButton);
 
@@ -337,7 +420,7 @@ class ChartingState extends MusicBeatState
 	function addMain()
 	{
 		menuMain = new DoidoBox(803, 19, 458, 32, 4, [
-			createBasic("Charting"),
+			createChartingTab(),
 			createBasic("Events"),
 			createBasic("Note"),
 			createBasic("Functions"),
