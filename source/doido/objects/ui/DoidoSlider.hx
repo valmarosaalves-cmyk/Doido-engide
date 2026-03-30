@@ -18,17 +18,21 @@ class DoidoSlider extends FlxSpriteGroup
 	public var rangeMin:Float = 0;
 	public var rangeMax:Float = 1;
 	public var steps:Int = 2;
+	public var vertical:Bool = false;
+	public var center:Bool = true;
 	public var snappingStrength(default, set):Float; // 0.05 seems pretty good
 
 	var dotSpacing:Float = 1;
 
 	public function new(x:Float = 0, y:Float = 0, wid:Int = 160, hei:Int = 6, defValue:Float = 0, rangeMin:Float = 0, rangeMax:Float = 0, steps:Int = 2,
-			snappingStrength:Float = 0)
+			snappingStrength:Float = 0, vertical:Bool = false, center:Bool = false)
 	{
 		super(x, y);
 		this.rangeMin = rangeMin;
 		this.rangeMax = rangeMax;
 		this.steps = steps;
+		this.vertical = vertical;
+		this.center = center;
 
 		bar = new FlxSprite().makeGraphic(wid, hei, 0xFFD8DAF6);
 		add(bar);
@@ -47,7 +51,8 @@ class DoidoSlider extends FlxSpriteGroup
 			}
 		}
 
-		slider = new FlxSprite().loadImage("editors/charting/slider");
+		slider = new FlxSprite().loadImage("editors/charting/slider" + (vertical ? "-vertical" : ""));
+		slider.x = (bar.width / 2) - (slider.width / 2);
 		slider.y = (bar.height / 2) - (slider.height / 2);
 		add(slider);
 
@@ -57,7 +62,7 @@ class DoidoSlider extends FlxSpriteGroup
 
 	override function draw()
 	{
-		slider.x = FlxMath.lerp(bar.x, bar.x + bar.width, FlxMath.remapToRange(value, rangeMin, rangeMax, 0, 1)) - (slider.width / 2);
+		setAxis(FlxMath.lerp(getStart(), getEnd(), FlxMath.remapToRange(value, rangeMin, rangeMax, 0, 1)) - (getCenter(slider) / 2), slider);
 		super.draw();
 	}
 
@@ -76,13 +81,13 @@ class DoidoSlider extends FlxSpriteGroup
 
 		if (scrubbing)
 		{
-			value = FlxMath.bound(FlxMath.remapToRange(FlxG.mouse.x, bar.x, bar.x + bar.width, rangeMin, rangeMax), rangeMin, rangeMax);
+			value = FlxMath.bound(FlxMath.remapToRange((vertical ? FlxG.mouse.y : FlxG.mouse.x), getStart(), getEnd(), rangeMin, rangeMax), rangeMin, rangeMax);
 
 			if (steps >= 2 && snappingStrength >= 0)
 			{
 				for (i in 0...steps)
 				{
-					var space = FlxMath.remapToRange(i * dotSpacing, 0, bar.width, rangeMin, rangeMax);
+					var space = FlxMath.remapToRange(i * dotSpacing, 0, (vertical ? bar.height : bar.width), rangeMin, rangeMax);
 					if (Math.abs(value - space) <= snappingStrength)
 						value = space;
 				}
@@ -99,5 +104,25 @@ class DoidoSlider extends FlxSpriteGroup
 	{
 		snappingStrength = FlxMath.bound(f, 0, FlxMath.remapToRange(dotSpacing, 0, bar.width, rangeMin, rangeMax) / 2);
 		return snappingStrength;
+	}
+
+	function getStart()
+		return getAxis(bar) + (center ? getCenter(slider) / 2 : 0);
+
+	function getEnd()
+		return getAxis(bar) + getCenter(bar) - (center ? getCenter(slider) / 2 : 0);
+
+	function getCenter(sprite:FlxSprite)
+		return (vertical ? sprite.height : sprite.width);
+
+	function getAxis(sprite:FlxSprite)
+		return (vertical ? sprite.y : sprite.x);
+
+	function setAxis(f:Float, sprite:FlxSprite)
+	{
+		if (vertical)
+			sprite.y = f;
+		else
+			sprite.x = f;
 	}
 }

@@ -14,6 +14,7 @@ class QuickButton extends FlxSprite
 	public var onDown(default, null):ButtonSignal = new ButtonSignal();
 	public var onHover(default, null):ButtonSignal = new ButtonSignal();
 	public var onOut(default, null):ButtonSignal = new ButtonSignal();
+	public var onDisable(default, null):ButtonSignal = new ButtonSignal();
 
 	public var maxScale:Float = 1.15;
 	public var minScale:Float = 0.9;
@@ -42,6 +43,7 @@ class QuickButton extends FlxSprite
 			minScale = storedMin;
 		}
 
+		onDisable.dispatch(this);
 		return b;
 	}
 
@@ -270,6 +272,7 @@ class BoxLabel extends FlxSpriteGroup
 		button = new QuickButton(onUp, onDown);
 		button.makeColor(width, height, 0xFFD8DAF6);
 		button.alpha = 0;
+		button.changeScale = false;
 		button.maxScale = 1;
 		button.minScale = 1;
 		add(button);
@@ -308,18 +311,24 @@ class BoxLabel extends FlxSpriteGroup
 class ChooserButton extends FlxSpriteGroup
 {
 	var _label:FlxBitmapText;
-	var button:QuickButton;
 
-	public function new(label:String, width:Float = 318, height:Float = 22, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
+	public var button:QuickButton;
+
+	public function new(label:String, width:Int = 318, height:Int = 22, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
 	{
 		super();
 
 		button = new QuickButton(onUp, onDown);
-		button.makeColor(width, height, 0xFFD8DAF6);
+		button.makeGraphic(width, height, 0xFFD8DAF6);
 		button.alpha = 0;
 		button.maxScale = 1;
 		button.minScale = 1;
 		button.changeScale = false;
+		button.onDisable.add((b) ->
+		{
+			if (b.disabled)
+				b.alpha = 0;
+		});
 		add(button);
 
 		button.onHover.add((btn) ->
