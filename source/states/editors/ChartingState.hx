@@ -958,6 +958,7 @@ class ChartingState extends MusicBeatState
 	{
 		PlayState.SONG = SONG;
 		MusicBeat.switchState(new PlayState());
+		FlxG.mouse.visible = false;
 	}
 
 	function selectAll()
@@ -1460,13 +1461,6 @@ class TimeWindow extends BaseWindow
 			if (FlxG.mouse.justPressed)
 				scrubbing = true;
 		}
-
-		// using Lib.current.mouse instead of FlxG.mouse
-		// so the position is consistent in every resolution
-		if (openfl.Lib.current.mouseX < 92 && openfl.Lib.current.mouseY < 62)
-			Main.fpsCounter.visible = false;
-		else
-			Main.fpsCounter.visible = Save.data.fpsCounter;
 
 		if (scrubbing)
 		{

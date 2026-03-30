@@ -46,6 +46,18 @@ class FPSCounter extends Sprite
 		if (!visible)
 			return;
 
+		if (FlxG.mouse.visible)
+		{
+			// using Lib.current.mouse instead of FlxG.mouse
+			// so the position is consistent in every resolution
+			if (openfl.Lib.current.mouseX < 92 && openfl.Lib.current.mouseY < 62)
+				alpha = 0.0;
+			else if (alpha < 1.0)
+				alpha += 0.2 * FlxG.elapsed;
+		}
+		else
+			alpha = 1.0;
+
 		final now:Float = Timer.stamp() * 1000;
 		times.push(now);
 		while (times[0] < now - 1000)
