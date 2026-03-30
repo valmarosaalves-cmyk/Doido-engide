@@ -1414,6 +1414,24 @@ class TimeWindow extends BaseWindow
 		{
 			chartState.resetSection();
 		});
+
+		var timerMark:Checkmark = new Checkmark(false);
+		timerMark.onUp.add((btn) ->
+		{
+			oldTimer = timerMark.value;
+		});
+		timerMark.x = bg.x + bg.width - timerMark.width - 8;
+		timerMark.y = bg.y + 8;
+		add(timerMark);
+
+		var oldTimer = new FlxBitmapText(0, bg.y + 8 + 3, Assets.bitmapFont("phantommuff"));
+		oldTimer.color = 0xFFD8DAF6;
+		oldTimer.alignment = LEFT;
+		oldTimer.scale.set(0.625, 0.625);
+		oldTimer.updateHitbox();
+		oldTimer.text = "Old Timer:";
+		oldTimer.x = timerMark.x - oldTimer.width - 8;
+		add(oldTimer);
 	}
 
 	override function draw()
@@ -1477,10 +1495,12 @@ class TimeWindow extends BaseWindow
 		}
 	}
 
+	public var oldTimer:Bool = false;
+
 	public function getTime(time:Float):String
 	{
 		time /= 1000;
-		if (true) // new timer
+		if (!oldTimer) // new timer
 			return FlxStringUtil.formatTime(time, true);
 		else // old timer
 			return '${Math.floor(time * 100) / 100}';
