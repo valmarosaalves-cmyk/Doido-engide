@@ -284,7 +284,7 @@ class ChartingState extends MusicBeatState
 		var instStepper = new PsychUINumericStepper(getX("margin_right", 100), getY(3), 0.01, 1, 0, 1.0, 2, 100, true);
 		tab.add(instStepper);
 
-		var playerSlider:DoidoSlider = new DoidoSlider(getX("margin_second"), getY(1) + 9, 160, 6, 1, 0, 1, 3);
+		var playerSlider:DoidoSlider = new DoidoSlider(getX("margin_second"), getY(1) + 9, 160, 6, 1, 0, 1, 3, 0.05);
 		playerSlider.onScrub.add((sld) ->
 		{
 			@:bypassAccessor audio.muteVoices = false;
@@ -295,7 +295,7 @@ class ChartingState extends MusicBeatState
 		});
 		tab.add(playerSlider);
 
-		var oppSlider:DoidoSlider = new DoidoSlider(getX("margin_second"), getY(2) + 9, 160, 6, 1, 0, 1, 3);
+		var oppSlider:DoidoSlider = new DoidoSlider(getX("margin_second"), getY(2) + 9, 160, 6, 1, 0, 1, 3, 0.05);
 		oppSlider.onScrub.add((sld) ->
 		{
 			@:bypassAccessor audio.muteVoices = false;
@@ -306,7 +306,7 @@ class ChartingState extends MusicBeatState
 		});
 		tab.add(oppSlider);
 
-		var instSlider:DoidoSlider = new DoidoSlider(getX("margin_second"), getY(3) + 9, 160, 6, 1, 0, 1, 3);
+		var instSlider:DoidoSlider = new DoidoSlider(getX("margin_second"), getY(3) + 9, 160, 6, 1, 0, 1, 3, 0.05);
 		instSlider.onScrub.add((sld) ->
 		{
 			@:bypassAccessor audio.muteVoices = false;
@@ -354,7 +354,7 @@ class ChartingState extends MusicBeatState
 		var playbackStepper = new PsychUINumericStepper(getX("margin_right", 152), getY(6), 0.1, 1, 0, 2.0, 2, 100, false, true);
 		tab.add(playbackStepper);
 
-		var playbackSlider:DoidoSlider = new DoidoSlider(getX("margin_first_small"), getY(6) + 9, 210, 6, 1, 0, 2, 5);
+		var playbackSlider:DoidoSlider = new DoidoSlider(getX("margin_first_small"), getY(6) + 9, 210, 6, 1, 0, 2, 5, 0.05);
 		playbackSlider.onScrub.add((sld) ->
 		{
 			if (playbackSlider.value <= 0)

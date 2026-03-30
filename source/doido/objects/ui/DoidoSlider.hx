@@ -18,7 +18,7 @@ class DoidoSlider extends FlxSpriteGroup
 	public var rangeMin:Float = 0;
 	public var rangeMax:Float = 1;
 	public var steps:Int = 2;
-	public var snappingStrength:Float = 0.05; // 0.05 seems pretty good
+	public var snappingStrength(default, set):Float; // 0.05 seems pretty good
 
 	var dotSpacing:Float = 1;
 
@@ -52,7 +52,7 @@ class DoidoSlider extends FlxSpriteGroup
 		add(slider);
 
 		value = defValue;
-		this.snappingStrength = FlxMath.remapToRange(dotSpacing, 0, bar.width, rangeMin, rangeMax)/2;
+		this.snappingStrength = snappingStrength;
 	}
 
 	override function draw()
@@ -93,5 +93,11 @@ class DoidoSlider extends FlxSpriteGroup
 
 			onScrub.dispatch(this);
 		}
+	}
+
+	function set_snappingStrength(f:Float)
+	{
+		snappingStrength = FlxMath.bound(f, 0, FlxMath.remapToRange(dotSpacing, 0, bar.width, rangeMin, rangeMax) / 2);
+		return snappingStrength;
 	}
 }
