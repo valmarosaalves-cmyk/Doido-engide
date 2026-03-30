@@ -1432,7 +1432,7 @@ class TimeWindow extends BaseWindow
 		oldTxt.scale.set(0.625, 0.625);
 		oldTxt.updateHitbox();
 		oldTxt.text = "Old Timer:";
-		oldTxt.x = oldMark.x - oldMark.width - 8;
+		oldTxt.x = oldMark.x - oldTxt.width - 8;
 		add(oldTxt);
 	}
 
