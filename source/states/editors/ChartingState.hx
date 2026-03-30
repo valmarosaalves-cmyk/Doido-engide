@@ -350,7 +350,7 @@ class ChartingState extends MusicBeatState
 
 		tab.add(createText(getX(), getY(6) + 3, "Speed:", 0xFFD8DAF6));
 
-		var playbackStepper = new PsychUINumericStepper(getX("margin_right", 152), getY(6), 0.1, 1, 0, 2.0, 1, 100, false, true);
+		var playbackStepper = new PsychUINumericStepper(getX("margin_right", 152), getY(6), 0.1, 1, 0, 2.0, 2, 100, false, true);
 		tab.add(playbackStepper);
 
 		var playbackSlider:DoidoSlider = new DoidoSlider(getX("margin_first_small"), getY(6) + 9, 210, 6, 1, 0, 2, 5);
