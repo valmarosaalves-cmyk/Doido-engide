@@ -74,8 +74,11 @@ class CharGroup extends FlxTypedGroup<Character>
 
 	public function setPos(x:Float = 0, y:Float = 0)
 	{
-		this.x = x;
-		this.y = y;
+		@:bypassAccessor {
+			this.x = x;
+			this.y = y;
+		}
+		updateChar();
 	}
 
 	public var scrollFactorX(default, set):Float = 1.0;

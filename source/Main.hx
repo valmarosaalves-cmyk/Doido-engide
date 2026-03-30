@@ -170,8 +170,10 @@ class Main extends Sprite
 
 	public static function setFps(x:Int, y:Int)
 	{
-		@:bypassAccessor fpsX = x;
-		@:bypassAccessor fpsY = y;
+		@:bypassAccessor {
+			fpsX = x;
+			fpsY = y;
+		}
 		scaleFps();
 	}
 
