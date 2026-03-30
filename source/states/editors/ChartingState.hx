@@ -27,6 +27,7 @@ import objects.ui.notes.Note;
 import shaders.MultiplyShader;
 import haxe.Json;
 import flixel.util.FlxColor;
+import doido.objects.ui.QuickButton.TextButton;
 
 class ChartingNote extends Note
 {
@@ -154,11 +155,20 @@ class ChartingState extends MusicBeatState
 		fileWindow.title = "File";
 		// fileWindow.addButton("New", "Ctrl + N");
 		// fileWindow.addSeparator();
-		// fileWindow.addButton("Open Chart", "Ctrl + O");
+
 		// fileWindow.addButton("Open Events", "Ctrl + Alt + O");
 		// fileWindow.addSeparator();
-		fileWindow.addButton("Save Chart as...", "Ctrl + S", (btn) -> save(false));
-		fileWindow.addButton("Save Events as...", "Ctrl + Alt + S", (btn) -> save(true));
+		// fileWindow.addButton("Open Song", "Ctrl + O");
+		fileWindow.addButton("Save Song", "Ctrl + S", (btn) ->
+		{
+			save(CHART, "normal");
+			save(EVENTS, "events");
+			save(META, "meta");
+		});
+		fileWindow.addSeparator();
+		fileWindow.addButton("Save Chart as...", "Ctrl + Shift + S", (btn) -> save(CHART, "normal"));
+		fileWindow.addButton("Save Events as...", "Ctrl + Alt + S", (btn) -> save(EVENTS, "events"));
+		fileWindow.addButton("Save Meta as...", "Ctrl + Tab + S", (btn) -> save(META, "meta"));
 		fileWindow.addSeparator();
 		// fileWindow.addButton("Reload Chart", "Ctrl + Shift + Alt + R");
 		// fileWindow.addSeparator();
@@ -214,10 +224,13 @@ class ChartingState extends MusicBeatState
 	{
 		var songTab = createBasic("Song");
 
-		function getX(i:Int = 0, width:Float = 0) {
-			return switch(i) {
-				case 1: songTab.bg.x + 110;
-				case -1: songTab.bg.x + (songTab.bg.width/2) - (width/2);
+		function getX(place:String = "margin_left", width:Float = 0)
+		{
+			return switch (place)
+			{
+				case "margin_first": songTab.bg.x + 110;
+				case "margin_right": songTab.bg.x + songTab.bg.width - width - 8;
+				case "center": songTab.bg.x + (songTab.bg.width / 2) - (width / 2);
 				default: songTab.bg.x + 8;
 			}
 		}
@@ -226,17 +239,17 @@ class ChartingState extends MusicBeatState
 			return songTab.bg.y + 8 + (spacingH * i);
 
 		// chart options
-		songTab.add(createText(getX(0), getY(0), "Chart:"));
-		songTab.add(createText(getX(0), getY(1), "Name:", 0xFFD8DAF6));
-		songTab.add(createText(getX(0), getY(2), "BPM:", 0xFFD8DAF6));
-		songTab.add(createText(getX(0), getY(3), "Note Speed:", 0xFFD8DAF6));
+		songTab.add(createText(getX(), getY(0), "Chart:"));
+		songTab.add(createText(getX(), getY(1), "Name:", 0xFFD8DAF6));
+		songTab.add(createText(getX(), getY(2), "BPM:", 0xFFD8DAF6));
+		songTab.add(createText(getX(), getY(3), "Note Speed:", 0xFFD8DAF6));
 
 		var songName:PsychUIInputText;
-		songName = new PsychUIInputText(getX(1), getY(1), 342, CHART.song, 14);
+		songName = new PsychUIInputText(getX("margin_first"), getY(1), 342, CHART.song, 14);
 		songName.onChange.add((old, cur, input) -> CHART.song = cur);
 		songTab.add(songName);
 
-		var bpmStepper = new PsychUINumericStepper(getX(1), getY(2), 1, CHART.bpm, 1, 339, 0);
+		var bpmStepper = new PsychUINumericStepper(getX("margin_first"), getY(2), 1, CHART.bpm, 1, 339, 0);
 		bpmStepper.onValueChange = (() ->
 		{
 			Conductor.initialBPM = bpmStepper.value;
@@ -244,19 +257,79 @@ class ChartingState extends MusicBeatState
 		});
 		songTab.add(bpmStepper);
 
-		var speedStepper = new PsychUINumericStepper(getX(1), getY(3), 0.1, CHART.speed, 0.1, 10, 1);
+		var speedStepper = new PsychUINumericStepper(getX("margin_first"), getY(3), 0.1, CHART.speed, 0.1, 10, 1);
 		speedStepper.onValueChange = (() ->
 		{
 			CHART.speed = speedStepper.value;
 		});
 		songTab.add(speedStepper);
 
+		var reloadButton = new TextButton("Reload Audio", false, (btn) ->
+		{
+			playingSong = false;
+			audio.pause();
+			audio.reload(CHART.song);
+		});
+		reloadButton.x = getX("margin_right", reloadButton.width);
+		reloadButton.y = getY(3) - 9;
+		reloadButton.button.setColorTransform(0.59,0.78,1);
+		reloadButton.text.color = 0xFFFFFFFF;
+		songTab.add(reloadButton);
+
 		var balls:FlxSprite = new FlxSprite().loadImage("editors/charting/balls");
-		balls.setPosition(getX(-1, balls.width), getY(4) + 5);
-		add(balls);
+		balls.setPosition(getX("center", balls.width), getY(4) + 5);
+		songTab.add(balls);
 
 		// meta options
-		songTab.add(createText(getX(0), getY(5), "Meta:"));
+		songTab.add(createText(getX(), getY(5), "Meta:"));
+
+		songTab.add(createText(getX(), getY(8), "Stage:", 0xFFD8DAF6));
+		songTab.add(createText(getX("center", 145), getY(8), "Composer:", 0xFFD8DAF6));
+		songTab.add(createText(getX("margin_right", 145), getY(8), "Charter:", 0xFFD8DAF6));
+
+		var stages:Array<String> = Assets.list("data/stages/", true, SCRIPT);
+		var stageDropdown = new PsychUIDropDownMenu(getX(), getY(8) + 22, stages, (i, s) ->
+		{
+			META.stage = s;
+		}, 145, false);
+		stageDropdown.selectedLabel = META.stage;
+		songTab.add(stageDropdown);
+
+		var composer:PsychUIInputText;
+		composer = new PsychUIInputText(getX("center", 145), getY(8) + 22, 145, META.composer, 14);
+		composer.onChange.add((old, cur, input) -> META.composer = cur);
+		songTab.add(composer);
+
+		var charter:PsychUIInputText;
+		charter = new PsychUIInputText(getX("margin_right", 145), getY(8) + 22, 145, META.charter, 14);
+		charter.onChange.add((old, cur, input) -> META.charter = cur);
+		songTab.add(charter);
+
+		songTab.add(createText(getX(), getY(6), "Player:", 0xFFD8DAF6));
+		songTab.add(createText(getX("center", 145), getY(6), "Opponent:", 0xFFD8DAF6));
+		songTab.add(createText(getX("margin_right", 145), getY(6), "Girlfriend:", 0xFFD8DAF6));
+
+		var characters:Array<String> = Assets.list("data/characters/", true, JSON).concat(["face"]);
+		var bfDropdown = new PsychUIDropDownMenu(getX(), getY(6) + 22, characters, (i, s) ->
+		{
+			META.player1 = s;
+		}, 145, false);
+		bfDropdown.selectedLabel = META.player1;
+		songTab.add(bfDropdown);
+
+		var dadDropdown = new PsychUIDropDownMenu(getX("center", 145), getY(6) + 22, characters, (i, s) ->
+		{
+			META.player2 = s;
+		}, 145, false);
+		dadDropdown.selectedLabel = META.player2;
+		songTab.add(dadDropdown);
+
+		var gfDropdown = new PsychUIDropDownMenu(getX("margin_right", 145), getY(6) + 22, characters, (i, s) ->
+		{
+			META.gf = s;
+		}, 145, false);
+		gfDropdown.selectedLabel = META.gf;
+		songTab.add(gfDropdown);
 
 		return songTab;
 	}
@@ -650,7 +723,16 @@ class ChartingState extends MusicBeatState
 				noFunAllowed = !noFunAllowed;
 
 			if (FlxG.keys.justPressed.S && FlxG.keys.pressed.CONTROL)
-				save(FlxG.keys.pressed.ALT);
+			{
+				var pressedNone = !FlxG.keys.pressed.SHIFT && !FlxG.keys.pressed.ALT && !FlxG.keys.pressed.TAB;
+
+				if (FlxG.keys.pressed.SHIFT || pressedNone)
+					save(CHART, "normal");
+				if (FlxG.keys.pressed.ALT || pressedNone)
+					save(EVENTS, "events");
+				if (FlxG.keys.pressed.TAB || pressedNone)
+					save(META, "meta");
+			}
 		}
 
 		if (playingSong)
@@ -705,23 +787,12 @@ class ChartingState extends MusicBeatState
 		}
 	}
 
-	public function save(saveEvents:Bool = false)
+	public function save(_data:Dynamic, name:String)
 	{
-		if (!saveEvents)
+		var data:String = Json.stringify(_data, "\t");
+		if (data != null && data.length > 0)
 		{
-			var data:String = Json.stringify(CHART, "\t");
-			if (data != null && data.length > 0)
-			{
-				Assets.fileSave(data.trim(), '${CHART.song}.json');
-			}
-		}
-		else
-		{
-			var data:String = Json.stringify(EVENTS, "\t");
-			if (data != null && data.length > 0)
-			{
-				Assets.fileSave(data.trim(), '${CHART.song}-events.json');
-			}
+			Assets.fileSave(data.trim(), '${CHART.song}-${name}.json');
 		}
 	}
 

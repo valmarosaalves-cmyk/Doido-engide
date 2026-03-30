@@ -18,6 +18,7 @@ class QuickButton extends FlxSprite
 	public var maxScale:Float = 1.15;
 	public var minScale:Float = 0.9;
 	public var idleScale:Float = 1;
+	public var changeScale:Bool = true;
 
 	private var storedMax:Float = 1;
 	private var storedMin:Float = 1;
@@ -86,7 +87,8 @@ class QuickButton extends FlxSprite
 			}
 		}
 
-		scale.set(FlxMath.lerp(scale.x, daScale, elapsed * 8), FlxMath.lerp(scale.y, daScale, elapsed * 8));
+		if (changeScale)
+			scale.set(FlxMath.lerp(scale.x, daScale, elapsed * 8), FlxMath.lerp(scale.y, daScale, elapsed * 8));
 	}
 }
 
@@ -132,8 +134,7 @@ class AnimatedButton extends QuickButton
 class TextButton extends FlxSpriteGroup
 {
 	public var button:AnimatedButton;
-
-	var text:FlxBitmapText;
+	public var text:FlxBitmapText;
 
 	public function new(label:String = "", big:Bool = false, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
 	{
@@ -185,6 +186,7 @@ class MenuButton extends FlxSpriteGroup
 		button.alpha = 0;
 		button.maxScale = 1;
 		button.minScale = 1;
+		button.changeScale = false;
 		add(button);
 
 		button.onHover.add((btn) ->
