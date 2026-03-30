@@ -107,6 +107,8 @@ class MusicBeatState extends FlxUIState
 
 		curStepFloat = Conductor.getStepAtTime();
 		curStep = _curStep = Math.floor(curStepFloat);
+
+		setFps();
 	}
 
 	override function openSubState(subState:FlxSubState)
@@ -175,6 +177,12 @@ class MusicBeatState extends FlxUIState
 	{
 		// finally you're useful for something
 		curBeat = Math.floor(curStep / 4);
+	}
+
+	private function setFps(x:Int = 5, y:Int = 5)
+	{
+		if (Main.fpsX != x || Main.fpsY != y)
+			Main.setFps(x, y);
 	}
 }
 

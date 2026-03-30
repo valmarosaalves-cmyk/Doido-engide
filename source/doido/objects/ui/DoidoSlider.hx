@@ -17,12 +17,18 @@ class DoidoSlider extends FlxSpriteGroup
 	public var value:Float = 0;
 	public var rangeMin:Float = 0;
 	public var rangeMax:Float = 1;
+	public var steps:Int = 2;
+	public var snappingStrength:Float = 0.05; // 0.05 seems pretty good
 
-	public function new(x:Float = 0, y:Float = 0, wid:Int = 160, hei:Int = 6, defValue:Float = 0, rangeMin:Float = 0, rangeMax:Float = 0, steps:Int = 2)
+	var dotSpacing:Float = 1;
+
+	public function new(x:Float = 0, y:Float = 0, wid:Int = 160, hei:Int = 6, defValue:Float = 0, rangeMin:Float = 0, rangeMax:Float = 0, steps:Int = 2,
+			snappingStrength:Float = 0)
 	{
 		super(x, y);
 		this.rangeMin = rangeMin;
 		this.rangeMax = rangeMax;
+		this.steps = steps;
 
 		bar = new FlxSprite().makeGraphic(wid, hei, 0xFFD8DAF6);
 		add(bar);
@@ -30,7 +36,7 @@ class DoidoSlider extends FlxSpriteGroup
 		// you cant really have less than two
 		if (steps >= 2)
 		{
-			var dotSpacing:Float = wid / (steps - 1);
+			dotSpacing = wid / (steps - 1);
 			for (i in 0...steps)
 			{
 				var dot = new FlxSprite().loadImage("editors/charting/dot");
@@ -46,6 +52,7 @@ class DoidoSlider extends FlxSpriteGroup
 		add(slider);
 
 		value = defValue;
+		this.snappingStrength = FlxMath.remapToRange(dotSpacing, 0, bar.width, rangeMin, rangeMax)/2;
 	}
 
 	override function draw()
@@ -70,6 +77,17 @@ class DoidoSlider extends FlxSpriteGroup
 		if (scrubbing)
 		{
 			value = FlxMath.bound(FlxMath.remapToRange(FlxG.mouse.x, bar.x, bar.x + bar.width, rangeMin, rangeMax), rangeMin, rangeMax);
+
+			if (steps >= 2 && snappingStrength >= 0)
+			{
+				for (i in 0...steps)
+				{
+					var space = FlxMath.remapToRange(i * dotSpacing, 0, bar.width, rangeMin, rangeMax);
+					if (Math.abs(value - space) <= snappingStrength)
+						value = space;
+				}
+			}
+
 			if (!FlxG.mouse.pressed)
 				scrubbing = false;
 

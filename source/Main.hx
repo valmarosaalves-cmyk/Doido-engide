@@ -15,6 +15,8 @@ import sys.io.File;
 
 class Main extends Sprite
 {
+	public static var game:FlxGame;
+
 	// later we should have the window size options be determined automatically, probably
 	var gameWidth:Int = 1280;
 	var gameHeight:Int = 720;
@@ -30,7 +32,7 @@ class Main extends Sprite
 	{
 		super();
 		initGame();
-		addChild(fpsCounter = new FPSCounter(5, 5));
+		addChild(fpsCounter = new FPSCounter());
 		fixes();
 	}
 
@@ -41,7 +43,7 @@ class Main extends Sprite
 
 		Logs.init(); // custom logging shit
 
-		var game:FlxGame = new FlxGame(gameWidth, gameHeight, Init, framerate, framerate, skipSplash);
+		game = new FlxGame(gameWidth, gameHeight, Init, framerate, framerate, skipSplash);
 		globalFont = Assets.font("vcr"); // we need to initialize this before the font ever gets used, otherwise it wont be found
 		@:privateAccess
 		game._customSoundTray = SoundTray;
@@ -90,6 +92,7 @@ class Main extends Sprite
 		FlxG.signals.gameResized.add((w, h) ->
 		{
 			resetCamCache();
+			scaleFps();
 		});
 
 		// fullscreen bind fix
@@ -146,6 +149,42 @@ class Main extends Sprite
 			sprite.__cacheBitmap = null;
 			sprite.__cacheBitmapData = null;
 		}
+	}
+
+	public static var fpsX(default, set):Float = 5;
+	public static var fpsY(default, set):Float = 5;
+
+	public static function set_fpsX(f:Float)
+	{
+		fpsX = f;
+		scaleFps();
+		return f;
+	}
+
+	public static function set_fpsY(f:Float)
+	{
+		fpsY = f;
+		scaleFps();
+		return f;
+	}
+
+	public static function setFps(x:Int, y:Int)
+	{
+		@:bypassAccessor fpsX = x;
+		@:bypassAccessor fpsY = y;
+		scaleFps();
+	}
+
+	public static function scaleFps()
+	{
+		var scaleX:Float = FlxG.stage.window.width / FlxG.width;
+		var scaleY:Float = FlxG.stage.window.height / FlxG.height;
+		var scale:Float = Math.min(scaleX, scaleY);
+
+		fpsCounter.scaleX = scale;
+		fpsCounter.scaleY = scale;
+		fpsCounter.x = game.x + (fpsX*scale);
+		fpsCounter.y = game.y + (fpsY*scale);
 	}
 }
 

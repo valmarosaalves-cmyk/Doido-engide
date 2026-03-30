@@ -12,6 +12,7 @@ class FPSCounter extends Sprite
 	@:noCompletion private var times:Array<Float>;
 	@:noCompletion private var deltaTimeout:Float = 0.0;
 
+	var bg:Sprite;
 	var fpsField:CounterField;
 	var labelField:CounterField;
 	var memField:CounterField;
@@ -26,13 +27,19 @@ class FPSCounter extends Sprite
 		this.x = x;
 		this.y = y;
 
-		fpsField = new CounterField(x, y, 22, 100, "", Main.globalFont, 0xFFFFFF);
+		bg = new Sprite();
+		bg.graphics.beginFill(0x000000, 0.5);
+		bg.graphics.drawRoundRect(x, y, 80, 50, 6, 6);
+		bg.graphics.endFill();
+		addChild(bg);
+
+		fpsField = new CounterField(x + 5, y + 5, 22, 100, "", Main.globalFont, 0xFFFFFF);
 		addChild(fpsField);
 
-		labelField = new CounterField(x - 30, y + 9, 12, 100, "FPS", Main.globalFont, 0xFFFFFF);
+		labelField = new CounterField(x, y + 5 + 9, 12, 100, "FPS", Main.globalFont, 0xFFFFFF);
 		addChild(labelField);
 
-		memField = new CounterField(x, y + 21, 14, 300, "", Main.globalFont, 0xFFFFFF);
+		memField = new CounterField(x + 5, y + 5 + 21, 14, 300, "", Main.globalFont, 0xFFFFFF);
 		addChild(memField);
 
 		visible = Save.data.fpsCounter;
@@ -45,18 +52,6 @@ class FPSCounter extends Sprite
 	{
 		if (!visible)
 			return;
-
-		if (FlxG.mouse.visible)
-		{
-			// using Lib.current.mouse instead of FlxG.mouse
-			// so the position is consistent in every resolution
-			if (openfl.Lib.current.mouseX < 92 && openfl.Lib.current.mouseY < 62)
-				alpha = 0.0;
-			else if (alpha < 1.0)
-				alpha += 0.2 * FlxG.elapsed;
-		}
-		else
-			alpha = 1.0;
 
 		final now:Float = Timer.stamp() * 1000;
 		times.push(now);
@@ -75,7 +70,7 @@ class FPSCounter extends Sprite
 			fps = FlxG.updateFramerate;
 
 		fpsField.text = '$fps';
-		labelField.x = fpsField.x + fpsField.getLineMetrics(0).width + 5;
+		labelField.x = fpsField.x + fpsField.getLineMetrics(0).width + 4;
 
 		memField.text = FlxStringUtil.formatBytes(System.totalMemoryNumber);
 
@@ -97,13 +92,8 @@ class FPSCounter extends Sprite
 
 		graphics.clear();
 
-		var bgWidth:Float = Math.max(fpsField.textWidth + labelField.textWidth + 5, memField.textWidth) + 20;
-		var bgHeight:Float = memField.y + memField.textHeight + 16;
-
-		// draw background
-		graphics.beginFill(0x000000, 0.5);
-		graphics.drawRoundRect(x - 6, y - 6, bgWidth, bgHeight, 6, 6);
-		graphics.endFill();
+		bg.width = Math.max(labelField.x + labelField.getLineMetrics(0).width, memField.x + memField.getLineMetrics(0).width) + 12;
+		bg.height = memField.y + memField.getLineMetrics(0).height + 12;
 	}
 }
 
