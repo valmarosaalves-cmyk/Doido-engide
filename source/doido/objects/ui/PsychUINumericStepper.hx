@@ -93,6 +93,12 @@ class PsychUINumericStepper extends PsychUIInputText
 	{
 		value = Math.max(min, Math.min(max, v));
 		text = Std.string(isPercent ? (value * 100) : value);
+
+		buttonPlus.disabled = value >= max;
+		buttonMinus.disabled = value <= min;
+		if (buttonReset != null)
+			buttonReset.disabled = value == defValue;
+
 		_updateValue();
 		return value;
 	}
@@ -218,11 +224,6 @@ class PsychUINumericStepper extends PsychUIInputText
 
 	function _internalOnChange()
 	{
-		buttonPlus.disabled = value >= max;
-		buttonMinus.disabled = value <= min;
-		if (buttonReset != null)
-			buttonReset.disabled = value == defValue;
-
 		if (onValueChange != null)
 			onValueChange();
 	}

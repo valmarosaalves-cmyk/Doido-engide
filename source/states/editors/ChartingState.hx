@@ -4,6 +4,7 @@ import doido.objects.ui.QuickButton.Checkmark;
 import doido.objects.ui.PsychUINumericStepper;
 import doido.objects.ui.DoidoWindow.BaseWindow;
 import doido.objects.ui.DoidoWindow.MenuWindow;
+import doido.objects.ui.DoidoWindow.IWindow;
 import doido.objects.ui.*;
 import flixel.util.FlxStringUtil;
 import flixel.util.FlxTimer;
@@ -230,6 +231,8 @@ class ChartingState extends MusicBeatState
 			return switch (place)
 			{
 				case "margin_first": tab.bg.x + 138;
+				case "margin_first_small": tab.bg.x + 76;
+				case "margin_second": tab.bg.x + 178;
 				case "margin_right": tab.bg.x + tab.bg.width - width - 8;
 				case "center": tab.bg.x + (tab.bg.width / 2) - (width / 2);
 				default: tab.bg.x + 8;
@@ -240,9 +243,9 @@ class ChartingState extends MusicBeatState
 			return tab.bg.y + 8 + (spacingH * i);
 
 		tab.add(createText(getX(), getY(0), "Volume:"));
-		tab.add(createText(getX(), getY(1) + 4, "Player:"));
-		tab.add(createText(getX(), getY(2) + 4, "Opponent:"));
-		tab.add(createText(getX(), getY(3) + 4, "Instrumental:"));
+		tab.add(createText(getX(), getY(1) + 3, "Player:", 0xFFD8DAF6));
+		tab.add(createText(getX(), getY(2) + 3, "Opponent:", 0xFFD8DAF6));
+		tab.add(createText(getX(), getY(3) + 3, "Instrumental:", 0xFFD8DAF6));
 
 		var playerVol:Checkmark = new Checkmark(true);
 		playerVol.onUp.add((btn) ->
@@ -250,17 +253,10 @@ class ChartingState extends MusicBeatState
 			audio.muteVoices = !playerVol.value;
 		});
 		playerVol.x = getX("margin_first");
-		playerVol.y = getY(1);
+		playerVol.y = getY(1) - 1;
 		tab.add(playerVol);
 
 		var playerStepper = new PsychUINumericStepper(getX("margin_right", 100), getY(1), 0.01, 1, 0, 1.0, 2, 100, true);
-		playerStepper.onValueChange = (() ->
-		{
-			@:bypassAccessor audio.muteVoices = false;
-			playerVol.value = true;
-			if (audio.voicesGlobal != null)
-				audio.voicesGlobal.volume = playerStepper.value;
-		});
 		tab.add(playerStepper);
 
 		var oppVol:Checkmark = new Checkmark(true);
@@ -269,17 +265,10 @@ class ChartingState extends MusicBeatState
 			audio.muteOpponent = !oppVol.value;
 		});
 		oppVol.x = getX("margin_first");
-		oppVol.y = getY(2);
+		oppVol.y = getY(2) - 1;
 		tab.add(oppVol);
 
 		var oppStepper = new PsychUINumericStepper(getX("margin_right", 100), getY(2), 0.01, 1, 0, 1.0, 2, 100, true);
-		oppStepper.onValueChange = (() ->
-		{
-			@:bypassAccessor audio.muteOpponent = false;
-			oppVol.value = true;
-			if (audio.voicesOpp != null)
-				audio.voicesOpp.volume = oppStepper.value;
-		});
 		tab.add(oppStepper);
 
 		var instVol:Checkmark = new Checkmark(true);
@@ -288,17 +277,105 @@ class ChartingState extends MusicBeatState
 			audio.muteInst = !instVol.value;
 		});
 		instVol.x = getX("margin_first");
-		instVol.y = getY(3);
+		instVol.y = getY(3) - 1;
 		tab.add(instVol);
 
 		var instStepper = new PsychUINumericStepper(getX("margin_right", 100), getY(3), 0.01, 1, 0, 1.0, 2, 100, true);
+		tab.add(instStepper);
+
+		var playerSlider:DoidoSlider = new DoidoSlider(getX("margin_second"), getY(1) + 9, 160, 6, 1, 0, 1, 3);
+		playerSlider.onScrub.add((sld) ->
+		{
+			@:bypassAccessor audio.muteVoices = false;
+			playerVol.value = true;
+			playerStepper.value = playerSlider.value;
+			if (audio.voicesGlobal != null)
+				audio.voicesGlobal.volume = playerSlider.value;
+		});
+		tab.add(playerSlider);
+
+		var oppSlider:DoidoSlider = new DoidoSlider(getX("margin_second"), getY(2) + 9, 160, 6, 1, 0, 1, 3);
+		oppSlider.onScrub.add((sld) ->
+		{
+			@:bypassAccessor audio.muteVoices = false;
+			oppVol.value = true;
+			oppStepper.value = oppSlider.value;
+			if (audio.voicesOpp != null)
+				audio.voicesOpp.volume = oppSlider.value;
+		});
+		tab.add(oppSlider);
+
+		var instSlider:DoidoSlider = new DoidoSlider(getX("margin_second"), getY(3) + 9, 160, 6, 1, 0, 1, 3);
+		instSlider.onScrub.add((sld) ->
+		{
+			@:bypassAccessor audio.muteVoices = false;
+			instVol.value = true;
+			instStepper.value = instSlider.value;
+			audio.inst.volume = instSlider.value;
+		});
+		tab.add(instSlider);
+
+		playerStepper.onValueChange = (() ->
+		{
+			@:bypassAccessor audio.muteVoices = false;
+			playerVol.value = true;
+			playerSlider.value = playerStepper.value;
+			if (audio.voicesGlobal != null)
+				audio.voicesGlobal.volume = playerStepper.value;
+		});
+
+		oppStepper.onValueChange = (() ->
+		{
+			@:bypassAccessor audio.muteOpponent = false;
+			oppVol.value = true;
+			oppSlider.value = oppStepper.value;
+			if (audio.voicesOpp != null)
+				audio.voicesOpp.volume = oppStepper.value;
+		});
+
 		instStepper.onValueChange = (() ->
 		{
 			@:bypassAccessor audio.muteInst = false;
 			instVol.value = true;
+			instSlider.value = instStepper.value;
 			audio.inst.volume = instStepper.value;
 		});
-		tab.add(instStepper);
+
+		var balls:FlxSprite = new FlxSprite().loadImage("editors/charting/balls");
+		balls.setPosition(getX("center", balls.width), getY(4) + 5);
+		tab.add(balls);
+
+		// playback
+		tab.add(createText(getX(), getY(5), "Playback:"));
+
+		tab.add(createText(getX(), getY(6) + 3, "Speed:", 0xFFD8DAF6));
+
+		var playbackStepper = new PsychUINumericStepper(getX("margin_right", 152), getY(6), 0.1, 1, 0, 2.0, 1, 100, false, true);
+		tab.add(playbackStepper);
+
+		var playbackSlider:DoidoSlider = new DoidoSlider(getX("margin_first_small"), getY(6) + 9, 210, 6, 1, 0, 2, 5);
+		playbackSlider.onScrub.add((sld) ->
+		{
+			if (playbackSlider.value <= 0)
+			{
+				playingSong = false;
+				audio.pause();
+			}
+			playbackStepper.value = playbackSlider.value;
+			audio.speed = playbackSlider.value;
+		});
+		tab.add(playbackSlider);
+
+		playbackStepper.onValueChange = (() ->
+		{
+			if (playbackStepper.value <= 0)
+			{
+				playingSong = false;
+				audio.pause();
+			}
+			playbackSlider.value = playbackStepper.value;
+			audio.speed = playbackStepper.value;
+		});
 
 		return tab;
 	}
@@ -323,9 +400,9 @@ class ChartingState extends MusicBeatState
 
 		// chart options
 		songTab.add(createText(getX(), getY(0), "Chart:"));
-		songTab.add(createText(getX(), getY(1) + 4, "Name:", 0xFFD8DAF6));
-		songTab.add(createText(getX(), getY(2) + 4, "BPM:", 0xFFD8DAF6));
-		songTab.add(createText(getX(), getY(3) + 4, "Note Speed:", 0xFFD8DAF6));
+		songTab.add(createText(getX(), getY(1) + 3, "Name:", 0xFFD8DAF6));
+		songTab.add(createText(getX(), getY(2) + 3, "BPM:", 0xFFD8DAF6));
+		songTab.add(createText(getX(), getY(3) + 3, "Note Speed:", 0xFFD8DAF6));
 
 		var songName:PsychUIInputText;
 		songName = new PsychUIInputText(getX("margin_first"), getY(1), 342, CHART.song, 14);
@@ -453,7 +530,7 @@ class ChartingState extends MusicBeatState
 			playingSong = false;
 		else
 		{
-			if (FlxG.keys.justPressed.SPACE && !typing)
+			if (FlxG.keys.justPressed.SPACE && !typing && audio.speed > 0)
 				playingSong = !playingSong;
 		}
 
@@ -461,13 +538,11 @@ class ChartingState extends MusicBeatState
 
 		for (basic in members)
 		{
-			if (Std.isOfType(basic, BaseWindow))
+			if (Std.isOfType(basic, IWindow))
 			{
-				if (FlxG.mouse.overlaps(cast(basic, BaseWindow).bg))
+				if (cast(basic, IWindow).overlapping)
 				{
 					overlapsWindow = true;
-					/*if (FlxG.mouse.justPressed)
-						clickedOnWindow = true; */
 				}
 			}
 		}
@@ -818,12 +893,12 @@ class ChartingState extends MusicBeatState
 			}
 		}
 
-		if (playingSong)
+		if (playingSong && audio.speed > 0)
 		{
 			if (!audio.playing && Conductor.songPos >= 0)
 				audio.play(Conductor.songPos);
 
-			Conductor.songPos += elapsed * 1000;
+			Conductor.songPos += elapsed * 1000 * audio.speed;
 		}
 		else
 		{

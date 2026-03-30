@@ -55,7 +55,7 @@ class MenuWindow extends BaseWindow
 	}
 }
 
-class BaseWindow extends FlxGroup
+class BaseWindow extends FlxGroup implements IWindow
 {
 	public var chartState:ChartingState;
 	public var bg:FlxSprite;
@@ -70,4 +70,13 @@ class BaseWindow extends FlxGroup
 		bg.alpha = 0.5;
 		add(bg);
 	}
+
+	public var overlapping(get, never):Bool;
+	public function get_overlapping():Bool
+		return FlxG.mouse.overlaps(bg);
+}
+
+interface IWindow
+{
+	var overlapping(get, never):Bool;
 }

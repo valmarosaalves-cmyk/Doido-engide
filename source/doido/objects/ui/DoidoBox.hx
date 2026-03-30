@@ -1,11 +1,12 @@
 package doido.objects.ui;
 
+import doido.objects.ui.DoidoWindow.IWindow;
 import flixel.group.FlxGroup;
 import states.editors.ChartingState;
 import doido.objects.ui.QuickButton.BoxLabel;
 import doido.objects.ui.DoidoWindow.BaseWindow;
 
-class DoidoBox extends FlxGroup
+class DoidoBox extends FlxGroup implements IWindow
 {
 	public var chartState:ChartingState;
 	public var tabs:Array<BaseWindow> = [];
@@ -20,8 +21,8 @@ class DoidoBox extends FlxGroup
 	var cur:Int = -1;
 	var spacing:Float = 5;
 
-	public function new(x:Float = 0, y:Float = 0, width:Float = 100, buttonHeight:Float = 20, startingTab:Int = -1, centerButtons:Bool = true, tabs:Array<BaseWindow>,
-			chartState:ChartingState)
+	public function new(x:Float = 0, y:Float = 0, width:Float = 100, buttonHeight:Float = 20, startingTab:Int = -1, centerButtons:Bool = true,
+			tabs:Array<BaseWindow>, chartState:ChartingState)
 	{
 		super();
 		this.x = x;
@@ -75,5 +76,21 @@ class DoidoBox extends FlxGroup
 
 		if (tabs[cur] != null)
 			tabs[cur].update(elapsed);
+	}
+
+	public var overlapping(get, never):Bool;
+
+	public function get_overlapping():Bool
+	{
+		for (button in buttons)
+		{
+			if (FlxG.mouse.overlaps(button))
+				return true;
+		}
+
+		if (tabs[cur] != null)
+			return tabs[cur].overlapping;
+
+		return false;
 	}
 }
