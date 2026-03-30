@@ -430,6 +430,7 @@ class ChartingState extends MusicBeatState
 			playingSong = false;
 			audio.pause();
 			audio.reload(CHART.song);
+			grid.length = audio.length;
 		});
 		reloadButton.x = getX("margin_right", reloadButton.width);
 		reloadButton.y = getY(3) - 9;
