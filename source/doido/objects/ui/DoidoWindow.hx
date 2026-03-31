@@ -17,10 +17,18 @@ enum MenuObjects
 	SEPARATOR;
 }
 
-enum ChooserType
+enum ChooserView
 {
 	LIST;
 	GRID;
+}
+
+enum ChooserType
+{
+	NONE;
+	CHARACTER;
+	EVENT;
+	NOTETYPE;
 }
 
 class ChooserWindow extends BaseWindow
@@ -42,11 +50,12 @@ class ChooserWindow extends BaseWindow
 	var filtered:Array<String> = [];
 	var noScroll(get, never):Bool;
 
-	public var type:ChooserType = GRID;
+	public var view:ChooserView = GRID;
+	public var type:ChooserType = CHARACTER;
 
 	var gridCount:Int = 4;
 
-	public function new(x:Float = 0, y:Float = 0, width:Int = 440, height:Int = 185, chartState:ChartingState)
+	public function new(x:Float = 0, y:Float = 0, width:Int = 440, height:Int = 185, list:Array<String>, chartState:ChartingState)
 	{
 		super(chartState);
 		this.x = x;
@@ -55,7 +64,7 @@ class ChooserWindow extends BaseWindow
 		this.height = height;
 		@:bypassAccessor filter = "";
 
-		options = ["bba", "a", "ba", "c", "d", "e", "f", "g", "h"];
+		options = list;
 
 		bg.scale.set(width, height);
 		bg.updateHitbox();
@@ -71,7 +80,7 @@ class ChooserWindow extends BaseWindow
 		});
 		add(slider);
 
-		switch (type)
+		switch (view)
 		{
 			case GRID:
 				buttonWidth = Std.int((width - 40 - spacing) / gridCount);
@@ -93,9 +102,9 @@ class ChooserWindow extends BaseWindow
 
 		for (i in 0...filtered.length)
 		{
-			var button:ChooserButton = new ChooserButton(filtered[i], buttonWidth, buttonHeight, (btn) -> Logs.print('click ${options[i]}'));
+			var button:ChooserButton = new ChooserButton(filtered[i], type, view, buttonWidth, buttonHeight, (btn) -> Logs.print('click ${options[i]}'));
 
-			if (type == GRID)
+			if (view == GRID)
 				button.x = x + spacing + ((i % gridCount) * buttonWidth);
 			else
 				button.x = x + spacing;
@@ -120,7 +129,7 @@ class ChooserWindow extends BaseWindow
 		yOffset = (noScroll ? 0 : FlxMath.bound(yOffset, 0, bottom));
 		for (button in buttons)
 		{
-			if (type == GRID)
+			if (view == GRID)
 				button.y = y + spacing + (buttonHeight * Math.floor(button.ID / gridCount)) - yOffset;
 			else
 				button.y = y + spacing + (buttonHeight * button.ID) - yOffset;
@@ -173,7 +182,7 @@ class ChooserWindow extends BaseWindow
 
 	function get_noScroll()
 	{
-		return bottom <= bg.y;
+		return (height + bottom) <= height;
 	}
 }
 

@@ -536,7 +536,7 @@ class ChartingState extends MusicBeatState
 
 		tab.add(createText(getX(), getY(0) + 3, "Test:"));
 
-		var test:ChooserWindow = new ChooserWindow(getX("center", 440), getY(1), this);
+		var test:ChooserWindow = new ChooserWindow(getX("center", 440), getY(1), characters.concat(characters), this);
 		tab.add(test);
 
 		var filter:PsychUIInputText;

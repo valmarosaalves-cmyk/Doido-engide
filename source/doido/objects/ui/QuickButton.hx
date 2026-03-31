@@ -5,6 +5,9 @@ import flixel.math.FlxMath;
 import flixel.util.FlxSignal;
 import flixel.group.FlxSpriteGroup;
 import flixel.text.FlxBitmapText;
+import doido.objects.ui.DoidoWindow.ChooserType;
+import doido.objects.ui.DoidoWindow.ChooserView;
+import objects.ui.HealthIcon;
 
 typedef ButtonSignal = FlxTypedSignal<QuickButton->Void>;
 
@@ -313,8 +316,9 @@ class ChooserButton extends FlxSpriteGroup
 	var _label:FlxBitmapText;
 
 	public var button:QuickButton;
+	public var icon:FlxSprite;
 
-	public function new(label:String, width:Int = 318, height:Int = 22, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
+	public function new(label:String, type:ChooserType, view:ChooserView, width:Int = 318, height:Int = 22, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
 	{
 		super();
 
@@ -340,13 +344,36 @@ class ChooserButton extends FlxSpriteGroup
 			btn.alpha = 0;
 		});
 
+		icon = new FlxSprite();
+		switch(type)
+		{
+			case CHARACTER:
+				var uhhh = new HealthIcon();
+                uhhh.setIcon(label, false);
+                icon.loadGraphicFromSprite(uhhh);
+			default:
+				icon.visible = false;
+		}
+		icon.setGraphicSize(width-20, height-20);
+		icon.updateHitbox();
+		icon.x = button.x + (button.width - icon.width) / 2;
+        icon.y = button.y + 5;
+		add(icon);
+
 		_label = new FlxBitmapText(0, 0, Assets.bitmapFont("phantommuff"));
 		_label.color = 0xFFFFFFFF;
 		_label.alignment = CENTER;
 		_label.text = label;
 		_label.scale.set(0.625, 0.625);
 		_label.updateHitbox();
-		_label.setPosition(button.x + ((button.width / 2) - (_label.width / 2)), button.y + ((button.height / 2) - (_label.height / 2)));
 		add(_label);
+
+		switch(view) {
+			case GRID:
+				_label.x = button.x + (button.width - _label.width) / 2;
+        		_label.y = button.y + button.height - _label.height - 2;
+			default:
+				_label.setPosition(button.x + ((button.width / 2) - (_label.width / 2)), button.y + ((button.height / 2) - (_label.height / 2)));
+		}
 	}
 }
