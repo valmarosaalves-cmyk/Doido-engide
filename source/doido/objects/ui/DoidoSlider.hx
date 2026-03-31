@@ -21,6 +21,7 @@ class DoidoSlider extends FlxSpriteGroup
 	public var vertical:Bool = false;
 	public var center:Bool = true;
 	public var snappingStrength(default, set):Float; // 0.05 seems pretty good
+	public var disabled:Bool = false;
 
 	var dotSpacing:Float = 1;
 
@@ -79,7 +80,7 @@ class DoidoSlider extends FlxSpriteGroup
 				scrubbing = true;
 		}
 
-		if (scrubbing)
+		if (scrubbing && !disabled)
 		{
 			value = FlxMath.bound(FlxMath.remapToRange((vertical ? FlxG.mouse.y : FlxG.mouse.x), getStart(), getEnd(), rangeMin, rangeMax), rangeMin, rangeMax);
 

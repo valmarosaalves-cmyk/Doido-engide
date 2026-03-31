@@ -17,6 +17,12 @@ enum MenuObjects
 	SEPARATOR;
 }
 
+enum ChooserType
+{
+	LIST;
+	GRID;
+}
+
 class ChooserWindow extends BaseWindow
 {
 	public var x:Float;
@@ -26,7 +32,8 @@ class ChooserWindow extends BaseWindow
 	public var filter(default, set):String;
 
 	var spacing:Int = 12;
-	var buttonHeight:Int = 40;
+	var buttonWidth:Int = 1;
+	var buttonHeight:Int = 1;
 	var bottom:Int = 0;
 
 	var buttons:Array<ChooserButton> = [];
@@ -34,6 +41,10 @@ class ChooserWindow extends BaseWindow
 	var options(default, set):Array<String>;
 	var filtered:Array<String> = [];
 	var noScroll(get, never):Bool;
+
+	public var type:ChooserType = GRID;
+
+	var gridCount:Int = 4;
 
 	public function new(x:Float = 0, y:Float = 0, width:Int = 440, height:Int = 185, chartState:ChartingState)
 	{
@@ -60,6 +71,16 @@ class ChooserWindow extends BaseWindow
 		});
 		add(slider);
 
+		switch (type)
+		{
+			case GRID:
+				buttonWidth = Std.int((width - 40 - spacing) / gridCount);
+				buttonHeight = buttonWidth;
+			case LIST:
+				buttonWidth = width - 40 - spacing;
+				buttonHeight = 40;
+		}
+
 		buildButtons();
 	}
 
@@ -72,15 +93,22 @@ class ChooserWindow extends BaseWindow
 
 		for (i in 0...filtered.length)
 		{
-			var button:ChooserButton = new ChooserButton(filtered[i], width - 40 - spacing, buttonHeight, (btn) -> Logs.print('click ${options[i]}'));
-			button.x = x + spacing;
+			var button:ChooserButton = new ChooserButton(filtered[i], buttonWidth, buttonHeight, (btn) -> Logs.print('click ${options[i]}'));
+
+			if (type == GRID)
+				button.x = x + spacing + ((i % gridCount) * buttonWidth);
+			else
+				button.x = x + spacing;
+
 			button.ID = i;
 			buttons.push(button);
 			add(button);
 		}
 
 		yOffset = 0;
-		bottom = (buttonHeight * filtered.length) + (2 * spacing) - height;
+		slider.value = 0;
+		bottom = (buttonHeight * Math.ceil(filtered.length / gridCount)) + (2 * spacing) - height;
+		slider.disabled = noScroll;
 		slider.rangeMax = bottom;
 		updateButtons();
 	}
@@ -92,7 +120,10 @@ class ChooserWindow extends BaseWindow
 		yOffset = (noScroll ? 0 : FlxMath.bound(yOffset, 0, bottom));
 		for (button in buttons)
 		{
-			button.y = y + spacing + (40 * button.ID) - yOffset;
+			if (type == GRID)
+				button.y = y + spacing + (buttonHeight * Math.floor(button.ID / gridCount)) - yOffset;
+			else
+				button.y = y + spacing + (buttonHeight * button.ID) - yOffset;
 			for (item in button.members)
 				setClip(item);
 		}

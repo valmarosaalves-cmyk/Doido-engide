@@ -1,5 +1,10 @@
 package states.editors;
 
+import doido.Cache;
+import flixel.graphics.frames.FlxFramesCollection;
+import openfl.geom.Rectangle;
+import flixel.graphics.FlxGraphic;
+import objects.ui.HealthIcon;
 import doido.objects.ui.DoidoWindow.ChooserWindow;
 import doido.objects.ui.QuickButton.Checkmark;
 import doido.objects.ui.PsychUINumericStepper;
@@ -31,6 +36,7 @@ import shaders.MultiplyShader;
 import haxe.Json;
 import flixel.util.FlxColor;
 import doido.objects.ui.QuickButton.TextButton;
+import flixel.graphics.frames.FlxFrame;
 
 class ChartingNote extends Note
 {
@@ -82,6 +88,8 @@ class ChartingState extends MusicBeatState
 	public var menuBox:DoidoBox;
 	public var menuMain:DoidoBox;
 
+	var characters:Array<String> = [];
+
 	public function new(SONG:DoidoSong)
 	{
 		super();
@@ -96,6 +104,8 @@ class ChartingState extends MusicBeatState
 		Conductor.initialBPM = CHART.bpm;
 		Conductor.mapBPMChanges(EVENTS.events);
 		Conductor.songPos = 0;
+
+		characters = Assets.list("data/characters/", true, JSON).concat(["face"]);
 
 		audio = new AudioHandler(CHART.song);
 
@@ -149,6 +159,14 @@ class ChartingState extends MusicBeatState
 		cursorTxt.updateHitbox();
 
 		scrollBall = new FlxSprite(0, 0).loadImage("editors/charting/scrollBall");
+
+		//preload icons
+		for (char in characters)
+		{
+			var icon:HealthIcon = new HealthIcon();
+			icon.setIcon(char, false);
+			icon.destroy();
+		}
 	}
 
 	function addMenu()
@@ -475,7 +493,6 @@ class ChartingState extends MusicBeatState
 		songTab.add(createText(getX("center", 145), getY(6), "Opponent:", 0xFFD8DAF6));
 		songTab.add(createText(getX("margin_right", 145), getY(6), "Girlfriend:", 0xFFD8DAF6));
 
-		var characters:Array<String> = Assets.list("data/characters/", true, JSON).concat(["face"]);
 		var bfDropdown = new PsychUIDropDownMenu(getX(), getY(6) + 22, characters, (i, s) ->
 		{
 			META.player1 = s;
@@ -729,11 +746,8 @@ class ChartingState extends MusicBeatState
 					var sizeTimed:Float = (GRID_SIZE / realSnap) * GRID_ZOOM;
 
 					hoverSquare.visible = true;
-					hoverSquare.setPosition(
-						grid.gridX + mouseLane * GRID_SIZE,
-						grid.gridY + Math.floor((FlxG.mouse.y - grid.gridY) / sizeTimed) * sizeTimed
-					);
-					if(GRID_SNAP == 0)
+					hoverSquare.setPosition(grid.gridX + mouseLane * GRID_SIZE, grid.gridY + Math.floor((FlxG.mouse.y - grid.gridY) / sizeTimed) * sizeTimed);
+					if (GRID_SNAP == 0)
 						hoverSquare.y = FlxG.mouse.y;
 
 					var mouseStep:Float = (hoverSquare.y - grid.gridY) / GRID_SIZE / GRID_ZOOM;
@@ -1304,7 +1318,7 @@ class ChartingGrid extends FlxSprite
 				beatLine.color = (zoomedY % 16 == 0) ? 0xFF1C1A24 : 0xFFA5B1E4;
 				beatLine.scale.y = (zoomedY % 16 == 0) ? 8 : 4;
 				beatLine.updateHitbox();
-				
+
 				beatLine.y = gridY - (beatLine.height / 2);
 				beatLine.draw();
 			}
@@ -1365,7 +1379,8 @@ class GridWindow extends BaseWindow
 		add(zoomTxt);
 
 		zoomStepper = new PsychUINumericStepper(bg.x + 82, windowTitle.y + 30, 0.25, ChartingState.GRID_ZOOM, 0.25, 4, 2, 100, true);
-		zoomStepper.onValueChange = () -> {
+		zoomStepper.onValueChange = () ->
+		{
 			ChartingState.GRID_ZOOM = zoomStepper.value;
 		};
 		add(zoomStepper);
@@ -1382,11 +1397,11 @@ class GridWindow extends BaseWindow
 			"NONE", "4th", "8th", "12th", "16th", "20th", "24th", "32th", "48th", "64th", "96th", "192th"
 		];
 		snaps.reverse();
-		snapDrowUp = new PsychUIDropDownMenu(bg.x + 82, zoomTxt.y + 30, snaps, (i, s) -> {
-			
-			if (s == "NONE") s = "0th";
+		snapDrowUp = new PsychUIDropDownMenu(bg.x + 82, zoomTxt.y + 30, snaps, (i, s) ->
+		{
+			if (s == "NONE")
+				s = "0th";
 			ChartingState.GRID_SNAP = Std.parseInt(s.replace("th", ""));
-
 		}, 100, true);
 		snapDrowUp.selectedLabel = (ChartingState.GRID_SNAP == 0 ? "NONE" : '${ChartingState.GRID_SNAP}th');
 		add(snapDrowUp);
