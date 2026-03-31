@@ -9,6 +9,7 @@ import states.editors.ChartingState;
 import flixel.FlxSprite;
 import flixel.math.FlxRect;
 import flixel.math.FlxMath;
+import doido.utils.EditorUtil;
 
 enum MenuObjects
 {
@@ -20,8 +21,9 @@ class ChooserWindow extends BaseWindow
 {
 	public var x:Float;
 	public var y:Float;
-	public var width:Float;
-	public var height:Float;
+	public var width:Int;
+	public var height:Int;
+	public var filter(default, set):String;
 
 	var spacing:Int = 12;
 	var buttonHeight:Int = 40;
@@ -29,7 +31,9 @@ class ChooserWindow extends BaseWindow
 
 	var buttons:Array<ChooserButton> = [];
 	var slider:DoidoSlider;
-	var options:Array<String> = ["thing1", "thing2", "thing3", "thing4", "thing5", "thing6", "thing7", "thing8"];
+	var options(default, set):Array<String>;
+	var filtered:Array<String> = [];
+	var noScroll(get, never):Bool;
 
 	public function new(x:Float = 0, y:Float = 0, width:Int = 440, height:Int = 185, chartState:ChartingState)
 	{
@@ -38,24 +42,16 @@ class ChooserWindow extends BaseWindow
 		this.y = y;
 		this.width = width;
 		this.height = height;
+		@:bypassAccessor filter = "";
+
+		options = ["bba", "a", "ba", "c", "d", "e", "f", "g", "h"];
 
 		bg.scale.set(width, height);
 		bg.updateHitbox();
 		bg.x = x;
 		bg.y = y;
 
-		for (i in 0...options.length)
-		{
-			var button:ChooserButton = new ChooserButton(options[i], width - 40 - spacing, buttonHeight, (btn) -> Logs.print('click ${options[i]}'));
-			button.x = x + spacing;
-			button.ID = i;
-			buttons.push(button);
-			add(button);
-		}
-
-		bottom = (buttonHeight * options.length) + (2 * spacing) - height;
-
-		slider = new DoidoSlider(bg.x + bg.width - 18 - spacing, bg.y + spacing, 18, height - (spacing * 2), 0, 0, bottom, 0, 0, true, true);
+		slider = new DoidoSlider(bg.x + bg.width - 18 - spacing, bg.y + spacing, 18, height - (spacing * 2), 0, 0, 1, 0, 0, true, true);
 		slider.bar.color = 0xFF000000;
 		slider.onScrub.add((b) ->
 		{
@@ -64,6 +60,28 @@ class ChooserWindow extends BaseWindow
 		});
 		add(slider);
 
+		buildButtons();
+	}
+
+	function buildButtons()
+	{
+		for (button in buttons)
+			button.kill();
+
+		buttons = [];
+
+		for (i in 0...filtered.length)
+		{
+			var button:ChooserButton = new ChooserButton(filtered[i], width - 40 - spacing, buttonHeight, (btn) -> Logs.print('click ${options[i]}'));
+			button.x = x + spacing;
+			button.ID = i;
+			buttons.push(button);
+			add(button);
+		}
+
+		yOffset = 0;
+		bottom = (buttonHeight * filtered.length) + (2 * spacing) - height;
+		slider.rangeMax = bottom;
 		updateButtons();
 	}
 
@@ -71,6 +89,7 @@ class ChooserWindow extends BaseWindow
 
 	function updateButtons()
 	{
+		yOffset = (noScroll ? 0 : FlxMath.bound(yOffset, 0, bottom));
 		for (button in buttons)
 		{
 			button.y = y + spacing + (40 * button.ID) - yOffset;
@@ -86,14 +105,13 @@ class ChooserWindow extends BaseWindow
 		for (button in buttons)
 			button.button.disabled = !overlapping;
 
-		if (overlapping)
+		if (overlapping && !noScroll)
 		{
 			if (FlxG.mouse.wheel != 0)
 			{
 				yOffset -= FlxG.mouse.wheel * 32;
-				yOffset = FlxMath.bound(yOffset, 0, bottom);
-				slider.value = yOffset;
 				updateButtons();
+				slider.value = yOffset;
 			}
 		}
 	}
@@ -105,6 +123,26 @@ class ChooserWindow extends BaseWindow
 		var newwidth:Float = (x + width - sprite.x) - newx;
 		var newheight:Float = (y + height - sprite.y) - newy;
 		sprite.clipRect = new FlxRect(newx / sprite.scale.x, newy / sprite.scale.y, newwidth / sprite.scale.x, newheight / sprite.scale.y);
+	}
+
+	public function set_filter(s:String)
+	{
+		filter = s;
+		filtered = EditorUtil.doidoSearch(options, filter);
+		buildButtons();
+		return filter;
+	}
+
+	public function set_options(a:Array<String>)
+	{
+		options = a;
+		filtered = EditorUtil.doidoSearch(options, filter);
+		return options;
+	}
+
+	function get_noScroll()
+	{
+		return bottom <= bg.y;
 	}
 }
 

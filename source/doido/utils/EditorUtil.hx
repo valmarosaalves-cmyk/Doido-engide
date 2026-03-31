@@ -25,4 +25,17 @@ class EditorUtil
 		if (Application.current.window.cursor != newCursor)
 			Application.current.window.cursor = newCursor;
 	}
+
+	public static function doidoSearch(arr:Array<String>, filter:String):Array<String>
+	{
+		var filtered:Array<String> = [];
+
+		for(str in arr)
+			if(str.toLowerCase().indexOf(filter.toLowerCase()) != -1)
+				filtered.push(str);
+
+		filtered.sort(function(a, b) return a.toLowerCase().indexOf(filter.toLowerCase()) - b.toLowerCase().indexOf(filter.toLowerCase()));
+
+		return filtered;
+	}
 }

@@ -506,6 +506,7 @@ class ChartingState extends MusicBeatState
 			return switch (place)
 			{
 				case "center": tab.bg.x + (tab.bg.width / 2) - (width / 2);
+				case "margin_first": tab.bg.x + 110;
 				default: tab.bg.x + 8;
 			}
 		}
@@ -513,8 +514,15 @@ class ChartingState extends MusicBeatState
 		function getY(i:Int = 0)
 			return tab.bg.y + 8 + (spacingH * i);
 
+		tab.add(createText(getX(), getY(0) + 3, "Test:"));
+
 		var test:ChooserWindow = new ChooserWindow(getX("center", 440), getY(1), this);
 		tab.add(test);
+
+		var filter:PsychUIInputText;
+		filter = new PsychUIInputText(getX("margin_first"), getY(0), 342, "", 14);
+		filter.onChange.add((old, cur, input) -> test.filter = cur);
+		tab.add(filter);
 
 		return tab;
 	}

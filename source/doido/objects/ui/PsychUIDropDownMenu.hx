@@ -5,6 +5,7 @@ import flixel.FlxSprite;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import doido.objects.ui.QuickButton.AnimatedButton;
+import doido.utils.EditorUtil;
 
 /*
  *
@@ -58,7 +59,7 @@ class PsychUIDropDownMenu extends PsychUIInputText
 		{
 			if (old != cur)
 			{
-				_curFilter = this.list.filter(function(str:String) return str.startsWith(cur));
+				_curFilter = EditorUtil.doidoSearch(list, cur);
 				showDropDown(true, 0, _curFilter);
 			}
 		});
