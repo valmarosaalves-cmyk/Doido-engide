@@ -45,6 +45,9 @@ class ChartingState extends MusicBeatState
 	public static var GRID_SIZE:Int = 40;
 	public static var GRID_LANES:Int = 8;
 
+	public static var GRID_SNAP:Int = 16;
+	public static var GRID_ZOOM:Float = 1.0;
+
 	public static var noFunAllowed:Bool = false; // reduced animations
 
 	public var audio:AudioHandler;
@@ -693,8 +696,9 @@ class ChartingState extends MusicBeatState
 					if (!FlxG.keys.pressed.CONTROL)
 						selectedNotes = [];
 
-					var startY:Float = Math.floor((selectSquare.y - grid.gridY) / GRID_SIZE);
-					var endY:Float = startY + Math.floor(selectSquare.height / GRID_SIZE);
+					var zoomedGrid:Float = GRID_SIZE * GRID_ZOOM;
+					var startY:Float = Math.floor((selectSquare.y - grid.gridY) / zoomedGrid);
+					var endY:Float = startY + Math.floor(selectSquare.height / zoomedGrid);
 					var startX:Float = Math.floor((selectSquare.x - grid.gridX) / GRID_SIZE);
 					var endX:Float = startX + Math.floor(selectSquare.width / GRID_SIZE);
 
@@ -719,11 +723,20 @@ class ChartingState extends MusicBeatState
 					&& FlxG.mouse.y > grid.gridY
 					&& FlxG.mouse.y < grid.gridY + GRID_SIZE * grid.gridLength)
 				{
-					var mouseStep:Float = getMouseStep();
 					var mouseLane:Int = getMouseLane();
+					var zoomSnap:Float = (GRID_SNAP * GRID_ZOOM);
+					var realSnap:Float = (zoomSnap / 16);
+					var sizeTimed:Float = (GRID_SIZE / realSnap) * GRID_ZOOM;
 
 					hoverSquare.visible = true;
-					hoverSquare.setPosition(grid.gridX + mouseLane * GRID_SIZE, grid.gridY + mouseStep * GRID_SIZE);
+					hoverSquare.setPosition(
+						grid.gridX + mouseLane * GRID_SIZE,
+						grid.gridY + Math.floor((FlxG.mouse.y - grid.gridY) / sizeTimed) * sizeTimed
+					);
+					if(GRID_SNAP == 0)
+						hoverSquare.y = FlxG.mouse.y;
+
+					var mouseStep:Float = (hoverSquare.y - grid.gridY) / GRID_SIZE / GRID_ZOOM;
 
 					if (FlxG.mouse.justPressedRight)
 						selectedNotes = [];
@@ -884,7 +897,7 @@ class ChartingState extends MusicBeatState
 			{
 				playingSong = false;
 				stopTweenSongPos();
-				Conductor.songPos += -FlxG.mouse.wheel * 10000 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1);
+				Conductor.songPos += -FlxG.mouse.wheel * 10000 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1) / GRID_ZOOM;
 			}
 
 			if (FlxG.keys.pressed.W || FlxG.keys.pressed.S)
@@ -892,7 +905,7 @@ class ChartingState extends MusicBeatState
 				playingSong = false;
 				stopTweenSongPos();
 				var dir:Int = (FlxG.keys.pressed.S ? 1 : 0) - (FlxG.keys.pressed.W ? 1 : 0);
-				Conductor.songPos += dir * 1000 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1);
+				Conductor.songPos += dir * 1000 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1) / GRID_ZOOM;
 			}
 
 			if (FlxG.keys.justPressed.A || FlxG.keys.justPressed.D)
@@ -967,7 +980,7 @@ class ChartingState extends MusicBeatState
 				Conductor.songPos += (FlxG.mouse.getWorldPosition().y - scrollAutoY) * 10 * elapsed * (FlxG.keys.pressed.SHIFT ? 4 : 1);
 		}
 
-		grid.gridY = timeBar.y + (timeBar.height / 2) - (curStepFloat * GRID_SIZE);
+		grid.gridY = timeBar.y + (timeBar.height / 2) - (curStepFloat * GRID_SIZE * GRID_ZOOM);
 
 		super.update(elapsed);
 		EditorUtil.setCursor(curCursor);
@@ -1001,15 +1014,6 @@ class ChartingState extends MusicBeatState
 			selectedNotes.push(note);
 	}
 
-	// snapping goes here
-	public function getMouseStep():Float
-	{
-		var mouseStep:Float = (FlxG.mouse.y - grid.gridY) / GRID_SIZE;
-		if (!FlxG.keys.pressed.ALT)
-			mouseStep = Math.floor(mouseStep);
-		return mouseStep;
-	}
-
 	public function getMouseLane():Int
 	{
 		return Math.floor((FlxG.mouse.x - grid.gridX) / GRID_SIZE);
@@ -1031,8 +1035,10 @@ class ChartingState extends MusicBeatState
 
 	public function changeSection(dir:Int)
 	{
+		var sectionLength:Int = 16;
+
 		dir *= (FlxG.keys.pressed.SHIFT ? 4 : 1);
-		tweenSongPos(getSectionStart(curStepFloat + 1 + (16 * dir)));
+		tweenSongPos(getSectionStart(curStepFloat + 1 + (sectionLength * dir)));
 	}
 
 	public function resetSection()
@@ -1125,8 +1131,8 @@ class ChartingState extends MusicBeatState
 
 		for (noteData in CHART.notes)
 		{
-			var noteY:Float = grid.gridY + (noteData.stepTime * GRID_SIZE);
-			var noteHeight:Float = GRID_SIZE * (noteData.length + 1);
+			var noteY:Float = grid.gridY + (noteData.stepTime * GRID_SIZE * GRID_ZOOM);
+			var noteHeight:Float = GRID_SIZE + (GRID_SIZE * GRID_ZOOM * (noteData.length + 1));
 			if (noteY < -noteHeight)
 				continue;
 			if (noteY > FlxG.height)
@@ -1160,10 +1166,10 @@ class ChartingState extends MusicBeatState
 				hold.isHold = true;
 				hold.reloadSprite();
 
-				hold.setGraphicSize(GRID_SIZE * 0.25, GRID_SIZE * (noteData.length + 0.5));
+				hold.setGraphicSize(GRID_SIZE * 0.25, GRID_SIZE * GRID_ZOOM * (noteData.length + 1));
 				hold.updateHitbox();
 
-				hold.setPosition(note.x + (GRID_SIZE - hold.width) / 2, note.y + (GRID_SIZE / 2));
+				hold.setPosition(note.x + (GRID_SIZE - hold.width) / 2, note.y);
 				hold.alpha = note.alpha;
 				hold.shader = note.shader;
 
@@ -1261,7 +1267,7 @@ class ChartingGrid extends FlxSprite
 		var maxGrid:Int = 0;
 
 		border.draw();
-		gridLength = Math.ceil(Conductor.getStepAtTime(length));
+		gridLength = Math.ceil(Conductor.getStepAtTime(length) * ChartingState.GRID_ZOOM);
 		for (_y in 0...gridLength)
 		{
 			var gridY:Float = gridY + (GRID_SIZE * _y);
@@ -1290,35 +1296,36 @@ class ChartingGrid extends FlxSprite
 
 		for (_y in minGrid...maxGrid)
 		{
+			var zoomedY:Float = (_y / ChartingState.GRID_ZOOM);
 			var gridY:Float = gridY + (GRID_SIZE * _y);
 			// beat lines and section numbers
-			if (_y % 4 == 0)
+			if (zoomedY % 4 == 0)
 			{
-				beatLine.color = (_y % 16 == 0) ? 0xFF1C1A24 : 0xFFA5B1E4;
-				beatLine.scale.y = (_y % 16 == 0) ? 8 : 4;
+				beatLine.color = (zoomedY % 16 == 0) ? 0xFF1C1A24 : 0xFFA5B1E4;
+				beatLine.scale.y = (zoomedY % 16 == 0) ? 8 : 4;
 				beatLine.updateHitbox();
-
+				
 				beatLine.y = gridY - (beatLine.height / 2);
 				beatLine.draw();
+			}
 
-				// section numbers
-				if (_y % 16 == 0)
-				{
-					sectText.text = '${Math.floor(_y / 16)}'.lpad("0", 2);
+			// section numbers
+			if (zoomedY % 16 == 0)
+			{
+				sectText.text = '${Math.floor(zoomedY / 16)}'.lpad("0", 2);
 
-					sectBG.scale.set(sectText.width + 12, sectText.height + 12);
-					sectBG.updateHitbox();
+				sectBG.scale.set(sectText.width + 12, sectText.height + 12);
+				sectBG.updateHitbox();
 
-					sectCap.scale.y = (sectBG.height / sectCap.frameHeight);
-					sectCap.updateHitbox();
+				sectCap.scale.y = (sectBG.height / sectCap.frameHeight);
+				sectCap.updateHitbox();
 
-					sectBG.setPosition(border.x + border.width, gridY - (sectBG.height / 2));
-					sectCap.setPosition(sectBG.x + sectBG.width - (sectCap.width / 2), sectBG.y);
-					sectText.setPosition(sectBG.x + (12 / 2), sectBG.y + (12 / 2));
-					sectCap.draw();
-					sectBG.draw();
-					sectText.draw();
-				}
+				sectBG.setPosition(border.x + border.width, gridY - (sectBG.height / 2));
+				sectCap.setPosition(sectBG.x + sectBG.width - (sectCap.width / 2), sectBG.y);
+				sectText.setPosition(sectBG.x + (12 / 2), sectBG.y + (12 / 2));
+				sectCap.draw();
+				sectBG.draw();
+				sectText.draw();
 			}
 		}
 		midLine.draw();
@@ -1332,7 +1339,7 @@ class GridWindow extends BaseWindow
 	var snapTxt:FlxBitmapText;
 
 	var songName:PsychUIInputText;
-	var stepper:PsychUINumericStepper;
+	var zoomStepper:PsychUINumericStepper;
 	var snapDrowUp:PsychUIDropDownMenu;
 
 	public function new(chartState:ChartingState)
@@ -1357,9 +1364,11 @@ class GridWindow extends BaseWindow
 		zoomTxt.updateHitbox();
 		add(zoomTxt);
 
-		stepper = new PsychUINumericStepper(bg.x + 82, windowTitle.y + 30, 1, 1, -1, 4, 0);
-		stepper.onValueChange = () -> Logs.print(stepper.value);
-		add(stepper);
+		zoomStepper = new PsychUINumericStepper(bg.x + 82, windowTitle.y + 30, 0.25, ChartingState.GRID_ZOOM, 0.25, 4, 2, 100, true);
+		zoomStepper.onValueChange = () -> {
+			ChartingState.GRID_ZOOM = zoomStepper.value;
+		};
+		add(zoomStepper);
 
 		snapTxt = new FlxBitmapText(bg.x + 6, zoomTxt.y + 32, Assets.bitmapFont("phantommuff"));
 		snapTxt.alignment = LEFT;
@@ -1370,14 +1379,17 @@ class GridWindow extends BaseWindow
 		add(snapTxt);
 
 		var snaps:Array<String> = [
-			"0th", "4th", "8th", "12th", "16th", "20th", "24th", "32th", "48th", "64th", "96th", "192th"
+			"NONE", "4th", "8th", "12th", "16th", "20th", "24th", "32th", "48th", "64th", "96th", "192th"
 		];
 		snaps.reverse();
-		snapDrowUp = new PsychUIDropDownMenu(bg.x + 82, zoomTxt.y + 30, snaps, (i, s) -> {}, 100, true);
-		snapDrowUp.selectedLabel = "16th";
-		add(snapDrowUp);
+		snapDrowUp = new PsychUIDropDownMenu(bg.x + 82, zoomTxt.y + 30, snaps, (i, s) -> {
+			
+			if (s == "NONE") s = "0th";
+			ChartingState.GRID_SNAP = Std.parseInt(s.replace("th", ""));
 
-		/* */
+		}, 100, true);
+		snapDrowUp.selectedLabel = (ChartingState.GRID_SNAP == 0 ? "NONE" : '${ChartingState.GRID_SNAP}th');
+		add(snapDrowUp);
 	}
 }
 
