@@ -7,6 +7,36 @@ import flixel.math.FlxAngle;
 import flixel.util.FlxColor;
 import flixel.util.FlxSort;
 
+typedef SkinData =
+{
+	var ?isQuant:Bool;
+	var ?scale:Float;
+	var ?hasSplash:Bool;
+	var ?hasCover:Bool;
+	var notes:Array<NoteSkin>;
+	var strums:Array<StrumSkin>;
+	//var splashes:Array<SplashSkin>;
+	//var covers:Array<CoverSkin>;
+}
+
+typedef NoteSkin =
+{
+	var ?id:Int;
+	var anim:String;
+	var ?noteAnim:String;
+	var ?holdAnim:String;
+	var ?holdEndAnim:String;
+}
+
+typedef StrumSkin =
+{
+	var ?id:Int;
+	var anim:String;
+	var ?staticAnim:String;
+	var ?pressedAnim:String;
+	var ?confirmAnim:String;
+}
+
 class NoteUtil
 {
 	public static var directions:Array<String> = [];

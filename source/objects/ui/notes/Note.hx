@@ -3,6 +3,7 @@ package objects.ui.notes;
 import flixel.util.FlxColor;
 import shaders.RGBPalette;
 import flixel.FlxSprite;
+import doido.utils.NoteUtil.SkinData;
 
 class Note extends FlxSprite
 {
