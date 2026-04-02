@@ -927,6 +927,11 @@ class DebugOptions extends MusicBeatState
 				get: () -> Save.data.lowQuality,
 				set: (b:Bool) -> Save.data.lowQuality = b
 			},
+			{
+				name: "Quant Notes",
+				get: () -> Save.data.quantNotes,
+				set: (b:Bool) -> Save.data.quantNotes = b
+			},
 			#if desktop
 			{
 				name: "FPS Counter",
@@ -977,12 +982,17 @@ class DebugOptions extends MusicBeatState
 		title.y = text.y - title.height;
 		add(title);
 	}
-
+	
 	function drawText()
 	{
 		text.text = "";
 		for (i in 0...options.length)
-			text.text += '${(i == cur ? "> " : "")}${options[i].name} ${options[i].get()}\n';
+		{
+			if (i == cur)
+				text.text += '\n  ${options[i].name} < ${options[i].get()} >\n\n';
+			else
+				text.text += '${options[i].name} - ${options[i].get()}\n';
+		}
 	}
 
 	var holdTimer:Float = 0;

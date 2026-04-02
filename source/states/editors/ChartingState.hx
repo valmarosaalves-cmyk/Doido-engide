@@ -40,8 +40,9 @@ import flixel.graphics.frames.FlxFrame;
 
 class ChartingNote extends Note
 {
-	public function new()
-	{
+	public var selected:Bool = false;
+
+	public function new() {
 		super();
 	}
 }
@@ -67,7 +68,7 @@ class ChartingState extends MusicBeatState
 	public var grid:ChartingGrid;
 	public var timeBar:FlxSprite;
 	public var renderNotes:FlxTypedGroup<ChartingNote>;
-	public var selectedShader:MultiplyShader;
+	public var selectedColor:FlxColor = FlxColor.BLACK;
 
 	// editor stuff
 	public var selectedNotes:Array<NoteData> = [];
@@ -126,9 +127,6 @@ class ChartingState extends MusicBeatState
 
 		renderNotes = new FlxTypedGroup<ChartingNote>();
 		add(renderNotes);
-
-		selectedShader = new MultiplyShader();
-		selectedShader.multiplyColor = 0xFF0078D4;
 
 		timeBar = new FlxSprite(grid.gridX).makeColor(GRID_SIZE * GRID_LANES, 4, 0xFFFF0000);
 		timeBar.screenCenter(Y);
@@ -663,7 +661,15 @@ class ChartingState extends MusicBeatState
 
 			if (selectedNotes.length > 0)
 			{
-				selectedShader.multiplyOpacity = 0.8 + Math.sin(FlxG.game.ticks / 100) * 0.4;
+				var selColor:Float = 0.8 + Math.sin(FlxG.game.ticks / 100) * 2;
+				selectedColor.redFloat = selColor;
+				selectedColor.greenFloat = selColor;
+				selectedColor.blueFloat = selColor;
+				for(note in renderNotes.members)
+				{
+					if (note.selected)
+						note.color = selectedColor;
+				}
 
 				if (FlxG.keys.justPressed.Q || FlxG.keys.justPressed.E)
 				{
@@ -1159,10 +1165,11 @@ class ChartingState extends MusicBeatState
 			note.setGraphicSize(GRID_SIZE, GRID_SIZE);
 			note.updateHitbox();
 
-			if (selectedNotes.contains(noteData))
-				note.shader = selectedShader;
+			note.selected = false;
+			if (!selectedNotes.contains(noteData))
+				note.color = 0xFFFFFFFF;
 			else
-				note.shader = null;
+				note.selected = true;
 
 			if (noteData.stepTime < curStepFloat)
 				note.alpha = 0.4;

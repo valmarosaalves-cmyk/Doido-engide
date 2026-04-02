@@ -4,8 +4,8 @@ import doido.song.chart.SongHandler.EventData;
 import doido.song.chart.SongHandler.NoteData;
 import flixel.FlxSprite;
 import flixel.math.FlxAngle;
+import flixel.util.FlxColor;
 import flixel.util.FlxSort;
-import objects.ui.notes.Note;
 
 class NoteUtil
 {
@@ -87,6 +87,56 @@ class NoteUtil
 
 	public static function stringToInt(direction:String):Int
 		return directions.indexOf(direction);
+
+	public static final quantArray:Array<Int> = [4, 8, 12, 16, 20, 24, 32, 48, 64, 192];
+	public static function getQuantColors(assetModifier:String):Array<Array<FlxColor>>
+	{
+		switch(assetModifier)
+		{
+			default:
+				return [
+					[0xFFff3535, 0xFFFFFFFF, 0xFF651038], // red
+					[0xFF536bef, 0xFFFFFFFF, 0xFF0f1c54], // blue
+					[0xFFc24b99, 0xFFFFFFFF, 0xFF3c1f56], // magenta
+					[0xFF00e550, 0xFFFFFFFF, 0xFF0a4447], // lime
+					[0xFF606789, 0xFFFFFFFF, 0xFF232a4c], // gray
+					[0xFFff7ad7, 0xFFFFFFFF, 0xFF4d0954], // pink
+					[0xFFffe83d, 0xFFFFFFFF, 0xFF514100], // yellow
+					[0xFFae36e6, 0xFFFFFFFF, 0xFF19246a], // purple
+					[0xFF0fe7ff, 0xFFFFFFFF, 0xFF153e72], // cyan
+					[0xFF606789, 0xFFFFFFFF, 0xFF232a4c], // light gray
+				];
+		}
+	}
+
+	public static function calcQuant(data:NoteData)
+	{
+		var stepInMeasure:Float = data.stepTime % 16;
+
+		var bestError:Float = 9999;
+		var bestIndex:Int = 0;
+
+		for (i in 0...NoteUtil.quantArray.length)
+		{
+			var division:Int = NoteUtil.quantArray[i];
+
+			var spacing:Float = 16 / division;
+			var snapped:Float = Math.round(stepInMeasure / spacing) * spacing;
+			var error:Float = Math.abs(stepInMeasure - snapped);
+
+			if (error < bestError)
+			{
+				bestError = error;
+				bestIndex = i;
+			}
+		}
+
+		// tolerance
+		if (bestError <= 0.05)
+			return bestIndex;
+		else
+			return 0;
+	}
 
 	inline public static function noteWidth(wide:Bool)
 		return (160 * 0.7) + (wide ? 70 : 0); // 112

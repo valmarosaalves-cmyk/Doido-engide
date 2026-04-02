@@ -1,7 +1,8 @@
 package objects.ui.notes;
 
-import objects.ui.notes.Note;
 import doido.song.Timings;
+import objects.ui.notes.Note;
+import shaders.RGBPalette;
 
 class Splash extends BaseSplash
 {
@@ -11,9 +12,16 @@ class Splash extends BaseSplash
 		switch ("la la la")
 		{
 			default:
-				this.loadSparrow("notes/base/splashes");
-				animation.addByPrefix("splash1", '$direction splash 1', 24, false);
-				animation.addByPrefix("splash2", '$direction splash 2', 24, false);
+				if (canQuant) {
+					this.loadSparrow("notes/base/quant/splashes");
+					direction = "";
+				} else {
+					this.loadSparrow("notes/base/splashes");
+					direction += " ";
+				}
+				for(i in 1...3) {
+					animation.addByPrefix('splash$i', '${direction}splash $i', 24, false);
+				}
 				splashScale = 0.8;
 				startAlpha = 0.8;
 		}
@@ -43,16 +51,28 @@ class Cover extends BaseSplash
 		switch ("la la la")
 		{
 			default:
-				this.loadSparrow("notes/base/covers");
+				
 				splashScale = 0.7;
 
-				direction = direction.toUpperCase();
+				if(canQuant) {
+					this.loadSparrow("notes/base/quant/covers");
+					direction = "";
+				} else {
+					this.loadSparrow("notes/base/covers");
+					direction = direction.toUpperCase();
+				}
+				
 				animation.addByPrefix("start", 'holdCoverStart$direction', 24, false);
-				animation.addByPrefix("loop", 'holdCover$direction', 24, true);
+				animation.addByPrefix("loop", 'holdCover${direction}0', 24, true);
 				animation.addByPrefix("splash", 'holdCoverEnd$direction', 24, false);
 
-				for (anim in ["start", "loop", "splash"])
-					addOffset(anim, {x: 6, y: -32});
+				if (canQuant)
+					addOffset("splash", {x: -6, y: -16});
+				else
+				{
+					for (anim in ["start", "loop", "splash"])
+						addOffset(anim, {x: 6, y: -32});
+				}
 		}
 
 		alpha = startAlpha;
@@ -101,9 +121,17 @@ class BaseSplash extends DoidoSprite
 	public var splashed:Bool = false;
 	public var note:Note;
 
+	public var canQuant:Bool = false;
+	public var quantShader:RGBPalette;
+
 	public function new()
 	{
 		super();
+		if (Save.data.quantNotes)
+		{
+			quantShader = new RGBPalette();
+			canQuant = true;
+		}
 	}
 
 	public function loadData(note:Note)
@@ -111,6 +139,21 @@ class BaseSplash extends DoidoSprite
 		visible = true;
 		splashed = false;
 		this.note = note;
+
+		if (!canQuant || note == null)
+			shader = null;
+		else
+		{
+			if (shader != quantShader)
+				shader = quantShader;
+
+			var colorArray = note.quantColors[note.noteQuant];
+			quantShader.setColor(
+				colorArray[0],
+				colorArray[1],
+				colorArray[2],	
+			);
+		}
 	}
 
 	public function reloadSplash() {}

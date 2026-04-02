@@ -11,6 +11,7 @@ class SaveVariables
 	public var downscroll:Bool = false;
 	public var middlescroll:Bool = false;
 	// visuals
+	public var quantNotes:Bool = false;
 	public var fpsCounter:Bool = #if desktop true #else false #end;
 	// graphics
 	public var fps:Int = 60;

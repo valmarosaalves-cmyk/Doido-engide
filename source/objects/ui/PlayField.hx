@@ -333,7 +333,7 @@ class PlayField extends FlxGroup
 			{
 				note.gotHit = true;
 				note.visible = false;
-				strum.playAnim("confirm");
+				strum.playConfirm(note);
 			}
 
 			if (diff <= Timings.getTiming("sick").diff)
@@ -344,7 +344,7 @@ class PlayField extends FlxGroup
 		}
 		else
 		{
-			strum.playAnim("confirm");
+			strum.playConfirm(note);
 			note.gotHit = true;
 			// turns transparent if you dont hit sick
 			if (note.holdHitPercent < Timings.getTiming("sick").hold)

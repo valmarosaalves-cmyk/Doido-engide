@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Created with Funkin Packer v0.1.3 https://neeeoo.github.io/funkin-packer/
+-->
+<TextureAtlas imagePath="covers.png" width="589" height="517">
+	<SubTexture name="holdCoverStart0001" x="468" y="100" width="94" height="92" frameX="-0" frameY="-1" frameWidth="98" frameHeight="98"/>
+	<SubTexture name="holdCover0001" x="1" y="394" width="139" height="109" frameX="-9" frameY="-6" frameWidth="161" frameHeight="125"/>
+	<SubTexture name="holdCover0002" x="468" y="1" width="120" height="96" frameX="-16" frameY="-17" frameWidth="161" frameHeight="125"/>
+	<SubTexture name="holdCover0003" x="405" y="369" width="93" height="79" frameX="-31" frameY="-20" frameWidth="161" frameHeight="125"/>
+	<SubTexture name="holdCover0004" x="143" y="433" width="78" height="36" frameX="-38" frameY="-46" frameWidth="161" frameHeight="125"/>
+	<SubTexture name="holdCoverEnd0001" x="143" y="394" width="78" height="36" frameX="-79" frameY="-79" frameWidth="256" frameHeight="230"/>
+	<SubTexture name="holdCoverEnd0002" x="143" y="394" width="78" height="36" frameX="-79" frameY="-79" frameWidth="256" frameHeight="230"/>
+	<SubTexture name="holdCoverEnd0003" x="234" y="369" width="168" height="147" frameX="-29" frameY="-4" frameWidth="256" frameHeight="230"/>
+	<SubTexture name="holdCoverEnd0004" x="250" y="1" width="215" height="185" frameX="-4" frameY="-1" frameWidth="256" frameHeight="230"/>
+	<SubTexture name="holdCoverEnd0005" x="250" y="1" width="215" height="185" frameX="-4" frameY="-1" frameWidth="256" frameHeight="230"/>
+	<SubTexture name="holdCoverEnd0006" x="1" y="198" width="230" height="193" frameX="-1" frameY="-7" frameWidth="256" frameHeight="230"/>
+	<SubTexture name="holdCoverEnd0007" x="1" y="1" width="246" height="194" frameX="-1" frameY="-23" frameWidth="256" frameHeight="230"/>
+	<SubTexture name="holdCoverEnd0008" x="234" y="198" width="242" height="168" frameX="-10" frameY="-58" frameWidth="256" frameHeight="230"/>
+</TextureAtlas>

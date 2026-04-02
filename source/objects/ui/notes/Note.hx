@@ -1,5 +1,7 @@
 package objects.ui.notes;
 
+import flixel.util.FlxColor;
+import shaders.RGBPalette;
 import flixel.FlxSprite;
 
 class Note extends FlxSprite
@@ -27,9 +29,18 @@ class Note extends FlxSprite
 	public var noteSpeed:Null<Float> = null;
 	public var noteSpeedMult:Float = 1.0;
 
+	//oop
+	public var canQuant:Bool = false;
+	public var quantShader:RGBPalette;
+
 	public function new()
 	{
 		super();
+		if (Save.data.quantNotes)
+		{
+			quantShader = new RGBPalette();
+			canQuant = true;
+		}
 	}
 
 	public function loadData(data:NoteData)
@@ -73,9 +84,16 @@ class Note extends FlxSprite
 		switch ("i told you ill do the skins later")
 		{
 			default:
-				var postfix:String = (isHold ? " hold" + (isHoldEnd ? " end" : "") : "");
+				if (canQuant) {
+					this.loadSparrow("notes/base/quant/notes");
+					if (shader != quantShader)
+						shader = quantShader;
+				} else {
+					this.loadSparrow("notes/base/notes");
+					shader = null;
+				}
 
-				this.loadSparrow("notes/base/notes");
+				var postfix:String = (isHold ? " hold" + (isHoldEnd ? " end" : "") : "");
 				animation.addByPrefix(direction, 'note ${direction}${postfix}0', 0, false);
 				noteScale = 0.7;
 		}
@@ -83,6 +101,28 @@ class Note extends FlxSprite
 		scale.set(noteScale, noteScale);
 		updateHitbox();
 		animation.play(direction);
+
+		if (canQuant)
+		{
+			getQuantColors("base");
+			noteQuant = NoteUtil.calcQuant(data);
+			
+			quantShader.setColor(
+				quantColors[noteQuant][0],
+				quantColors[noteQuant][1],
+				quantColors[noteQuant][2],
+			);
+		}
+	}
+
+	public var noteQuant:Int = 0;
+	public var quantModifier:String = "";
+	public var quantColors:Array<Array<FlxColor>> = [];
+	public function getQuantColors(quantModifier:String)
+	{
+		if (this.quantModifier == quantModifier) return;
+		this.quantModifier = quantModifier;
+		quantColors = NoteUtil.getQuantColors(quantModifier);
 	}
 
 	override function update(elapsed:Float)
