@@ -1,18 +1,9 @@
 {
-    "scale": 0.7,
-    "isQuant": false,
-    "hasSplash": true,
-    "hasCover": true,
-    "notes": [
-        {
-            "id": 0,
-            "anim": "note %direction%state"
-        }
-    ],
-    "strums": [
-        {
-            "id": 0,
-            "anim": "strum %direction%state"
-        }
-    ]
+    "notes": {
+        "anim": "note %direction%state",
+
+        "anims": [
+            
+        ]
+    }
 }
