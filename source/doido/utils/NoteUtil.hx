@@ -14,15 +14,15 @@ typedef SkinData =
 	var ?hasSplash:Bool;
 	var ?hasCover:Bool;
 	var notes:Array<NoteSkin>;
-	var strums:Array<StrumSkin>;
-	//var splashes:Array<SplashSkin>;
-	//var covers:Array<CoverSkin>;
+	var ?strums:Array<StrumSkin>;
+	// var splashes:Array<SplashSkin>;
+	// var covers:Array<CoverSkin>;
 }
 
 typedef NoteSkin =
 {
 	var ?id:Int;
-	var anim:String;
+	var ?anim:String;
 	var ?noteAnim:String;
 	var ?holdAnim:String;
 	var ?holdEndAnim:String;
@@ -31,7 +31,7 @@ typedef NoteSkin =
 typedef StrumSkin =
 {
 	var ?id:Int;
-	var anim:String;
+	var ?anim:String;
 	var ?staticAnim:String;
 	var ?pressedAnim:String;
 	var ?confirmAnim:String;
@@ -119,9 +119,10 @@ class NoteUtil
 		return directions.indexOf(direction);
 
 	public static final quantArray:Array<Int> = [4, 8, 12, 16, 20, 24, 32, 48, 64, 192];
+
 	public static function getQuantColors(assetModifier:String):Array<Array<FlxColor>>
 	{
-		switch(assetModifier)
+		switch (assetModifier)
 		{
 			default:
 				return [
@@ -176,7 +177,7 @@ class NoteUtil
 		var radAngle = FlxAngle.asRadians(angle);
 		var cosAngle = Math.cos(radAngle);
 		var sinAngle = Math.sin(radAngle);
-		
+
 		note.x = strum.x + (cosAngle * offsetX) + (sinAngle * offsetY);
 		note.y = strum.y + (cosAngle * offsetY) + (sinAngle * offsetX);
 	}
@@ -186,4 +187,59 @@ class NoteUtil
 
 	public static function sortEvents(Obj1:EventData, Obj2:EventData):Int
 		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.stepTime, Obj2.stepTime);
+
+	public static function loadSkin(skin:String):SkinData
+	{
+		var newSkin:SkinData = {notes: []};
+		var tempSkin:SkinData;
+		try
+		{
+			tempSkin = cast(Assets.json('data/notes/$skin'));
+		}
+		catch (e)
+		{
+			Logs.print('SKIN $skin LOAD ERROR: $e', ERROR);
+			tempSkin = null;
+		}
+
+		newSkin.isQuant = tempSkin.isQuant ?? false;
+		newSkin.scale = tempSkin.scale ?? 0.7;
+		newSkin.hasSplash = tempSkin.hasSplash ?? true;
+		newSkin.hasCover = tempSkin.hasCover ?? true;
+
+		var anims:Array<NoteSkin> = [for (i in 0...directions.length) tempSkin.notes[0]];
+
+		// iterate starting at index 1
+		for (temp in tempSkin.notes.slice(1))
+		{
+			if ((temp.id ?? 0) != 0)
+				anims[temp.id] = temp;
+		}
+
+		for (i in 0...anims.length)
+		{
+			var anim = anims[i];
+			anim.id = i;
+
+			var name = anim.anim ?? "note %direction%state";
+			anim.noteAnim = parseAnimation(anim.noteAnim ?? name, i, "");
+			anim.holdAnim = parseAnimation(anim.noteAnim ?? name, i, " hold");
+			anim.holdEndAnim = parseAnimation(anim.noteAnim ?? name, i, " hold end");
+		}
+
+		trace(anims);
+
+		return newSkin;
+	}
+
+	static function parseAnimation(str:String, id:Int, state:String):String
+	{
+		var newstr = str;
+		var vals = ["%id" => Std.string(id), "%direction" => directions[id], "%state" => state];
+
+		for (key => value in vals)
+			newstr = newstr.replace(key, value);
+
+		return newstr;
+	}
 }

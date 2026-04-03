@@ -24,6 +24,8 @@ class PlayField extends FlxGroup
 	public var bfStrumline:Strumline;
 	public var touchInput:TouchInput;
 
+	var noteskins:Map<String, SkinData> = [];
+
 	public function new(spawnNotes:Array<NoteData>, speed:Float, downscroll:Bool, middlescroll:Bool)
 	{
 		super();
@@ -46,6 +48,11 @@ class PlayField extends FlxGroup
 		{
 			strumline.scrollSpeed = speed;
 			add(strumline);
+		}
+
+		for (noteskin in ["base"])
+		{
+			noteskins.set(noteskin, NoteUtil.loadSkin(noteskin));
 		}
 
 		touchInput = new TouchInput(bfStrumline);

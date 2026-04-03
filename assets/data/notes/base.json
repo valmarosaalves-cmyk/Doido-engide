@@ -6,13 +6,13 @@
     "notes": [
         {
             "id": 0,
-            "anim": "note %direction %state"
+            "anim": "note %direction%state"
         }
     ],
     "strums": [
         {
             "id": 0,
-            "anim": "strum %direction %state"
+            "anim": "strum %direction%state"
         }
     ]
 }
