@@ -48,8 +48,7 @@ class DoidoSprite extends FlxAnimate
 		super(x, y);
 	};
 
-	public function addOffset(animName:String, offset:DoidoPoint)
-	{
+	public function addOffset(animName:String, offset:DoidoPoint) {
 		animOffsets.set(animName, offset);
 	}
 
@@ -66,6 +65,15 @@ class DoidoSprite extends FlxAnimate
 			return;
 		animOffsets.get(animName).x += x;
 		animOffsets.get(animName).y += y;
+	}
+
+	public function removeOffset(animName:String) {
+		if (animOffsets.exists(animName))
+			animOffsets.remove(animName);
+	}
+
+	public function clearOffsets() {
+		animOffsets = [];
 	}
 
 	public function addAnim(animData:Animation)

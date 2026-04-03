@@ -8,6 +8,7 @@ class Splash extends BaseSplash
 {
 	override public function reloadSplash()
 	{
+		clearOffsets();
 		var direction:String = NoteUtil.intToString(note.data.lane);
 		switch ("la la la")
 		{
@@ -26,9 +27,7 @@ class Splash extends BaseSplash
 				startAlpha = 0.8;
 		}
 
-		alpha = startAlpha;
-		scale.set(splashScale, splashScale);
-		updateHitbox();
+		super.reloadSplash();
 		playRandom();
 	}
 
@@ -47,6 +46,7 @@ class Cover extends BaseSplash
 
 	override public function reloadSplash()
 	{
+		clearOffsets();
 		var direction:String = NoteUtil.intToString(note.data.lane);
 		switch ("la la la")
 		{
@@ -75,9 +75,7 @@ class Cover extends BaseSplash
 				}
 		}
 
-		alpha = startAlpha;
-		scale.set(splashScale, splashScale);
-		updateHitbox();
+		super.reloadSplash();
 		playAnim("start");
 	}
 
@@ -156,7 +154,12 @@ class BaseSplash extends DoidoSprite
 		}
 	}
 
-	public function reloadSplash() {}
+	public function reloadSplash()
+	{
+		alpha = startAlpha;
+		scale.set(splashScale, splashScale);
+		updateHitbox();
+	}
 
 	override function update(elapsed:Float)
 	{
