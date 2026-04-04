@@ -13,7 +13,6 @@ import flixel.group.FlxGroup;
 import flixel.math.FlxPoint;
 import objects.ui.notes.*;
 import doido.mobile.TouchInput;
-import doido.utils.Skin;
 
 class PlayField extends FlxGroup
 {
@@ -24,8 +23,6 @@ class PlayField extends FlxGroup
 	public var dadStrumline:Strumline;
 	public var bfStrumline:Strumline;
 	public var touchInput:TouchInput;
-
-	var noteskins:Map<String, Skin> = [];
 
 	public function new(spawnNotes:Array<NoteData>, speed:Float, downscroll:Bool, middlescroll:Bool)
 	{
@@ -49,11 +46,6 @@ class PlayField extends FlxGroup
 		{
 			strumline.scrollSpeed = speed;
 			add(strumline);
-		}
-
-		for (noteskin in ["base"])
-		{
-			noteskins.set(noteskin, new Skin(noteskin));
 		}
 
 		touchInput = new TouchInput(bfStrumline);

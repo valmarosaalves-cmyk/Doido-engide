@@ -1,21 +1,20 @@
+/*
 package doido.utils;
+
+import doido.objects.DoidoSprite.Animation;
 
 typedef SkinData =
 {
-	var notes:NoteSkin;
+	var notes:SkinAnims;
+	var ?strums:SkinAnims;
+	var ?splashes:SkinAnims;
+	var ?covers:SkinAnims;
 }
 
-typedef NoteSkin =
+typedef SkinAnims =
 {
-	var ?anim:String; // generic
-	var ?anims:Array<SkinAnim>; // specific
-}
-
-typedef SkinAnim =
-{
-    var id:Int;
-	var name:String;
-	var prefix:String;
+	var ?template:String; // generic
+	var ?custom:Array<Animation>; // specific
 }
 
 class Skin
@@ -52,48 +51,74 @@ class Skin
 			return;
 		}
 
-		if (tempSkin.notes.anim != null)
-		{
-			for (i in 0...NoteUtil.directions.length)
-                for(anim in ["note", "hold", "end"])
-				    noteAnims[i].set(anim, parseAnimation(tempSkin.notes.anim, i, getState(anim)));
-		}
-
-        if(tempSkin.notes.anims != null)
-            for(anim in tempSkin.notes.anims)
-                noteAnims[anim.id].set(anim.name, parseAnimation(anim.prefix, anim.id, getState(anim.name)));
+		fillAnimMap(noteAnims, tempSkin.notes, ["note", "hold", "end"]);
+		fillAnimMap(strumAnims, tempSkin.strums, ["static", "pressed", "confirm"]);
+		fillAnimMap(splashAnims, tempSkin.splashes, ["splash"]);
+		fillAnimMap(coverAnims, tempSkin.covers, ["start", "loop", "splash"]);
 
 		trace(noteAnims);
+		trace(strumAnims);
+		trace(splashAnims);
+		trace(coverAnims);
 	}
 
-	function parseAnimation(str:String, id:Int, state:String):String
+	function fillAnimMap(target:Array<Map<String, String>>, source:SkinAnims, anims:Array<String>)
+	{
+		if (source.template != null)
+		{
+			for (i in 0...count)
+				for (anim in anims)
+					target[i].set(anim, parseAnimation(source.template, i, anim));
+		}
+
+		if (source.custom != null)
+		{
+			for (anim in source.custom)
+				if (anim.id != null)
+					target[anim.id].set(anim.name, parseAnimation(anim.prefix, anim.id, getState(anim.name)));
+		}
+	}
+
+	function parseAnimation(str:String, id:Int, name:String):String
 	{
 		var newstr = str;
 		var vals = [
 			"%id" => Std.string(id),
 			"%direction" => NoteUtil.directions[id],
-			"%state" => state,
+			"%state" => getState(name),
 			"%color" => colors[id]
 		];
 
 		for (key => value in vals)
 			newstr = newstr.replace(key, value);
 
-		return newstr;
+		return formatAnim(newstr);
 	}
 
-    function getState(name:String)
-    {
-        return switch(name) {
-            case "hold": " hold";
-            case "holdend" | "hold end" | "end": " hold end";
-            default: "";
-        }
-    }
+	function formatAnim(str:String):String
+		return str.trim() + "0";
+
+	function getState(name:String)
+	{
+		return switch (name)
+		{
+			case "hold": "hold";
+			case "holdend" | "hold end" | "end": "hold end";
+			case "note" | "loop": "";
+			case "start": "Start";
+			case "splash": "End";
+			default: name;
+		}
+	}
 
 	// note: implement support for other direction counts later
 	var colors(get, never):Array<String>;
+	var count(get, never):Int;
 
 	function get_colors():Array<String>
 		return ["purple", "blue", "green", "red"];
+
+	function get_count():Int
+		return NoteUtil.directions.length;
 }
+*/
