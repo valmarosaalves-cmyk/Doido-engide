@@ -1,5 +1,6 @@
 package doido.objects.ui;
 
+import flixel.math.FlxPoint;
 import flixel.group.FlxSpriteGroup;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
@@ -17,13 +18,14 @@ class DoidoSlider extends FlxSpriteGroup
 	public var value:Float = 0;
 	public var rangeMin:Float = 0;
 	public var rangeMax:Float = 1;
-	public var steps:Int = 2;
+	public var steps(default, set):Int = 2;
 	public var vertical:Bool = false;
 	public var center:Bool = true;
 	public var snappingStrength(default, set):Float; // 0.05 seems pretty good
 	public var disabled:Bool = false;
+	public var dotSpacing:Float = 1;
 
-	var dotSpacing:Float = 1;
+	var wid:Int = 160;
 
 	public function new(x:Float = 0, y:Float = 0, wid:Int = 160, hei:Int = 6, defValue:Float = 0, rangeMin:Float = 0, rangeMax:Float = 0, steps:Int = 2,
 			snappingStrength:Float = 0, vertical:Bool = false, center:Bool = false)
@@ -31,16 +33,37 @@ class DoidoSlider extends FlxSpriteGroup
 		super(x, y);
 		this.rangeMin = rangeMin;
 		this.rangeMax = rangeMax;
-		this.steps = steps;
 		this.vertical = vertical;
 		this.center = center;
+		this.wid = wid;
 
 		bar = new FlxSprite().makeGraphic(wid, hei, 0xFFD8DAF6);
 		add(bar);
 
+		this.steps = steps;
+
+		slider = new FlxSprite().loadImage("editors/charting/slider" + (vertical ? "-vertical" : ""));
+		slider.x = (bar.width / 2) - (slider.width / 2);
+		slider.y = (bar.height / 2) - (slider.height / 2);
+		slider.setZ(10);
+		add(slider);
+
+		value = defValue;
+		this.snappingStrength = snappingStrength;
+	}
+
+	function set_steps(i:Int)
+	{
+		steps = i;
+
 		// you cant really have less than two
 		if (steps >= 2)
 		{
+			for (dot in dots)
+				dot.destroy();
+
+			dots = [];
+
 			dotSpacing = wid / (steps - 1);
 			for (i in 0...steps)
 			{
@@ -52,13 +75,9 @@ class DoidoSlider extends FlxSpriteGroup
 			}
 		}
 
-		slider = new FlxSprite().loadImage("editors/charting/slider" + (vertical ? "-vertical" : ""));
-		slider.x = (bar.width / 2) - (slider.width / 2);
-		slider.y = (bar.height / 2) - (slider.height / 2);
-		add(slider);
+		sort(ZIndex.sort);
 
-		value = defValue;
-		this.snappingStrength = snappingStrength;
+		return steps;
 	}
 
 	override function draw()
@@ -69,11 +88,16 @@ class DoidoSlider extends FlxSpriteGroup
 
 	var scrubbing:Bool = false;
 
+	var mousePos(get, never):FlxPoint;
+
+	function get_mousePos():FlxPoint
+		return FlxG.mouse.getViewPosition(FlxG.cameras.list[FlxG.cameras.list.length - 1]);
+
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
 
-		if (FlxG.mouse.overlaps(bar) || FlxG.mouse.overlaps(slider))
+		if (bar.overlapsPoint(mousePos) || slider.overlapsPoint(mousePos))
 		{
 			// chartState.curCursor = POINTER;
 			if (FlxG.mouse.justPressed)
@@ -82,7 +106,7 @@ class DoidoSlider extends FlxSpriteGroup
 
 		if (scrubbing && !disabled)
 		{
-			value = FlxMath.bound(FlxMath.remapToRange((vertical ? FlxG.mouse.y : FlxG.mouse.x), getStart(), getEnd(), rangeMin, rangeMax), rangeMin, rangeMax);
+			value = FlxMath.bound(FlxMath.remapToRange((vertical ? mousePos.y : mousePos.x), getStart(), getEnd(), rangeMin, rangeMax), rangeMin, rangeMax);
 
 			if (steps >= 2 && snappingStrength >= 0)
 			{

@@ -411,6 +411,7 @@ class ChartingState extends MusicBeatState
 			return switch (place)
 			{
 				case "margin_first": tab.bg.x + 110;
+				case "margin_first_search": tab.bg.x + 80;
 				case "margin_right": tab.bg.x + tab.bg.width - width - 8;
 				case "center": tab.bg.x + (tab.bg.width / 2) - (width / 2);
 				default: tab.bg.x + 8;
@@ -472,9 +473,19 @@ class ChartingState extends MusicBeatState
 		tab.add(test);
 
 		var filter:PsychUIInputText;
-		filter = new PsychUIInputText(getX("margin_first"), getY(4), 342, "", 14);
+		filter = new PsychUIInputText(getX("margin_first_search"), getY(4), 372, "", 14);
 		filter.onChange.add((old, cur, input) -> test.filter = cur);
+		filter.behindText.color = 0xFFD8DAF6;
 		tab.add(filter);
+
+		var glass:FlxSprite = new FlxSprite().loadImage("editors/charting/glass");
+		glass.setGraphicSize(filter.behindText.height - 2, filter.behindText.height - 2);
+		glass.x = filter.behindText.x + 1;
+		glass.y = filter.behindText.y + 1;
+		tab.add(glass);
+
+		filter.textObj.x += glass.width + 2;
+		filter.fieldWidth -= Std.int(glass.width + 2);
 
 		tab.add(createText(getX(), getY(11), "Player:", 0xFFD8DAF6));
 		tab.add(createText(getX("center", 145), getY(11), "Opponent:", 0xFFD8DAF6));
