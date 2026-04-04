@@ -42,7 +42,8 @@ class ChartingNote extends Note
 {
 	public var selected:Bool = false;
 
-	public function new() {
+	public function new()
+	{
 		super();
 	}
 }
@@ -158,7 +159,7 @@ class ChartingState extends MusicBeatState
 
 		scrollBall = new FlxSprite(0, 0).loadImage("editors/charting/scrollBall");
 
-		//preload icons
+		// preload icons
 		for (char in characters)
 		{
 			var icon:HealthIcon = new HealthIcon();
@@ -403,47 +404,47 @@ class ChartingState extends MusicBeatState
 
 	function createSongTab():BaseWindow
 	{
-		var songTab = createBasic("Song");
+		var tab = createBasic("Song");
 
 		function getX(place:String = "margin_left", width:Float = 0)
 		{
 			return switch (place)
 			{
-				case "margin_first": songTab.bg.x + 110;
-				case "margin_right": songTab.bg.x + songTab.bg.width - width - 8;
-				case "center": songTab.bg.x + (songTab.bg.width / 2) - (width / 2);
-				default: songTab.bg.x + 8;
+				case "margin_first": tab.bg.x + 110;
+				case "margin_right": tab.bg.x + tab.bg.width - width - 8;
+				case "center": tab.bg.x + (tab.bg.width / 2) - (width / 2);
+				default: tab.bg.x + 8;
 			}
 		}
 
 		function getY(i:Int = 0)
-			return songTab.bg.y + 8 + (spacingH * i);
+			return tab.bg.y + 8 + (spacingH * i);
 
 		// chart options
-		songTab.add(createText(getX(), getY(0), "Chart:"));
-		songTab.add(createText(getX(), getY(1) + 3, "Name:", 0xFFD8DAF6));
-		songTab.add(createText(getX(), getY(2) + 3, "BPM:", 0xFFD8DAF6));
-		songTab.add(createText(getX(), getY(3) + 3, "Note Speed:", 0xFFD8DAF6));
+		// tab.add(createText(getX(), getY(0), "Chart:"));
+		tab.add(createText(getX(), getY(0) + 3, "Name:", 0xFFD8DAF6));
+		tab.add(createText(getX(), getY(1) + 3, "BPM:", 0xFFD8DAF6));
+		tab.add(createText(getX(), getY(2) + 3, "Note Speed:", 0xFFD8DAF6));
 
 		var songName:PsychUIInputText;
-		songName = new PsychUIInputText(getX("margin_first"), getY(1), 342, CHART.song, 14);
+		songName = new PsychUIInputText(getX("margin_first"), getY(0), 342, CHART.song, 14);
 		songName.onChange.add((old, cur, input) -> CHART.song = cur);
-		songTab.add(songName);
+		tab.add(songName);
 
-		var bpmStepper = new PsychUINumericStepper(getX("margin_first"), getY(2), 1, CHART.bpm, 1, 339, 0);
+		var bpmStepper = new PsychUINumericStepper(getX("margin_first"), getY(1), 1, CHART.bpm, 1, 339, 0);
 		bpmStepper.onValueChange = (() ->
 		{
 			Conductor.initialBPM = bpmStepper.value;
 			CHART.bpm = Conductor.bpm;
 		});
-		songTab.add(bpmStepper);
+		tab.add(bpmStepper);
 
-		var speedStepper = new PsychUINumericStepper(getX("margin_first"), getY(3), 0.1, CHART.speed, 0.1, 10, 1);
+		var speedStepper = new PsychUINumericStepper(getX("margin_first"), getY(2), 0.1, CHART.speed, 0.1, 10, 1);
 		speedStepper.onValueChange = (() ->
 		{
 			CHART.speed = speedStepper.value;
 		});
-		songTab.add(speedStepper);
+		tab.add(speedStepper);
 
 		var reloadButton = new TextButton("Reload Audio", false, (btn) ->
 		{
@@ -453,66 +454,197 @@ class ChartingState extends MusicBeatState
 			grid.length = audio.length;
 		});
 		reloadButton.x = getX("margin_right", reloadButton.width);
-		reloadButton.y = getY(3) - 9;
+		reloadButton.y = getY(2) - 9;
 		reloadButton.button.setColorTransform(0.59, 0.78, 1);
 		reloadButton.text.color = 0xFFFFFFFF;
-		songTab.add(reloadButton);
+		tab.add(reloadButton);
 
 		var balls:FlxSprite = new FlxSprite().loadImage("editors/charting/balls");
-		balls.setPosition(getX("center", balls.width), getY(4) + 5);
-		songTab.add(balls);
+		balls.setPosition(getX("center", balls.width), getY(3) + 5);
+		tab.add(balls);
 
 		// meta options
-		songTab.add(createText(getX(), getY(5), "Meta:"));
+		// tab.add(createText(getX(), getY(5), "Meta:"));
 
-		songTab.add(createText(getX(), getY(8), "Stage:", 0xFFD8DAF6));
-		songTab.add(createText(getX("center", 145), getY(8), "Composer:", 0xFFD8DAF6));
-		songTab.add(createText(getX("margin_right", 145), getY(8), "Charter:", 0xFFD8DAF6));
+		tab.add(createText(getX(), getY(4) + 3, "Search:", 0xFFD8DAF6));
+
+		var test:ChooserWindow = new ChooserWindow(getX("center", 440), getY(5) + 5, 440, 165, [], this);
+		tab.add(test);
+
+		var filter:PsychUIInputText;
+		filter = new PsychUIInputText(getX("margin_first"), getY(4), 342, "", 14);
+		filter.onChange.add((old, cur, input) -> test.filter = cur);
+		tab.add(filter);
+
+		tab.add(createText(getX(), getY(11), "Player:", 0xFFD8DAF6));
+		tab.add(createText(getX("center", 145), getY(11), "Opponent:", 0xFFD8DAF6));
+		tab.add(createText(getX("margin_right", 145), getY(11), "Girlfriend:", 0xFFD8DAF6));
+
+		var bfIcon = new HealthIcon();
+		bfIcon.globalScale = 0.33;
+		bfIcon.setIcon(META.player1, false);
+		bfIcon.setPosition(getX() + 145 - bfIcon.width, getY(11) - 10);
+		tab.add(bfIcon);
+
+		var bfButton = new TextButton("", false);
+		bfButton.button.onUp.add((btn) ->
+		{
+			if (test.buttonId == "bf")
+			{
+				test.options = [];
+				test.onClick = null;
+				test.buttonId = "";
+			}
+			else
+			{
+				test.buttonId = "bf";
+				test.view = GRID;
+				test.type = CHARACTER;
+				test.options = characters;
+				test.onClick = (name) ->
+				{
+					test.options = [];
+					bfButton.text.text = name;
+					bfIcon.setIcon(name, false);
+					bfButton.button.setColorTransform(bfIcon.barColor.redFloat, bfIcon.barColor.greenFloat, bfIcon.barColor.blueFloat);
+					META.player1 = name;
+					test.buttonId = "";
+				};
+			}
+		});
+		bfButton.x = getX(); // bfButton.width
+		bfButton.y = getY(11) + 22;
+		bfButton.button.setColorTransform(bfIcon.barColor.redFloat, bfIcon.barColor.greenFloat, bfIcon.barColor.blueFloat);
+		bfButton.text.text = META.player1;
+		bfButton.text.color = 0xFFFFFFFF;
+		tab.add(bfButton);
+
+		var oppIcon = new HealthIcon();
+		oppIcon.globalScale = 0.33;
+		oppIcon.setIcon(META.player2, false);
+		oppIcon.setPosition(getX("center", 145) + 145 - oppIcon.width, getY(11) - 10);
+		tab.add(oppIcon);
+
+		var oppButton = new TextButton("", false);
+		oppButton.button.onUp.add((btn) ->
+		{
+			if (test.buttonId == "opp")
+			{
+				test.options = [];
+				test.onClick = null;
+				test.buttonId = "";
+			}
+			else
+			{
+				test.buttonId = "opp";
+				test.view = GRID;
+				test.type = CHARACTER;
+				test.options = characters;
+				test.onClick = (name) ->
+				{
+					test.options = [];
+					oppButton.text.text = name;
+					oppIcon.setIcon(name, false);
+					oppButton.button.setColorTransform(oppIcon.barColor.redFloat, oppIcon.barColor.greenFloat, oppIcon.barColor.blueFloat);
+					META.player2 = name;
+					test.buttonId = "";
+				};
+			}
+		});
+		oppButton.x = getX("center", oppButton.width); // bfButton.width
+		oppButton.y = getY(11) + 22;
+		oppButton.button.setColorTransform(oppIcon.barColor.redFloat, oppIcon.barColor.greenFloat, oppIcon.barColor.blueFloat);
+		oppButton.text.text = META.player2;
+		oppButton.text.color = 0xFFFFFFFF;
+		tab.add(oppButton);
+
+		var gfIcon = new HealthIcon();
+		gfIcon.globalScale = 0.33;
+		gfIcon.setIcon(META.gf, false);
+		gfIcon.setPosition(getX("margin_right", 145) + 145 - gfIcon.width, getY(11) - 10);
+		tab.add(gfIcon);
+
+		var gfButton = new TextButton("", false);
+		gfButton.button.onUp.add((btn) ->
+		{
+			if (test.buttonId == "gf")
+			{
+				test.options = [];
+				test.onClick = null;
+				test.buttonId = "";
+			}
+			else
+			{
+				test.buttonId = "gf";
+				test.view = GRID;
+				test.type = CHARACTER;
+				test.options = characters;
+				test.onClick = (name) ->
+				{
+					test.options = [];
+					gfButton.text.text = name;
+					gfIcon.setIcon(name, false);
+					gfButton.button.setColorTransform(gfIcon.barColor.redFloat, gfIcon.barColor.greenFloat, gfIcon.barColor.blueFloat);
+					META.gf = name;
+					test.buttonId = "";
+				};
+			}
+		});
+		gfButton.x = getX("margin_right", gfButton.width); // bfButton.width
+		gfButton.y = getY(11) + 22;
+		gfButton.button.setColorTransform(gfIcon.barColor.redFloat, gfIcon.barColor.greenFloat, gfIcon.barColor.blueFloat);
+		gfButton.text.text = META.gf;
+		gfButton.text.color = 0xFFFFFFFF;
+		tab.add(gfButton);
+
+		tab.add(createText(getX(), getY(13), "Stage:", 0xFFD8DAF6));
 
 		var stages:Array<String> = Assets.list("data/stages/", true, SCRIPT);
-		var stageDropdown = new PsychUIDropDownMenu(getX(), getY(8) + 22, stages, (i, s) ->
+		stages = stages.concat(stages);
+		var stageButton = new TextButton("", false);
+		stageButton.button.onUp.add((btn) ->
 		{
-			META.stage = s;
-		}, 145, false);
-		stageDropdown.selectedLabel = META.stage;
-		songTab.add(stageDropdown);
+			if (test.buttonId == "stages")
+			{
+				test.options = [];
+				test.onClick = null;
+				test.buttonId = "";
+			}
+			else
+			{
+				test.buttonId = "stages";
+				test.view = LIST;
+				test.type = NONE;
+				test.options = stages;
+				test.onClick = (name) ->
+				{
+					test.options = [];
+					stageButton.text.text = name;
+					META.stage = name;
+					test.buttonId = "";
+				};
+			}
+		});
+		stageButton.x = getX(); // bfButton.width
+		stageButton.y = getY(13) + 22;
+		stageButton.text.text = META.stage;
+		//stageButton.text.color = 0xFFFFFFFF;
+		tab.add(stageButton);
+
+		tab.add(createText(getX("center", 145), getY(13), "Composer:", 0xFFD8DAF6));
+		tab.add(createText(getX("margin_right", 145), getY(13), "Charter:", 0xFFD8DAF6));
 
 		var composer:PsychUIInputText;
-		composer = new PsychUIInputText(getX("center", 145), getY(8) + 22, 145, META.composer, 14);
+		composer = new PsychUIInputText(getX("center", 145), getY(13) + 22, 145, META.composer, 14);
 		composer.onChange.add((old, cur, input) -> META.composer = cur);
-		songTab.add(composer);
+		tab.add(composer);
 
 		var charter:PsychUIInputText;
-		charter = new PsychUIInputText(getX("margin_right", 145), getY(8) + 22, 145, META.charter, 14);
+		charter = new PsychUIInputText(getX("margin_right", 145), getY(13) + 22, 145, META.charter, 14);
 		charter.onChange.add((old, cur, input) -> META.charter = cur);
-		songTab.add(charter);
+		tab.add(charter);
 
-		songTab.add(createText(getX(), getY(6), "Player:", 0xFFD8DAF6));
-		songTab.add(createText(getX("center", 145), getY(6), "Opponent:", 0xFFD8DAF6));
-		songTab.add(createText(getX("margin_right", 145), getY(6), "Girlfriend:", 0xFFD8DAF6));
-
-		var bfDropdown = new PsychUIDropDownMenu(getX(), getY(6) + 22, characters, (i, s) ->
-		{
-			META.player1 = s;
-		}, 145, false);
-		bfDropdown.selectedLabel = META.player1;
-		songTab.add(bfDropdown);
-
-		var dadDropdown = new PsychUIDropDownMenu(getX("center", 145), getY(6) + 22, characters, (i, s) ->
-		{
-			META.player2 = s;
-		}, 145, false);
-		dadDropdown.selectedLabel = META.player2;
-		songTab.add(dadDropdown);
-
-		var gfDropdown = new PsychUIDropDownMenu(getX("margin_right", 145), getY(6) + 22, characters, (i, s) ->
-		{
-			META.gf = s;
-		}, 145, false);
-		gfDropdown.selectedLabel = META.gf;
-		songTab.add(gfDropdown);
-
-		return songTab;
+		return tab;
 	}
 
 	function createEventsTab()
@@ -531,16 +663,6 @@ class ChartingState extends MusicBeatState
 
 		function getY(i:Int = 0)
 			return tab.bg.y + 8 + (spacingH * i);
-
-		tab.add(createText(getX(), getY(0) + 3, "Test:"));
-
-		var test:ChooserWindow = new ChooserWindow(getX("center", 440), getY(1), characters.concat(characters), this);
-		tab.add(test);
-
-		var filter:PsychUIInputText;
-		filter = new PsychUIInputText(getX("margin_first"), getY(0), 342, "", 14);
-		filter.onChange.add((old, cur, input) -> test.filter = cur);
-		tab.add(filter);
 
 		return tab;
 	}
@@ -665,7 +787,7 @@ class ChartingState extends MusicBeatState
 				selectedColor.redFloat = selColor;
 				selectedColor.greenFloat = selColor;
 				selectedColor.blueFloat = selColor;
-				for(note in renderNotes.members)
+				for (note in renderNotes.members)
 				{
 					if (note.selected)
 						note.color = selectedColor;

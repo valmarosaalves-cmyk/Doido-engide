@@ -23,6 +23,8 @@ class HealthIcon extends FlxSprite
 	public var curIcon:String = "";
 	public var barColor:FlxColor;
 
+	public var globalScale:Float = 1;
+
 	var data:IconData;
 
 	public function setIcon(curIcon:String = "face", isPlayer:Bool = false):HealthIcon
@@ -47,7 +49,8 @@ class HealthIcon extends FlxSprite
 		animation.add("icon", [for (i in 0...gridFrames) i], 0, false);
 		animation.play("icon");
 
-		scale.set(data.scale ?? DEFAULT.scale, data.scale ?? DEFAULT.scale);
+		var newscale = (data.scale ?? DEFAULT.scale) * globalScale;
+		scale.set(newscale, newscale);
 		updateHitbox();
 
 		var clr:Dynamic = data.color ?? DEFAULT.color;

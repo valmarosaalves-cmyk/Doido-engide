@@ -46,12 +46,18 @@ class ChooserWindow extends BaseWindow
 
 	var buttons:Array<ChooserButton> = [];
 	var slider:DoidoSlider;
-	var options(default, set):Array<String>;
+
+	public var options(default, set):Array<String>;
+
 	var filtered:Array<String> = [];
 	var noScroll(get, never):Bool;
 
-	public var view:ChooserView = GRID;
+	public var view(default, set):ChooserView = GRID;
 	public var type:ChooserType = CHARACTER;
+
+	public var onClick:String->Void;
+
+	public var buttonId:String = "";
 
 	var gridCount:Int = 4;
 
@@ -63,8 +69,6 @@ class ChooserWindow extends BaseWindow
 		this.width = width;
 		this.height = height;
 		@:bypassAccessor filter = "";
-
-		options = list;
 
 		bg.scale.set(width, height);
 		bg.updateHitbox();
@@ -80,17 +84,8 @@ class ChooserWindow extends BaseWindow
 		});
 		add(slider);
 
-		switch (view)
-		{
-			case GRID:
-				buttonWidth = Std.int((width - 40 - spacing) / gridCount);
-				buttonHeight = buttonWidth;
-			case LIST:
-				buttonWidth = width - 40 - spacing;
-				buttonHeight = 40;
-		}
-
-		buildButtons();
+		view = GRID;
+		options = list;
 	}
 
 	function buildButtons()
@@ -102,7 +97,7 @@ class ChooserWindow extends BaseWindow
 
 		for (i in 0...filtered.length)
 		{
-			var button:ChooserButton = new ChooserButton(filtered[i], type, view, buttonWidth, buttonHeight, (btn) -> Logs.print('click ${options[i]}'));
+			var button:ChooserButton = new ChooserButton(filtered[i], type, view, buttonWidth, buttonHeight, (btn) -> onClick(filtered[i]));
 
 			if (view == GRID)
 				button.x = x + spacing + ((i % gridCount) * buttonWidth);
@@ -116,10 +111,18 @@ class ChooserWindow extends BaseWindow
 
 		yOffset = 0;
 		slider.value = 0;
-		bottom = (buttonHeight * Math.ceil(filtered.length / gridCount)) + (2 * spacing) - height;
+		calcBottom();
 		slider.disabled = noScroll;
 		slider.rangeMax = bottom;
 		updateButtons();
+	}
+
+	function calcBottom()
+	{
+		if(view == LIST)
+			bottom = (buttonHeight * filtered.length) + (2 * spacing) - height;
+		else
+			bottom = (buttonHeight * Math.ceil(filtered.length / gridCount)) + (2 * spacing) - height;
 	}
 
 	var yOffset:Float = 0;
@@ -177,12 +180,28 @@ class ChooserWindow extends BaseWindow
 	{
 		options = a;
 		filtered = EditorUtil.doidoSearch(options, filter);
+		buildButtons();
 		return options;
 	}
 
 	function get_noScroll()
 	{
 		return (height + bottom) <= height;
+	}
+
+	public function set_view(v:ChooserView)
+	{
+		view = v;
+		switch (view)
+		{
+			case GRID:
+				buttonWidth = Std.int((width - 40 - spacing) / gridCount);
+				buttonHeight = buttonWidth;
+			case LIST:
+				buttonWidth = width - 40 - spacing;
+				buttonHeight = 40;
+		}
+		return view;
 	}
 }
 

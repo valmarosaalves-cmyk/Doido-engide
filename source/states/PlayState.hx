@@ -41,7 +41,7 @@ class PlayState extends MusicBeatState implements Playable
 	public var camDisplace:LerpPoint;
 	public var defaultHudZoom:Float = 1.0;
 
-	public static var defaultCamZoom:Float = 0.9;
+	public var camZoom:Float = 0.9;
 
 	public var curFocus:String = "";
 	public var maxDisplace:DoidoPoint = {x: 0, y: 0};
@@ -147,7 +147,8 @@ class PlayState extends MusicBeatState implements Playable
 		characters.push(dad);
 		characters.push(bf);
 
-		for (char in characters) {
+		for (char in characters)
+		{
 			add(char);
 		}
 
@@ -210,7 +211,7 @@ class PlayState extends MusicBeatState implements Playable
 		followCamera("dad");
 		camFollow.get(1);
 
-		camGame.zoom = defaultCamZoom;
+		camGame.zoom = camZoom;
 		for (cam in [camHUD, camStrum])
 			cam.zoom = defaultHudZoom;
 
@@ -353,7 +354,7 @@ class PlayState extends MusicBeatState implements Playable
 				add(item);
 		}
 
-		defaultCamZoom = stageBuild.camZoom;
+		camZoom = stageBuild.camZoom;
 		if (stageBuild.gfVersion != "")
 			gf.setActive(stageBuild.gfVersion);
 		else
@@ -394,7 +395,7 @@ class PlayState extends MusicBeatState implements Playable
 			{x: -FlxG.width / 2, y: -FlxG.height / 2}
 		]);
 
-		camGame.zoom = FlxMath.lerp(camGame.zoom, defaultCamZoom, elapsed * 12);
+		camGame.zoom = FlxMath.lerp(camGame.zoom, camZoom, elapsed * 12);
 		for (cam in [camHUD, camStrum])
 			cam.zoom = FlxMath.lerp(cam.zoom, defaultHudZoom, elapsed * 12);
 
