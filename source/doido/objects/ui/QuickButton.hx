@@ -66,7 +66,7 @@ class QuickButton extends FlxSprite
 
 		if (!disabled)
 		{
-			if (FlxG.mouse.overlaps(this))
+			if (FlxG.mouse.overlaps(this, FlxG.cameras.list[FlxG.cameras.list.length-1]))
 			{
 				if (maxScale != 1 || minScale != 1)
 				{

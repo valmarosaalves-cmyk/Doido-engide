@@ -13,6 +13,8 @@ import flixel.text.FlxBitmapText;
 import doido.objects.ui.DoidoSlider;
 import doido.objects.ui.DoidoWindow.IWindow;
 import doido.objects.ui.*;
+import doido.objects.ui.DoidoWindow.ChooserWindow;
+import flixel.util.FlxColor;
 
 class CharacterEditor extends MusicBeatState
 {
@@ -96,20 +98,72 @@ class CharacterEditor extends MusicBeatState
 		newWindow.bg.scale.set(458, 501);
 		newWindow.bg.updateHitbox();
 		newWindow.bg.setPosition(FlxG.width - newWindow.bg.width - 18, 57);
+		newWindow.cameras = [camHUD];
 		return newWindow;
 	}
+
+	var spacingH:Float = 30;
 
 	function createAnimations():BaseWindow
 	{
 		var tab = createBasic("Animations");
+
+		function getX(place:String = "margin_left", width:Float = 0)
+		{
+			return switch (place)
+			{
+				case "margin_first": tab.bg.x + 110;
+				case "margin_first_search": tab.bg.x + 80;
+				case "margin_right": tab.bg.x + tab.bg.width - width - 8;
+				case "center": tab.bg.x + (tab.bg.width / 2) - (width / 2);
+				default: tab.bg.x + 8;
+			}
+		}
+
+		function getY(i:Int = 0)
+			return tab.bg.y + 8 + (spacingH * i);
+
+		tab.add(createText(getX(), getY(0) + 3, "Search:", 0xFFD8DAF6));
+
+		var anims:ChooserWindow = new ChooserWindow(getX("center", 440), getY(1) + 5, 440, 165, [], null);
+		anims.view = LIST;
+		anims.type = NONE;
+		anims.options = char.animList;
+		tab.add(anims);
+
+		var filter:PsychUIInputText;
+		filter = new PsychUIInputText(getX("margin_first_search"), getY(0), 372, "", 14);
+		filter.onChange.add((old, cur, input) -> anims.filter = cur);
+		filter.behindText.color = 0xFFD8DAF6;
+		filter.cameras = [camHUD];
+		tab.add(filter);
+
+		var glass:FlxSprite = new FlxSprite().loadImage("editors/charting/glass");
+		glass.setGraphicSize(filter.behindText.height - 2, filter.behindText.height - 2);
+		glass.x = filter.behindText.x + 1;
+		glass.y = filter.behindText.y + 1;
+		tab.add(glass);
+
+		filter.textObj.x += glass.width + 2;
+		filter.fieldWidth -= Std.int(glass.width + 2);
+
 		return tab;
+	}
+
+	function createText(x:Float = 0, y:Float = 0, text:String = "", color:FlxColor = 0xFFFFFFFF):FlxBitmapText
+	{
+		var newText = new FlxBitmapText(x, y, Assets.bitmapFont("phantommuff"));
+		newText.alignment = LEFT;
+		newText.text = text;
+		newText.color = color;
+		newText.scale.set(0.625, 0.625);
+		newText.updateHitbox();
+		return newText;
 	}
 
 	function addMain()
 	{
-		menuMain = new DoidoBox(803, 19, 458, 32, 4, true, [
-			createAnimations()
-		], null);
+		menuMain = new DoidoBox(803, 19, 458, 32, 4, true, [createAnimations()], null);
 		menuMain.cameras = [camHUD];
 		add(menuMain);
 	}
@@ -117,13 +171,14 @@ class CharacterEditor extends MusicBeatState
 	static var camZoom:Float = 0.9;
 
 	var draggingCharacter:Bool = false;
+	var typing(get, never):Bool;
+
+	function get_typing():Bool
+		return PsychUIInputText.focusOn != null;
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-
-		if (Controls.justPressed(BACK))
-			MusicBeat.switchState(new states.DebugMenu());
 
 		var overlapsWindow:Bool = false;
 		for (basic in members)
@@ -137,8 +192,11 @@ class CharacterEditor extends MusicBeatState
 			}
 		}
 
-		if (!overlapsWindow)
+		if (!overlapsWindow && !typing)
 		{
+			if (Controls.justPressed(BACK))
+				MusicBeat.switchState(new states.DebugMenu());
+
 			var speed:Float = elapsed * 400;
 			if (FlxG.keys.anyPressed([A, D, W, S]))
 			{
