@@ -66,7 +66,7 @@ class QuickButton extends FlxSprite
 
 		if (!disabled)
 		{
-			if (FlxG.mouse.overlaps(this, FlxG.cameras.list[FlxG.cameras.list.length-1]))
+			if (FlxG.mouse.overlaps(this, FlxG.cameras.list[FlxG.cameras.list.length - 1]))
 			{
 				if (maxScale != 1 || minScale != 1)
 				{
@@ -314,11 +314,13 @@ class BoxLabel extends FlxSpriteGroup
 class ChooserButton extends FlxSpriteGroup
 {
 	var _label:FlxBitmapText;
+	var _desc:FlxBitmapText;
 
 	public var button:QuickButton;
 	public var icon:FlxSprite;
 
-	public function new(label:String, type:ChooserType, view:ChooserView, width:Int = 318, height:Int = 22, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
+	public function new(label:String, desc:String = "", type:ChooserType, view:ChooserView, width:Int = 318, height:Int = 22, ?onUp:QuickButton->Void,
+			?onDown:QuickButton->Void)
 	{
 		super();
 
@@ -345,19 +347,19 @@ class ChooserButton extends FlxSpriteGroup
 		});
 
 		icon = new FlxSprite();
-		switch(type)
+		switch (type)
 		{
 			case CHARACTER:
 				var uhhh = new HealthIcon();
-                uhhh.setIcon(label, false);
-                icon.loadGraphicFromSprite(uhhh);
+				uhhh.setIcon(label, false);
+				icon.loadGraphicFromSprite(uhhh);
 			default:
 				icon.visible = false;
 		}
-		icon.setGraphicSize(width-20, height-20);
+		icon.setGraphicSize(width - 20, height - 20);
 		icon.updateHitbox();
 		icon.x = button.x + (button.width - icon.width) / 2;
-        icon.y = button.y + 5;
+		icon.y = button.y + 5;
 		add(icon);
 
 		_label = new FlxBitmapText(0, 0, Assets.bitmapFont("phantommuff"));
@@ -368,12 +370,32 @@ class ChooserButton extends FlxSpriteGroup
 		_label.updateHitbox();
 		add(_label);
 
-		switch(view) {
+		_desc = new FlxBitmapText(0, 0, Assets.bitmapFont("phantommuff"));
+		_desc.color = 0xFFD8DAF6;
+		_desc.alignment = CENTER;
+		_desc.text = desc;
+		_desc.scale.set(0.625, 0.625);
+		_desc.updateHitbox();
+		add(_desc);
+
+		switch (view)
+		{
 			case GRID:
 				_label.x = button.x + (button.width - _label.width) / 2;
-        		_label.y = button.y + button.height - _label.height - 2;
+				_label.y = button.y + button.height - _label.height - 2;
 			default:
-				_label.setPosition(button.x + ((button.width / 2) - (_label.width / 2)), button.y + ((button.height / 2) - (_label.height / 2)));
+				_label.setPosition(button.x
+					+ ((button.width / 2) - (_label.width / 2))
+					- (_desc.width / 2)
+					- 1,
+					button.y
+					+ ((button.height / 2) - (_label.height / 2)));
+				_desc.setPosition(button.x
+					+ ((button.width / 2) - (_desc.width / 2))
+					+ (_label.width / 2)
+					+ 1,
+					button.y
+					+ ((button.height / 2) - (_desc.height / 2)));
 		}
 	}
 }

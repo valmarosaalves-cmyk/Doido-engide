@@ -84,7 +84,7 @@ class DoidoBox extends FlxGroup implements IWindow
 	{
 		for (button in buttons)
 		{
-			if (FlxG.mouse.overlaps(button))
+			if (FlxG.mouse.overlaps(button, FlxG.cameras.list[FlxG.cameras.list.length - 1]))
 				return true;
 		}
 

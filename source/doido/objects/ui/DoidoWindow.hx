@@ -48,6 +48,7 @@ class ChooserWindow extends BaseWindow
 	var slider:DoidoSlider;
 
 	public var options(default, set):Array<String>;
+	public var descs(default, set):Array<String>;
 
 	var filtered:Array<String> = [];
 	var noScroll(get, never):Bool;
@@ -86,6 +87,7 @@ class ChooserWindow extends BaseWindow
 
 		view = GRID;
 		options = list;
+		@:bypassAccessor descs = [];
 	}
 
 	function buildButtons()
@@ -97,7 +99,11 @@ class ChooserWindow extends BaseWindow
 
 		for (i in 0...filtered.length)
 		{
-			var button:ChooserButton = new ChooserButton(filtered[i], type, view, buttonWidth, buttonHeight, (btn) -> onClick(filtered[i]));
+			var button:ChooserButton = new ChooserButton(filtered[i], descs[i] ?? "", type, view, buttonWidth, buttonHeight, (btn) ->
+			{
+				if (onClick != null)
+					onClick(filtered[i]);
+			});
 
 			if (view == GRID)
 				button.x = x + spacing + ((i % gridCount) * buttonWidth);
@@ -119,7 +125,7 @@ class ChooserWindow extends BaseWindow
 
 	function calcBottom()
 	{
-		if(view == LIST)
+		if (view == LIST)
 			bottom = (buttonHeight * filtered.length) + (2 * spacing) - height;
 		else
 			bottom = (buttonHeight * Math.ceil(filtered.length / gridCount)) + (2 * spacing) - height;
@@ -182,6 +188,13 @@ class ChooserWindow extends BaseWindow
 		filtered = EditorUtil.doidoSearch(options, filter);
 		buildButtons();
 		return options;
+	}
+
+	public function set_descs(a:Array<String>)
+	{
+		descs = a;
+		buildButtons();
+		return descs;
 	}
 
 	function get_noScroll()

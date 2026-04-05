@@ -15,6 +15,7 @@ import doido.objects.ui.DoidoWindow.IWindow;
 import doido.objects.ui.*;
 import doido.objects.ui.DoidoWindow.ChooserWindow;
 import flixel.util.FlxColor;
+import doido.objects.ui.QuickButton.TextButton;
 
 class CharacterEditor extends MusicBeatState
 {
@@ -128,7 +129,17 @@ class CharacterEditor extends MusicBeatState
 		var anims:ChooserWindow = new ChooserWindow(getX("center", 440), getY(1) + 5, 440, 165, [], null);
 		anims.view = LIST;
 		anims.type = NONE;
-		anims.options = char.animList;
+		anims.options = char.animList.concat(["Add New"]);
+
+		var offsets:Array<String> = [];
+		for (anim in char.animList)
+		{
+			var animoff = char.animOffsets.get(anim);
+			offsets.push('(${animoff.x}, ${animoff.y})');
+		}
+
+		anims.descs = offsets;
+		anims.cameras = [camHUD];
 		tab.add(anims);
 
 		var filter:PsychUIInputText;
@@ -176,9 +187,29 @@ class CharacterEditor extends MusicBeatState
 	function get_typing():Bool
 		return PsychUIInputText.focusOn != null;
 
+	var focused:Bool = true;
+	var waitingForFocus:Bool = false;
+	var clickedOnWindow:Bool = false;
+
+	override function onFocusLost()
+	{
+		focused = false;
+		super.onFocusLost();
+	}
+
+	override function onFocus()
+	{
+		waitingForFocus = true;
+		super.onFocus();
+	}
+
+	public var curCursor:lime.ui.MouseCursor = DEFAULT;
+
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		curCursor = DEFAULT;
 
 		var overlapsWindow:Bool = false;
 		for (basic in members)
@@ -192,7 +223,10 @@ class CharacterEditor extends MusicBeatState
 			}
 		}
 
-		if (!overlapsWindow && !typing)
+		if (FlxG.mouse.justPressed)
+			clickedOnWindow = overlapsWindow;
+
+		if (!overlapsWindow && !clickedOnWindow && !typing && focused)
 		{
 			if (Controls.justPressed(BACK))
 				MusicBeat.switchState(new states.DebugMenu());
@@ -227,17 +261,21 @@ class CharacterEditor extends MusicBeatState
 			if (daChange[3])
 				updateOffset(0, 1);
 
-			if (mouseOverlapsOffset(char))
+			if (draggingCharacter)
 			{
+				curCursor = MOVE;
+				updateOffset(FlxG.mouse.deltaViewX, FlxG.mouse.deltaViewY, false);
+			}
+			else if (mouseOverlapsOffset(char))
+			{
+				curCursor = POINTER;
 				if (FlxG.mouse.justPressed)
 					draggingCharacter = true;
 			}
 
-			if (draggingCharacter)
-				updateOffset(FlxG.mouse.deltaViewX, FlxG.mouse.deltaViewY, false);
-
 			if ((FlxG.mouse.pressed && !draggingCharacter) || FlxG.mouse.pressedMiddle)
 			{
+				curCursor = MOVE;
 				camFollow.x -= FlxG.mouse.deltaViewX;
 				camFollow.y -= FlxG.mouse.deltaViewY;
 			}
@@ -256,8 +294,11 @@ class CharacterEditor extends MusicBeatState
 				camFollow.y += init.y - post.y;
 			}
 
-			if (FlxG.mouse.justReleased)
+			if (FlxG.mouse.justReleased && draggingCharacter)
+			{
+				animWindow.updateAnim();
 				draggingCharacter = false;
+			}
 
 			if (FlxG.keys.justPressed.Q)
 				changeAnim(-1);
@@ -267,6 +308,14 @@ class CharacterEditor extends MusicBeatState
 			if (FlxG.keys.justPressed.SPACE)
 				char.playAnim(char.curAnimName, true);
 		}
+
+		if (!focused && waitingForFocus)
+		{
+			focused = true;
+			waitingForFocus = false;
+		}
+
+		EditorUtil.setCursor(curCursor);
 	}
 
 	function mouseOverlapsOffset(_char:Character)
@@ -323,8 +372,8 @@ class CharacterEditor extends MusicBeatState
 		}
 
 		char.playAnim(char.curAnimName, true);
-
-		animWindow.updateAnim();
+		if (arrows)
+			animWindow.updateAnim();
 	}
 }
 
@@ -407,6 +456,9 @@ class AnimWindow extends BaseWindow
 		updateAnim();
 	}
 
+	var lastAnim:String = "";
+	var lastGhost:String = "";
+
 	public function updateAnim()
 	{
 		var char = characterEditor.char;
@@ -420,12 +472,20 @@ class AnimWindow extends BaseWindow
 		animName.x = bg.x + bg.width / 2 - animName.width / 2;
 		offsetTxt.x = bg.x + bg.width / 2 - offsetTxt.width / 2;
 
-		charSlider.rangeMax = char.animation.curAnim.frames.length - 1;
-		charSlider.steps = char.animation.curAnim.frames.length - 1;
-		charSlider.snappingStrength = Math.POSITIVE_INFINITY;
+		if (lastAnim != anim)
+		{
+			charSlider.rangeMax = char.animation.curAnim.frames.length - 1;
+			charSlider.steps = char.animation.curAnim.frames.length - 1;
+			charSlider.snappingStrength = Math.POSITIVE_INFINITY;
+			lastAnim = anim;
+		}
 
-		ghostSlider.rangeMax = ghost.animation.curAnim.frames.length - 1;
-		ghostSlider.steps = ghost.animation.curAnim.frames.length - 1;
-		ghostSlider.snappingStrength = Math.POSITIVE_INFINITY;
+		if (lastGhost != ghost.curAnimName)
+		{
+			ghostSlider.rangeMax = ghost.animation.curAnim.frames.length - 1;
+			ghostSlider.steps = ghost.animation.curAnim.frames.length - 1;
+			ghostSlider.snappingStrength = Math.POSITIVE_INFINITY;
+			lastGhost == ghost.curAnimName;
+		}
 	}
 }
