@@ -110,12 +110,19 @@ class DoidoSlider extends FlxSpriteGroup
 
 			if (steps >= 2 && snappingStrength >= 0)
 			{
+				//shit workaround
+				var t = FlxMath.remapToRange(value, rangeMin, rangeMax, 0, 1);
 				for (i in 0...steps)
 				{
-					var space = FlxMath.remapToRange(i * dotSpacing, 0, (vertical ? bar.height : bar.width), rangeMin, rangeMax);
-					if (Math.abs(value - space) <= snappingStrength)
-						value = space;
+					var stepT = i / (steps - 1);
+					if (Math.abs(t - stepT) <= snappingStrength)
+					{
+						value = FlxMath.remapToRange(stepT, 0, 1, rangeMin, rangeMax);
+						break;
+					}
 				}
+
+				
 			}
 
 			if (!FlxG.mouse.pressed)
@@ -127,7 +134,7 @@ class DoidoSlider extends FlxSpriteGroup
 
 	function set_snappingStrength(f:Float)
 	{
-		snappingStrength = FlxMath.bound(f, 0, FlxMath.remapToRange(dotSpacing, 0, bar.width, rangeMin, rangeMax) / 2);
+		snappingStrength = FlxMath.bound(f, 0, 0.5 / (steps - 1));
 		return snappingStrength;
 	}
 

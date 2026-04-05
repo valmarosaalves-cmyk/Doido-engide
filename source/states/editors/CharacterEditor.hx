@@ -1,4 +1,4 @@
-package states;
+package states.editors;
 
 import doido.objects.ui.DoidoWindow.BaseWindow;
 import doido.objects.DoidoCamera;
@@ -11,8 +11,10 @@ import objects.Character;
 import flixel.addons.display.FlxGridOverlay;
 import flixel.text.FlxBitmapText;
 import doido.objects.ui.DoidoSlider;
+import doido.objects.ui.DoidoWindow.IWindow;
+import doido.objects.ui.*;
 
-class OffsetEditor extends MusicBeatState
+class CharacterEditor extends MusicBeatState
 {
 	var curChar:String = "";
 	var isPlayer:Bool = false;
@@ -30,15 +32,15 @@ class OffsetEditor extends MusicBeatState
 	public var char:Character;
 	public var ghost:Character;
 
-	var exportTxt:FlxText;
 	var camFollow:FlxObject;
-
 	var animWindow:AnimWindow;
+
+	public var menuMain:DoidoBox;
 
 	override function create()
 	{
 		super.create();
-		DiscordIO.changePresence("In the Offset Editor");
+		DiscordIO.changePresence("In the Character Editor");
 		FlxG.mouse.visible = true;
 
 		camChar = new DoidoCamera(false, true);
@@ -74,22 +76,6 @@ class OffsetEditor extends MusicBeatState
 			char.y += char.globalOffset.y;
 		}
 
-		exportTxt = new FlxText(0, 0, 0, "", 24);
-		exportTxt.setFormat(Main.globalFont, 24, 0xFFFFFFFF, RIGHT);
-		exportTxt.setBorderStyle(OUTLINE, 0xFF000000, 2);
-		exportTxt.cameras = [camHUD];
-		// add(exportTxt);
-		updateTxt();
-
-		/*var controlTxt = new FlxText(0, 0, 0, "Arrows - Change Offset\nWASD - Change Camera Pos\nQ/E - Change Anim\nQ/E + SHIFT - Change Zoom", 24);
-			controlTxt.setFormat(Main.globalFont, 24, 0xFFFFFFFF, LEFT);
-			controlTxt.setBorderStyle(OUTLINE, 0xFF000000, 2);
-			controlTxt.cameras = [camHUD];
-			add(controlTxt);
-
-			controlTxt.x = 0;
-			controlTxt.y = FlxG.height - controlTxt.height; */
-
 		for (anim in char.animList)
 		{
 			if (!char.animOffsets.exists(anim))
@@ -99,28 +85,38 @@ class OffsetEditor extends MusicBeatState
 		animWindow = new AnimWindow(this);
 		animWindow.cameras = [camHUD];
 		add(animWindow);
+
+		addMain();
 	}
 
-	function updateTxt()
+	function createBasic(title:String = "test"):BaseWindow
 	{
-		exportTxt.text = "";
+		var newWindow:BaseWindow = new BaseWindow(null);
+		newWindow.title = title;
+		newWindow.bg.scale.set(458, 501);
+		newWindow.bg.updateHitbox();
+		newWindow.bg.setPosition(FlxG.width - newWindow.bg.width - 18, 57);
+		return newWindow;
+	}
 
-		for (anim in char.animList)
-		{
-			if (!char.animOffsets.exists(anim))
-				char.addOffset(anim, {x: 0, y: 0});
+	function createAnimations():BaseWindow
+	{
+		var tab = createBasic("Animations");
+		return tab;
+	}
 
-			var offsets:DoidoPoint = char.animOffsets.get(anim);
-
-			exportTxt.text += (char.curAnimName == anim ? "> " : "") + '$anim ${offsets.x} ${offsets.y}\n';
-		}
-		exportTxt.text += '\nCam Pos: ${(Math.round(camFollow.x * 10)) / 10} ${(Math.round(camFollow.y * 10)) / 10}'
-			+ '\nZoom (on editor): ${(Math.round(camChar.zoom * 10)) / 10}';
-		exportTxt.x = FlxG.width - exportTxt.width;
-		exportTxt.y = FlxG.height - exportTxt.height;
+	function addMain()
+	{
+		menuMain = new DoidoBox(803, 19, 458, 32, 4, true, [
+			createAnimations()
+		], null);
+		menuMain.cameras = [camHUD];
+		add(menuMain);
 	}
 
 	static var camZoom:Float = 0.9;
+
+	var draggingCharacter:Bool = false;
 
 	override function update(elapsed:Float)
 	{
@@ -129,56 +125,99 @@ class OffsetEditor extends MusicBeatState
 		if (Controls.justPressed(BACK))
 			MusicBeat.switchState(new states.DebugMenu());
 
-		var speed:Float = elapsed * 400;
-		if (FlxG.keys.anyPressed([A, D, W, S]))
+		var overlapsWindow:Bool = false;
+		for (basic in members)
 		{
-			if (FlxG.keys.pressed.A)
-				camFollow.x -= speed;
-			if (FlxG.keys.pressed.D)
-				camFollow.x += speed;
-			if (FlxG.keys.pressed.W)
-				camFollow.y -= speed;
-			if (FlxG.keys.pressed.S)
-				camFollow.y += speed;
-			animWindow.updateAnim();
+			if (Std.isOfType(basic, IWindow))
+			{
+				if (cast(basic, IWindow).overlapping)
+				{
+					overlapsWindow = true;
+				}
+			}
 		}
 
-		var daChange:Array<Bool> = [
-			FlxG.keys.justPressed.LEFT,
-			FlxG.keys.justPressed.RIGHT,
-			FlxG.keys.justPressed.UP,
-			FlxG.keys.justPressed.DOWN,
-		];
-
-		if (daChange[0])
-			updateOffset(-1, 0);
-		if (daChange[1])
-			updateOffset(1, 0);
-		if (daChange[2])
-			updateOffset(0, -1);
-		if (daChange[3])
-			updateOffset(0, 1);
-
-		if (FlxG.keys.pressed.SHIFT)
+		if (!overlapsWindow)
 		{
-			var speedCam:Float = elapsed * camChar.zoom;
-			if (FlxG.keys.pressed.Q && camChar.zoom > 0.5)
-				camZoom -= speedCam;
-			if (FlxG.keys.pressed.E && camChar.zoom < 2.5)
-				camZoom += speedCam;
-			camChar.zoom = FlxMath.lerp(camChar.zoom, camZoom, elapsed * 12);
-			animWindow.updateAnim();
-		}
-		else
-		{
+			var speed:Float = elapsed * 400;
+			if (FlxG.keys.anyPressed([A, D, W, S]))
+			{
+				if (FlxG.keys.pressed.A)
+					camFollow.x -= speed;
+				if (FlxG.keys.pressed.D)
+					camFollow.x += speed;
+				if (FlxG.keys.pressed.W)
+					camFollow.y -= speed;
+				if (FlxG.keys.pressed.S)
+					camFollow.y += speed;
+				animWindow.updateAnim();
+			}
+
+			var daChange:Array<Bool> = [
+				FlxG.keys.justPressed.LEFT,
+				FlxG.keys.justPressed.RIGHT,
+				FlxG.keys.justPressed.UP,
+				FlxG.keys.justPressed.DOWN,
+			];
+
+			if (daChange[0])
+				updateOffset(-1, 0);
+			if (daChange[1])
+				updateOffset(1, 0);
+			if (daChange[2])
+				updateOffset(0, -1);
+			if (daChange[3])
+				updateOffset(0, 1);
+
+			if (mouseOverlapsOffset(char))
+			{
+				if (FlxG.mouse.justPressed)
+					draggingCharacter = true;
+			}
+
+			if (draggingCharacter)
+				updateOffset(FlxG.mouse.deltaViewX, FlxG.mouse.deltaViewY, false);
+
+			if ((FlxG.mouse.pressed && !draggingCharacter) || FlxG.mouse.pressedMiddle)
+			{
+				camFollow.x -= FlxG.mouse.deltaViewX;
+				camFollow.y -= FlxG.mouse.deltaViewY;
+			}
+
+			// this only checks if the character is being dragged to cover a bug im not sure how to fix
+			// ill think about it later so consider this temporary
+			if (FlxG.mouse.wheel != 0 && !draggingCharacter)
+			{
+				var init = FlxG.mouse.getWorldPosition(camChar);
+				camZoom += (FlxG.mouse.wheel) / 2;
+				camZoom = FlxMath.bound(camZoom, 0.4, 2.5);
+				camChar.zoom = FlxMath.lerp(camChar.zoom, camZoom, elapsed * 12);
+				var post = FlxG.mouse.getWorldPosition(camChar);
+
+				camFollow.x += init.x - post.x;
+				camFollow.y += init.y - post.y;
+			}
+
+			if (FlxG.mouse.justReleased)
+				draggingCharacter = false;
+
 			if (FlxG.keys.justPressed.Q)
 				changeAnim(-1);
 			if (FlxG.keys.justPressed.E)
 				changeAnim(1);
-		}
 
-		if (FlxG.keys.justPressed.SPACE)
-			char.playAnim(char.curAnimName, true);
+			if (FlxG.keys.justPressed.SPACE)
+				char.playAnim(char.curAnimName, true);
+		}
+	}
+
+	function mouseOverlapsOffset(_char:Character)
+	{
+		var mousePos = FlxG.mouse.getWorldPosition(camChar);
+		var offsets:DoidoPoint = char.animOffsets.get(char.curAnimName);
+		mousePos.x += offsets.x;
+		mousePos.y += offsets.y;
+		return _char.overlapsPoint(mousePos);
 	}
 
 	public function changeAnim(change:Int = 0):Void
@@ -195,22 +234,25 @@ class OffsetEditor extends MusicBeatState
 
 	var curAnim:Int = 0;
 
-	function updateOffset(x:Float = 0, y:Float = 0)
+	function updateOffset(x:Float = 0, y:Float = 0, arrows:Bool = true)
 	{
-		if (FlxG.keys.pressed.ALT)
+		if (arrows)
 		{
-			x *= 0.1;
-			y *= 0.1;
-		}
-		else if (FlxG.keys.pressed.SHIFT)
-		{
-			x *= 10;
-			y *= 10;
-		}
-		else if (FlxG.keys.pressed.CONTROL)
-		{
-			x *= 100;
-			y *= 100;
+			if (FlxG.keys.pressed.ALT)
+			{
+				x *= 0.1;
+				y *= 0.1;
+			}
+			else if (FlxG.keys.pressed.SHIFT)
+			{
+				x *= 10;
+				y *= 10;
+			}
+			else if (FlxG.keys.pressed.CONTROL)
+			{
+				x *= 100;
+				y *= 100;
+			}
 		}
 
 		char.addToOffset(char.curAnimName, -x, -y);
@@ -230,7 +272,7 @@ class OffsetEditor extends MusicBeatState
 
 class AnimWindow extends BaseWindow
 {
-	var offsetEditor:OffsetEditor;
+	var characterEditor:CharacterEditor;
 
 	public var animName:FlxBitmapText;
 	public var offsetTxt:FlxBitmapText;
@@ -240,10 +282,10 @@ class AnimWindow extends BaseWindow
 	var charSlider:DoidoSlider;
 	var ghostSlider:DoidoSlider;
 
-	public function new(offsetEditor:OffsetEditor)
+	public function new(characterEditor:CharacterEditor)
 	{
 		super(null);
-		this.offsetEditor = offsetEditor;
+		this.characterEditor = characterEditor;
 
 		bg.scale.set(458, 138);
 		bg.updateHitbox();
@@ -273,11 +315,11 @@ class AnimWindow extends BaseWindow
 		{
 			var isOff:Bool = (charSlider.value < 0.0);
 			if (isOff)
-				offsetEditor.char.playAnim(offsetEditor.char.curAnimName, true);
+				characterEditor.char.playAnim(characterEditor.char.curAnimName, true);
 			else
 			{
-				offsetEditor.char.playAnim(offsetEditor.char.curAnimName, true, Math.floor(charSlider.value));
-				offsetEditor.char.anim.pause();
+				characterEditor.char.playAnim(characterEditor.char.curAnimName, true, Math.floor(charSlider.value));
+				characterEditor.char.anim.pause();
 			}
 		});
 		add(charSlider);
@@ -295,11 +337,11 @@ class AnimWindow extends BaseWindow
 		{
 			var isOff:Bool = (ghostSlider.value < 0.0);
 			if (isOff)
-				offsetEditor.ghost.playAnim(offsetEditor.ghost.curAnimName, true);
+				characterEditor.ghost.playAnim(characterEditor.ghost.curAnimName, true);
 			else
 			{
-				offsetEditor.ghost.playAnim(offsetEditor.ghost.curAnimName, true, Math.floor(ghostSlider.value));
-				offsetEditor.ghost.anim.pause();
+				characterEditor.ghost.playAnim(characterEditor.ghost.curAnimName, true, Math.floor(ghostSlider.value));
+				characterEditor.ghost.anim.pause();
 			}
 		});
 		add(ghostSlider);
@@ -309,9 +351,9 @@ class AnimWindow extends BaseWindow
 
 	public function updateAnim()
 	{
-		var char = offsetEditor.char;
-		var ghost = offsetEditor.ghost;
-		var anim = offsetEditor.char.curAnimName;
+		var char = characterEditor.char;
+		var ghost = characterEditor.ghost;
+		var anim = characterEditor.char.curAnimName;
 		var offsets:DoidoPoint = char.animOffsets.get(anim);
 
 		animName.text = anim;
@@ -322,9 +364,10 @@ class AnimWindow extends BaseWindow
 
 		charSlider.rangeMax = char.animation.curAnim.frames.length - 1;
 		charSlider.steps = char.animation.curAnim.frames.length - 1;
-		// charSlider.snappingStrength = Math.POSITIVE_INFINITY;
+		charSlider.snappingStrength = Math.POSITIVE_INFINITY;
 
 		ghostSlider.rangeMax = ghost.animation.curAnim.frames.length - 1;
 		ghostSlider.steps = ghost.animation.curAnim.frames.length - 1;
+		ghostSlider.snappingStrength = Math.POSITIVE_INFINITY;
 	}
 }

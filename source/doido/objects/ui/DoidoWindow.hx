@@ -268,7 +268,7 @@ class BaseWindow extends FlxGroup implements IWindow
 	public var overlapping(get, never):Bool;
 
 	public function get_overlapping():Bool
-		return FlxG.mouse.overlaps(bg);
+		return FlxG.mouse.overlaps(bg, camera);
 }
 
 interface IWindow

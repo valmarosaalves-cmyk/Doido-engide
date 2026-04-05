@@ -18,6 +18,7 @@ import states.editors.ChartingState;
 import doido.song.Week;
 import doido.song.Timings;
 import flixel.util.FlxStringUtil;
+import states.editors.*;
 
 using doido.utils.TextUtil;
 
@@ -28,7 +29,7 @@ class DebugMenu extends MusicBeatState
 		"Controls",
 		"Options",
 		"Credits",
-		#if !mobile "Offset Editor", "Crash Handler", "Chart Converter" #end
+		#if !mobile "Character Editor", "Crash Handler", "Chart Converter" #end
 	];
 	var text:FlxText;
 	var title:FlxText;
@@ -116,7 +117,7 @@ class DebugMenu extends MusicBeatState
 					MusicBeat.switchState(new ChartConverter());
 				case "credits":
 					MusicBeat.switchState(new Credits());
-				case "offset editor":
+				case "character editor":
 					MusicBeat.switchState(new OffsetSel());
 				default:
 					MusicBeat.switchState(new Freeplay());
@@ -241,7 +242,7 @@ class OffsetSel extends MusicBeatState
 	{
 		super.create();
 		options = Assets.list("data/characters/", true, JSON);
-		DiscordIO.changePresence("In the Offset Editor");
+		DiscordIO.changePresence("In the Character Editor");
 
 		var bg = new FlxSprite().loadGraphic(Assets.image('menuInvert'));
 		bg.screenCenter();
@@ -254,7 +255,7 @@ class OffsetSel extends MusicBeatState
 		drawText();
 		text.y = FlxG.height - text.height - 10;
 
-		title = new FlxText(10, 0, 0, 'Offset Editor');
+		title = new FlxText(10, 0, 0, 'Character Editor');
 		title.setFormat(Main.globalFont, 100, 0xFFFFFFFF, LEFT);
 		title.setOutline(0xFF000000, 5);
 		title.y = text.y - title.height;
@@ -288,7 +289,7 @@ class OffsetSel extends MusicBeatState
 			MusicBeat.switchState(new states.DebugMenu());
 
 		if (Controls.justPressed(ACCEPT) || FlxG.keys.justPressed.SHIFT)
-			MusicBeat.switchState(new OffsetEditor(options[cur], FlxG.keys.justPressed.SHIFT));
+			MusicBeat.switchState(new CharacterEditor(options[cur], FlxG.keys.justPressed.SHIFT));
 	}
 
 	public function changeSelection(change:Int = 0)
