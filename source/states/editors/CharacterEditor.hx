@@ -16,6 +16,7 @@ import doido.objects.ui.*;
 import doido.objects.ui.DoidoWindow.ChooserWindow;
 import flixel.util.FlxColor;
 import doido.objects.ui.QuickButton.TextButton;
+import doido.objects.ui.QuickButton.Checkmark;
 
 class CharacterEditor extends MusicBeatState
 {
@@ -113,10 +114,13 @@ class CharacterEditor extends MusicBeatState
 		{
 			return switch (place)
 			{
-				case "margin_first": tab.bg.x + 110;
+				case "margin_first": tab.bg.x + 80;
 				case "margin_first_search": tab.bg.x + 80;
+				case "margin_second": tab.bg.x + 229 + 8;
 				case "margin_right": tab.bg.x + tab.bg.width - width - 8;
 				case "center": tab.bg.x + (tab.bg.width / 2) - (width / 2);
+				case "center_left": tab.bg.x + (tab.bg.width / 4) - (width / 2);
+				case "center_right": tab.bg.x + ((tab.bg.width / 4) * 3) - (width / 2);
 				default: tab.bg.x + 8;
 			}
 		}
@@ -124,9 +128,72 @@ class CharacterEditor extends MusicBeatState
 		function getY(i:Int = 0)
 			return tab.bg.y + 8 + (spacingH * i);
 
+		var bottomY = 15;
+
+		var balls:FlxSprite = new FlxSprite().loadImage("editors/charting/balls");
+		balls.setPosition(getX("center", balls.width), getY(bottomY - 4) + 5);
+		tab.add(balls);
+
+		tab.add(createText(getX(), getY(bottomY - 3) + 3, "Name:", 0xFFD8DAF6));
+		tab.add(createText(getX(), getY(bottomY - 2) + 3, "Prefix:", 0xFFD8DAF6));
+		tab.add(createText(getX(), getY(bottomY - 1) + 3, "Indices:", 0xFFD8DAF6));
+
+		var textWidth:Int = 200;
+		var name:PsychUIInputText;
+		name = new PsychUIInputText(getX("margin_first"), getY(bottomY - 3), textWidth, "", 14);
+		name.cameras = [camHUD];
+		tab.add(name);
+
+		var prefix:PsychUIInputText;
+		prefix = new PsychUIInputText(getX("margin_first"), getY(bottomY - 2), textWidth, "", 14);
+		prefix.cameras = [camHUD];
+		tab.add(prefix);
+
+		var indices:PsychUIInputText;
+		indices = new PsychUIInputText(getX("margin_first"), getY(bottomY - 1), textWidth, "", 14);
+		indices.cameras = [camHUD];
+		tab.add(indices);
+
+		var coordWidth:Int = 42;
+		tab.add(createText(getX("margin_right", coordWidth) - 22, getY(bottomY - 3) + 3, "Y:", 0xFFD8DAF6));
+		var y:PsychUIInputText;
+		y = new PsychUIInputText(getX("margin_right", coordWidth), getY(bottomY - 3), coordWidth, "", 14);
+		y.cameras = [camHUD];
+		tab.add(y);
+
+		tab.add(createText(getX("margin_right", 100) - 38, getY(bottomY - 3) + 3, "X:", 0xFFD8DAF6));
+		var x:PsychUIInputText;
+		x = new PsychUIInputText(getX("margin_right", coordWidth) - 18 - coordWidth - 12, getY(bottomY - 3), coordWidth, "", 14);
+		x.cameras = [camHUD];
+		tab.add(x);
+
+		var loop:Checkmark = new Checkmark(false);
+		loop.x = getX("margin_right", loop.width);
+		loop.y = getY(bottomY - 1) - 1;
+		tab.add(loop);
+		tab.add(createText(loop.x - 46, getY(bottomY - 1) + 3, "Loop:", 0xFFD8DAF6));
+
+		tab.add(createText(getX("margin_right", 100) - 38, getY(bottomY - 2) + 3, "FPS: ", 0xFFD8DAF6));
+		var fpsStepper = new PsychUINumericStepper(getX("margin_right", 100), getY(bottomY - 2), 1, 24, 1, 339, 0);
+		tab.add(fpsStepper);
+
+		var saveButton = new TextButton("Save Anim", false);
+		saveButton.x = getX("center_left", saveButton.width);
+		saveButton.y = getY(bottomY);
+		saveButton.button.setColorTransform(0.59, 0.78, 1);
+		saveButton.text.color = 0xFFFFFFFF;
+		tab.add(saveButton);
+
+		var deleteButton = new TextButton("Delete Anim", false);
+		deleteButton.x = getX("center_right", deleteButton.width);
+		deleteButton.y = getY(bottomY);
+		deleteButton.button.setColorTransform(1, 0, 0);
+		deleteButton.text.color = 0xFFFFFFFF;
+		tab.add(deleteButton);
+
 		tab.add(createText(getX(), getY(0) + 3, "Search:", 0xFFD8DAF6));
 
-		var anims:ChooserWindow = new ChooserWindow(getX("center", 440), getY(1) + 5, 440, 165, [], null);
+		var anims:ChooserWindow = new ChooserWindow(getX("center", 440), getY(1) + 5, 440, 285, [], null);
 		anims.view = LIST;
 		anims.type = NONE;
 		anims.options = char.animList.concat(["Add New"]);
@@ -174,7 +241,7 @@ class CharacterEditor extends MusicBeatState
 
 	function addMain()
 	{
-		menuMain = new DoidoBox(803, 19, 458, 32, 4, true, [createAnimations()], null);
+		menuMain = new DoidoBox(803, 19, 458, 32, 0, true, [createAnimations()], null);
 		menuMain.cameras = [camHUD];
 		add(menuMain);
 	}
