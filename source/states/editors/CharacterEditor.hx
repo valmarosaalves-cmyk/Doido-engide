@@ -135,6 +135,52 @@ class CharacterEditor extends MusicBeatState
 		return newWindow;
 	}
 
+	function createCharacter():BaseWindow
+	{
+		var tab = createBasic("Character");
+
+		function getX(place:String = "margin_left", width:Float = 0)
+		{
+			return switch (place)
+			{
+				case "margin_first": tab.bg.x + 80;
+				case "margin_first_search": tab.bg.x + 80;
+				case "margin_second": tab.bg.x + 229 + 8;
+				case "margin_right": tab.bg.x + tab.bg.width - width - 8;
+				case "center": tab.bg.x + (tab.bg.width / 2) - (width / 2);
+				case "center_left": tab.bg.x + (tab.bg.width / 4) - (width / 2);
+				case "center_right": tab.bg.x + ((tab.bg.width / 4) * 3) - (width / 2);
+				default: tab.bg.x + 8;
+			}
+		}
+
+		function getY(i:Int = 0)
+			return tab.bg.y + 8 + (spacingH * i);
+
+		tab.add(createText(getX(), getY(0) + 3, "Sprite:", 0xFFD8DAF6));
+		var textWidth:Int = 200;
+		var sprite:PsychUIInputText;
+		sprite = new PsychUIInputText(getX("margin_first"), getY(0), textWidth, char.data.spritesheet, 14);
+		sprite.onChange.add((old, cur, input) ->
+		{
+			char.data.spritesheet = cur;
+		});
+		sprite.cameras = [camHUD];
+		tab.add(sprite);
+
+		var reload = new TextButton("Reload Sprite", false);
+		reload.x = getX("center_right", reload.width);
+		reload.y = getY(1);
+		reload.button.setColorTransform(1, 0, 0);
+		reload.text.color = 0xFFFFFFFF;
+		reload.button.onUp.add((btn) -> {
+			char.loadCharacter(true);
+		});
+		tab.add(reload);
+
+		return tab;
+	}
+
 	var spacingH:Float = 30;
 
 	function createAnimations():BaseWindow
@@ -304,7 +350,7 @@ class CharacterEditor extends MusicBeatState
 
 						curEditing = animEditing.name;
 						char.removeAnim(oldEditing);
-						char.addAnim(char.data.anims[i]);
+						char.addAnim(char.data.anims[i], i);
 
 						if (char.curAnimName == oldEditing)
 							char.playAnim(curEditing);
@@ -389,7 +435,7 @@ class CharacterEditor extends MusicBeatState
 
 	function addMain()
 	{
-		menuMain = new DoidoBox(803, 19, 458, 32, 0, true, [createAnimations()], null);
+		menuMain = new DoidoBox(803, 19, 458, 32, 0, true, [createAnimations(), createCharacter()], null);
 		menuMain.cameras = [camHUD];
 		add(menuMain);
 	}
@@ -552,6 +598,7 @@ class CharacterEditor extends MusicBeatState
 		curAnim = FlxMath.wrap(curAnim, 0, char.animList.length - 1);
 
 		char.playAnim(char.animList[curAnim], true);
+		trace(char.animList);
 		updateAnim();
 		// updateTxt();
 	}
@@ -715,7 +762,7 @@ class AnimWindow extends BaseWindow
 		animName.x = bg.x + bg.width / 2 - animName.width / 2;
 		offsetTxt.x = bg.x + bg.width / 2 - offsetTxt.width / 2;
 
-		if (lastAnim != anim)
+		if (lastAnim != anim && char.animExists(anim))
 		{
 			charSlider.rangeMax = char.animation.curAnim.frames.length - 1;
 			charSlider.steps = char.animation.curAnim.frames.length - 1;

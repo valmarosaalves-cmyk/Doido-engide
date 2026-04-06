@@ -48,7 +48,8 @@ class DoidoSprite extends FlxAnimate
 		super(x, y);
 	};
 
-	public function addOffset(animName:String, offset:DoidoPoint) {
+	public function addOffset(animName:String, offset:DoidoPoint)
+	{
 		animOffsets.set(animName, offset);
 	}
 
@@ -67,16 +68,18 @@ class DoidoSprite extends FlxAnimate
 		animOffsets.get(animName).y += y;
 	}
 
-	public function removeOffset(animName:String) {
+	public function removeOffset(animName:String)
+	{
 		if (animOffsets.exists(animName))
 			animOffsets.remove(animName);
 	}
 
-	public function clearOffsets() {
+	public function clearOffsets()
+	{
 		animOffsets = [];
 	}
 
-	public function addAnim(animData:Animation)
+	public function addAnim(animData:Animation, ?index:Int)
 	{
 		if (spriteType == ATLAS)
 		{
@@ -118,7 +121,10 @@ class DoidoSprite extends FlxAnimate
 		if (animData.offset != null)
 			addOffset(animData.name, animData.offset);
 
-		animList.push(animData.name);
+		if (index != null)
+			animList.insert(index, animData.name);
+		else
+			animList.push(animData.name);
 	}
 
 	public function removeAnim(animName:String)
@@ -130,8 +136,9 @@ class DoidoSprite extends FlxAnimate
 
 	public function playAnim(animName:String, forced:Bool = true, frame:Int = 0)
 	{
-		if (!animExists(animName))
+		if (!existsInList(animName))
 			return;
+
 		anim.play(animName, forced, false, frame);
 		curAnimName = animName;
 

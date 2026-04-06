@@ -68,16 +68,19 @@ class Character extends DoidoSprite
 	public var cameraOffset:DoidoPoint = {x: 0, y: 0};
 	public var scaleOffset:DoidoPoint = {x: 0, y: 0};
 
-	function loadCharacter()
+	public function loadCharacter(reload:Bool = false)
 	{
-		try
+		if (!reload)
 		{
-			data = cast(Assets.json('data/characters/$curChar'));
-		}
-		catch (e)
-		{
-			Logs.print('CHAR $curChar LOAD ERROR: $e', ERROR);
-			data = DEFAULT;
+			try
+			{
+				data = cast(Assets.json('data/characters/$curChar'));
+			}
+			catch (e)
+			{
+				Logs.print('CHAR $curChar LOAD ERROR: $e', ERROR);
+				data = DEFAULT;
+			}
 		}
 
 		spriteTypeFromString(data.spriteType);
@@ -128,7 +131,7 @@ class Character extends DoidoSprite
 		origin.set(data.angleOrigin.x * width, data.angleOrigin.y * height);
 		scaleOffset = {x: offset.x, y: offset.y};
 
-		playAnim(idleAnims[0], true, anim.curAnim.numFrames);
+		//playAnim(idleAnims[0], true, anim.curAnim.numFrames);
 	}
 
 	public function singTypeFromString(type:Null<String>)
