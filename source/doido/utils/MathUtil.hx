@@ -26,4 +26,7 @@ class MathUtil
 
 	inline public static function addPoint(a:DoidoPoint, b:DoidoPoint):DoidoPoint
 		return {x: a.x + b.x, y: a.y + b.y};
+
+	inline public static function copyPoint(a:DoidoPoint):DoidoPoint
+		return {x: a.x, y: a.y};
 }

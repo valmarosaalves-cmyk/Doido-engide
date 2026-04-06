@@ -121,6 +121,13 @@ class DoidoSprite extends FlxAnimate
 		animList.push(animData.name);
 	}
 
+	public function removeAnim(animName:String)
+	{
+		anim.remove(animName);
+		animList.remove(animName);
+		animOffsets.remove(animName);
+	}
+
 	public function playAnim(animName:String, forced:Bool = true, frame:Int = 0)
 	{
 		if (!animExists(animName))
@@ -180,6 +187,9 @@ class DoidoSprite extends FlxAnimate
 
 	public function animExists(animName:String):Bool
 		return (anim.getByName(animName) != null);
+
+	public function existsInList(animName:String):Bool
+		return animList.contains(animName);
 
 	public function get_curAnimFrame():Int
 		return anim.curAnim.curFrame;

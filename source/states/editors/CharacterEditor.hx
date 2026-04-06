@@ -1,5 +1,6 @@
 package states.editors;
 
+import doido.objects.DoidoSprite.Animation;
 import doido.objects.ui.DoidoWindow.BaseWindow;
 import doido.objects.DoidoCamera;
 import flixel.FlxSprite;
@@ -17,6 +18,7 @@ import doido.objects.ui.DoidoWindow.ChooserWindow;
 import flixel.util.FlxColor;
 import doido.objects.ui.QuickButton.TextButton;
 import doido.objects.ui.QuickButton.Checkmark;
+import haxe.Json;
 
 class CharacterEditor extends MusicBeatState
 {
@@ -36,6 +38,19 @@ class CharacterEditor extends MusicBeatState
 	public var char:Character;
 	public var ghost:Character;
 
+	var defaultAnim:Animation = {
+		name: "",
+		prefix: "",
+		framerate: 24,
+		loop: false,
+		offset: {x: 0, y: 0},
+		indices: [],
+		flipX: false,
+		flipY: false
+	};
+	var animEditing:Animation;
+	var curEditing:String = "";
+
 	var camFollow:FlxObject;
 	var animWindow:AnimWindow;
 
@@ -49,6 +64,8 @@ class CharacterEditor extends MusicBeatState
 
 		camChar = new DoidoCamera(false, true);
 		camHUD = new DoidoCamera(true, false);
+
+		animEditing = copyAnim(defaultAnim);
 
 		camFollow = new FlxObject();
 		camChar.follow(camFollow, LOCKON, 1);
@@ -93,6 +110,20 @@ class CharacterEditor extends MusicBeatState
 		addMain();
 	}
 
+	function copyAnim(anim:Animation):Animation
+	{
+		var newAnim:Animation = {name: "", prefix: ""};
+		newAnim.name = anim.name;
+		newAnim.prefix = anim.prefix;
+		newAnim.framerate = anim.framerate;
+		newAnim.loop = anim.loop;
+		newAnim.offset = MathUtil.copyPoint(anim.offset);
+		newAnim.indices = (anim.indices ?? []).copy();
+		newAnim.flipX = anim.flipX;
+		newAnim.flipY = anim.flipY;
+		return newAnim;
+	}
+
 	function createBasic(title:String = "test"):BaseWindow
 	{
 		var newWindow:BaseWindow = new BaseWindow(null);
@@ -131,8 +162,11 @@ class CharacterEditor extends MusicBeatState
 		var bottomY = 15;
 
 		var balls:FlxSprite = new FlxSprite().loadImage("editors/charting/balls");
-		balls.setPosition(getX("center", balls.width), getY(bottomY - 4) + 5);
+		balls.setPosition(getX("center", balls.width), getY(bottomY - 5) + 12);
 		tab.add(balls);
+
+		var editText = createText(getX(), getY(bottomY - 4) + 3, 'Currently Editing: ${curEditing == "" ? "New" : curEditing}', 0xFFFFFFFF);
+		tab.add(editText);
 
 		tab.add(createText(getX(), getY(bottomY - 3) + 3, "Name:", 0xFFD8DAF6));
 		tab.add(createText(getX(), getY(bottomY - 2) + 3, "Prefix:", 0xFFD8DAF6));
@@ -140,12 +174,20 @@ class CharacterEditor extends MusicBeatState
 
 		var textWidth:Int = 200;
 		var name:PsychUIInputText;
-		name = new PsychUIInputText(getX("margin_first"), getY(bottomY - 3), textWidth, "", 14);
+		name = new PsychUIInputText(getX("margin_first"), getY(bottomY - 3), textWidth, animEditing.name, 14);
+		name.onChange.add((old, cur, input) ->
+		{
+			animEditing.name = cur;
+		});
 		name.cameras = [camHUD];
 		tab.add(name);
 
 		var prefix:PsychUIInputText;
-		prefix = new PsychUIInputText(getX("margin_first"), getY(bottomY - 2), textWidth, "", 14);
+		prefix = new PsychUIInputText(getX("margin_first"), getY(bottomY - 2), textWidth, animEditing.prefix, 14);
+		prefix.onChange.add((old, cur, input) ->
+		{
+			animEditing.prefix = cur;
+		});
 		prefix.cameras = [camHUD];
 		tab.add(prefix);
 
@@ -154,27 +196,36 @@ class CharacterEditor extends MusicBeatState
 		indices.cameras = [camHUD];
 		tab.add(indices);
 
-		var coordWidth:Int = 42;
-		tab.add(createText(getX("margin_right", coordWidth) - 22, getY(bottomY - 3) + 3, "Y:", 0xFFD8DAF6));
-		var y:PsychUIInputText;
-		y = new PsychUIInputText(getX("margin_right", coordWidth), getY(bottomY - 3), coordWidth, "", 14);
-		y.cameras = [camHUD];
-		tab.add(y);
+		/*
+			var coordWidth:Int = 42;
+			tab.add(createText(getX("margin_right", coordWidth) - 22, getY(bottomY - 3) + 3, "Y:", 0xFFD8DAF6));
+			var y:PsychUIInputText;
+			y = new PsychUIInputText(getX("margin_right", coordWidth), getY(bottomY - 3), coordWidth, "", 14);
+			y.cameras = [camHUD];
+			tab.add(y);
 
-		tab.add(createText(getX("margin_right", 100) - 38, getY(bottomY - 3) + 3, "X:", 0xFFD8DAF6));
-		var x:PsychUIInputText;
-		x = new PsychUIInputText(getX("margin_right", coordWidth) - 18 - coordWidth - 12, getY(bottomY - 3), coordWidth, "", 14);
-		x.cameras = [camHUD];
-		tab.add(x);
+			tab.add(createText(getX("margin_right", 100) - 38, getY(bottomY - 3) + 3, "X:", 0xFFD8DAF6));
+			var x:PsychUIInputText;
+			x = new PsychUIInputText(getX("margin_right", coordWidth) - 18 - coordWidth - 12, getY(bottomY - 3), coordWidth, "", 14);
+			x.cameras = [camHUD];
+			tab.add(x); */
 
-		var loop:Checkmark = new Checkmark(false);
+		var loop:Checkmark = new Checkmark(animEditing.loop);
 		loop.x = getX("margin_right", loop.width);
 		loop.y = getY(bottomY - 1) - 1;
+		loop.onUp.add((btn) ->
+		{
+			animEditing.loop = loop.value;
+		});
 		tab.add(loop);
 		tab.add(createText(loop.x - 46, getY(bottomY - 1) + 3, "Loop:", 0xFFD8DAF6));
 
 		tab.add(createText(getX("margin_right", 100) - 38, getY(bottomY - 2) + 3, "FPS: ", 0xFFD8DAF6));
-		var fpsStepper = new PsychUINumericStepper(getX("margin_right", 100), getY(bottomY - 2), 1, 24, 1, 339, 0);
+		var fpsStepper = new PsychUINumericStepper(getX("margin_right", 100), getY(bottomY - 2), 1, animEditing.framerate, 1, 339, 0);
+		fpsStepper.onValueChange = () ->
+		{
+			animEditing.framerate = Std.int(fpsStepper.value);
+		}
 		tab.add(fpsStepper);
 
 		var saveButton = new TextButton("Save Anim", false);
@@ -193,21 +244,118 @@ class CharacterEditor extends MusicBeatState
 
 		tab.add(createText(getX(), getY(0) + 3, "Search:", 0xFFD8DAF6));
 
-		var anims:ChooserWindow = new ChooserWindow(getX("center", 440), getY(1) + 5, 440, 285, [], null);
+		var anims:ChooserWindow = new ChooserWindow(getX("center", 440), getY(1) + 5, 440, 265, [], null);
 		anims.view = LIST;
 		anims.type = NONE;
 		anims.options = char.animList.concat(["Add New"]);
-
-		var offsets:Array<String> = [];
-		for (anim in char.animList)
+		anims.onClick = (str) ->
 		{
-			var animoff = char.animOffsets.get(anim);
-			offsets.push('(${animoff.x}, ${animoff.y})');
-		}
+			if (str == "Add New")
+				animEditing = copyAnim(defaultAnim);
+			else
+			{
+				for (anim in char.data.anims)
+				{
+					if (anim.name == str)
+					{
+						animEditing = copyAnim(anim);
+						break;
+					}
+				}
+			}
 
-		anims.descs = offsets;
+			curEditing = animEditing.name;
+			editText.text = 'Currently Editing: ${curEditing == "" ? "New" : curEditing}';
+			name.text = animEditing.name;
+			prefix.text = animEditing.prefix;
+			fpsStepper.value = animEditing.framerate ?? 24;
+			loop.value = animEditing.loop ?? false;
+		};
+
+		function setDescs()
+		{
+			var offsets:Array<String> = [];
+			for (anim in char.animList)
+			{
+				var animoff = char.animOffsets.get(anim);
+				offsets.push('(${animoff.x}, ${animoff.y})');
+			}
+
+			anims.descs = offsets;
+		}
+		setDescs();
+
 		anims.cameras = [camHUD];
 		tab.add(anims);
+
+		saveButton.button.onUp.add((btn) ->
+		{
+			if (char.existsInList(curEditing))
+			{
+				for (i in 0...char.data.anims.length)
+				{
+					var anim = char.data.anims[i];
+					if (anim.name == curEditing)
+					{
+						var oldOffset = anim.offset;
+						var oldEditing = curEditing;
+						char.data.anims[i] = copyAnim(animEditing);
+						char.data.anims[i].offset = oldOffset;
+
+						curEditing = animEditing.name;
+						char.removeAnim(oldEditing);
+						char.addAnim(char.data.anims[i]);
+
+						if (char.curAnimName == oldEditing)
+							char.playAnim(curEditing);
+
+						break;
+					}
+				}
+			}
+			else
+			{
+				char.data.anims.push(copyAnim(animEditing));
+				curEditing = animEditing.name;
+				char.addAnim(animEditing);
+			}
+
+			editText.text = 'Currently Editing: ${curEditing == "" ? "New" : curEditing}';
+			anims.options = char.animList.concat(["Add New"]);
+			setDescs();
+			updateAnim();
+		});
+
+		deleteButton.button.onUp.add((btn) ->
+		{
+			if (char.existsInList(curEditing))
+			{
+				for (i in 0...char.data.anims.length)
+				{
+					if (char.data.anims[i].name == curEditing)
+					{
+						char.data.anims.remove(char.data.anims[i]);
+						char.removeAnim(curEditing);
+						break;
+					}
+				}
+			}
+			else
+			{
+				// ???
+			}
+
+			animEditing = copyAnim(defaultAnim);
+			curEditing = "";
+			editText.text = 'Currently Editing: ${curEditing == "" ? "New" : curEditing}';
+			name.text = animEditing.name;
+			prefix.text = animEditing.prefix;
+			fpsStepper.value = animEditing.framerate ?? 24;
+			loop.value = animEditing.loop ?? false;
+			anims.options = char.animList.concat(["Add New"]);
+			setDescs();
+			updateAnim();
+		});
 
 		var filter:PsychUIInputText;
 		filter = new PsychUIInputText(getX("margin_first_search"), getY(0), 372, "", 14);
@@ -278,6 +426,9 @@ class CharacterEditor extends MusicBeatState
 
 		curCursor = DEFAULT;
 
+		if (FlxG.keys.justPressed.S && FlxG.keys.pressed.CONTROL)
+			save();
+
 		var overlapsWindow:Bool = false;
 		for (basic in members)
 		{
@@ -309,7 +460,6 @@ class CharacterEditor extends MusicBeatState
 					camFollow.y -= speed;
 				if (FlxG.keys.pressed.S)
 					camFollow.y += speed;
-				animWindow.updateAnim();
 			}
 
 			var daChange:Array<Bool> = [
@@ -363,7 +513,7 @@ class CharacterEditor extends MusicBeatState
 
 			if (FlxG.mouse.justReleased && draggingCharacter)
 			{
-				animWindow.updateAnim();
+				updateAnim(true);
 				draggingCharacter = false;
 			}
 
@@ -402,8 +552,25 @@ class CharacterEditor extends MusicBeatState
 		curAnim = FlxMath.wrap(curAnim, 0, char.animList.length - 1);
 
 		char.playAnim(char.animList[curAnim], true);
-		animWindow.updateAnim();
+		updateAnim();
 		// updateTxt();
+	}
+
+	public function updateAnim(updateData:Bool = false)
+	{
+		animWindow.updateAnim();
+
+		if (updateData)
+		{
+			for (anim in char.data.anims)
+			{
+				if (anim.name == char.curAnimName)
+				{
+					anim.offset = char.getOffset(anim.name);
+					break;
+				}
+			}
+		}
 	}
 
 	var curAnim:Int = 0;
@@ -440,7 +607,16 @@ class CharacterEditor extends MusicBeatState
 
 		char.playAnim(char.curAnimName, true);
 		if (arrows)
-			animWindow.updateAnim();
+			updateAnim(true);
+	}
+
+	function save()
+	{
+		var data:String = Json.stringify(char.data, "\t");
+		if (data != null && data.length > 0)
+		{
+			Assets.fileSave(data.trim(), '${char.curChar}.json');
+		}
 	}
 }
 
