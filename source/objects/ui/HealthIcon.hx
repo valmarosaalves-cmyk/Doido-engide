@@ -31,6 +31,7 @@ class HealthIcon extends FlxSprite
 	{
 		this.isPlayer = isPlayer;
 		this.curIcon = curIcon;
+		var DEFAULT = defaultIcon();
 
 		try
 		{
@@ -83,12 +84,15 @@ class HealthIcon extends FlxSprite
 		animation.curAnim.curFrame = daFrame;
 	}
 
-	final DEFAULT:IconData = {
-		image: "face",
-		color: "0xFFA1A1A1",
-		scale: 1,
-		gridWidth: 150,
-		flipX: false,
-		flipY: false
+	function defaultIcon():IconData
+	{
+		return {
+			image: "face",
+			color: "0xFFA1A1A1",
+			scale: 1,
+			gridWidth: 150,
+			flipX: false,
+			flipY: false
+		};
 	}
 }

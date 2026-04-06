@@ -134,6 +134,20 @@ class DoidoSprite extends FlxAnimate
 		animOffsets.remove(animName);
 	}
 
+	public function clearAnims()
+	{
+		if (animList.length <= 0)
+			return;
+
+		for (anim in animList)
+		{
+			this.anim.remove(anim);
+			animOffsets.remove(anim);
+		}
+
+		animList = [];
+	}
+
 	public function playAnim(animName:String, forced:Bool = true, frame:Int = 0)
 	{
 		if (!animExists(animName))
@@ -206,12 +220,11 @@ class DoidoSprite extends FlxAnimate
 
 	public static function copyAnim(anim:Animation):Animation
 	{
-		return
-		{
-			name:anim.name,
-			prefix:anim.prefix,
-			framerate:anim.framerate,
-			loop:anim.loop,
+		return {
+			name: anim.name,
+			prefix: anim.prefix,
+			framerate: anim.framerate,
+			loop: anim.loop,
 			offset: MathUtil.copyPoint(anim.offset),
 			indices: (anim.indices ?? []).copy(),
 			flipX: anim.flipX,

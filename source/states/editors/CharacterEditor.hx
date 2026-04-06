@@ -157,16 +157,26 @@ class CharacterEditor extends MusicBeatState
 
 		var reload = new TextButton("Reload Sprite", false);
 		reload.x = getX("margin_right", reload.width);
-		reload.y = getY(1);
+		reload.y = getY(0);
 		reload.button.setColorTransform(1, 0, 0);
 		reload.text.color = 0xFFFFFFFF;
 		reload.button.onUp.add((btn) ->
 		{
+			char.clearAnims();
 			char.loadCharacter(true);
 			char.debugMode = true;
 			char.setPosition(middlePoint.x - (char.width - middlePoint.width) / 2, middlePoint.y + (middlePoint.height / 2) - char.height);
 		});
 		tab.add(reload);
+
+		var spriteType:PsychUIDropDownMenu;
+		spriteType = new PsychUIDropDownMenu(getX() + 120, getY(1), ["SPARROW", "ATLAS", "PACKER", "ASEPRITE"], (i, s) ->
+		{
+			char.data.spriteType = s;
+		}, 130, false);
+		spriteType.selectedLabel = char.data.spriteType;
+		spriteType.cameras = [camHUD];
+		tab.add(spriteType);
 
 		var characters:PsychUIDropDownMenu;
 		var characterList = Assets.list("data/characters/", true, JSON).concat(["face"]);
@@ -176,24 +186,16 @@ class CharacterEditor extends MusicBeatState
 			{
 				char.curChar = s;
 
-				if (char.animList.length > 0)
-				{
-					for (anim in char.animList)
-					{
-						trace(anim);
-						char.anim.remove(anim);
-						char.animOffsets.remove(anim);
-					}
-
-					char.animList = [];
-				}
-
+				char.clearAnims();
 				char.loadCharacter(false);
 
 				char.debugMode = true;
 				char.setPosition(middlePoint.x - (char.width - middlePoint.width) / 2, middlePoint.y + (middlePoint.height / 2) - char.height);
 			}
 			ghost.alpha = 0.4;
+
+			sprite.text = char.data.spritesheet;
+			spriteType.selectedLabel = char.data.spriteType ?? "SPARROW";
 			anims.options = char.animList.concat(["Add New"]);
 			setDescs();
 			updateAnim(false);
@@ -201,15 +203,6 @@ class CharacterEditor extends MusicBeatState
 		characters.selectedLabel = char.curChar;
 		characters.cameras = [camHUD];
 		tab.add(characters);
-
-		var spriteType:PsychUIDropDownMenu;
-		spriteType = new PsychUIDropDownMenu(getX() + 120, getY(1), ["SPARROW", "ATLAS", "PACKER", "ASEPRITE"], (i, s) ->
-		{
-			char.data.spriteType = s;
-		}, 100, false);
-		spriteType.selectedLabel = char.data.spriteType;
-		spriteType.cameras = [camHUD];
-		tab.add(spriteType);
 
 		/*
 			var atlasType:PsychUIDropDownMenu;

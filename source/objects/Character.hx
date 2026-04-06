@@ -79,8 +79,7 @@ class Character extends DoidoSprite
 			catch (e)
 			{
 				Logs.print('CHAR $curChar LOAD ERROR: $e', ERROR);
-				data = DEFAULT;
-				trace(data);
+				data = defaultCharacter();
 			}
 		}
 
@@ -175,40 +174,42 @@ class Character extends DoidoSprite
 		offset.y += scaleOffset.y;
 	}
 
-	final DEFAULT:DoidoCharacter = {
-		spritesheet: "face",
-		spriteType: "ATLAS",
-		singType: "LOOP",
-		anims: [
-			{
-				name: "idle",
-				prefix: "idle-alive",
-				offset: {x: 0, y: 0}
-			},
-			{
-				name: "singLEFT",
-				prefix: "left-alive",
-				offset: {x: 42, y: 0}
-			},
-			{
-				name: "singDOWN",
-				prefix: "down-alive",
-				offset: {x: 0, y: 8}
-			},
-			{
-				name: "singUP",
-				prefix: "up-alive",
-				offset: {x: 19, y: 40}
-			},
-			{
-				name: "singRIGHT",
-				prefix: "right-alive",
-				offset: {x: -23, y: 13}
-			}
-		]
+	function defaultCharacter():DoidoCharacter
+	{
+		return {
+			spritesheet: "face",
+			spriteType: "ATLAS",
+			singType: "LOOP",
+			anims: [
+				{
+					name: "idle",
+					prefix: "idle-alive",
+					offset: {x: 0, y: 0}
+				},
+				{
+					name: "singLEFT",
+					prefix: "left-alive",
+					offset: {x: 42, y: 0}
+				},
+				{
+					name: "singDOWN",
+					prefix: "down-alive",
+					offset: {x: 0, y: 8}
+				},
+				{
+					name: "singUP",
+					prefix: "up-alive",
+					offset: {x: 19, y: 40}
+				},
+				{
+					name: "singRIGHT",
+					prefix: "right-alive",
+					offset: {x: -23, y: 13}
+				}
+			]
+		};
 	}
 
-	//note: figure out better way to do this... later
 	override public function playAnim(animName:String, forced:Bool = true, frame:Int = 0)
 	{
 		if (!existsInList(animName))

@@ -24,14 +24,17 @@ typedef WeekOrder =
 
 class Week
 {
-	public static var DEFAULT:WeekData = {
-		songs: [],
-		weekFile: "week1",
-		weekName: "unknown",
-		chars: ["dad", "bf", "gf"],
-		freeplayOnly: false,
-		storyModeOnly: false,
-		diffs: ['easy', 'normal', 'hard']
+	public static function defaultWeek():WeekData
+	{
+		return {
+			songs: [],
+			weekFile: "week1",
+			weekName: "unknown",
+			chars: ["dad", "bf", "gf"],
+			freeplayOnly: false,
+			storyModeOnly: false,
+			diffs: ['easy', 'normal', 'hard']
+		};
 	}
 
 	public static function weekList(storyMode:Bool = false, freeplay:Bool = true):Array<WeekData>
@@ -62,6 +65,7 @@ class Week
 	public static function loadWeek(week:String):WeekData
 	{
 		var newWeek:WeekData;
+		var DEFAULT = defaultWeek();
 		try
 		{
 			newWeek = cast(Assets.json('data/weeks/$week'));
