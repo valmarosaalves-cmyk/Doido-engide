@@ -155,6 +155,28 @@ class CharacterEditor extends MusicBeatState
 		sprite.cameras = [camHUD];
 		tab.add(sprite);
 
+		var player:Checkmark = new Checkmark(char.isPlayer);
+		player.x = getX("margin_right", player.width);
+		player.y = getY(1) + 10;
+		player.onUp.add((btn) ->
+		{
+			char.isPlayer = player.value;
+			flipCheck(char);
+		});
+		tab.add(player);
+		tab.add(createText(player.x - 60, getY(1) + 12, "Player:", 0xFFD8DAF6));
+
+		var ghostFlip:Checkmark = new Checkmark(ghost.isPlayer);
+		ghostFlip.x = player.x - 60 - ghostFlip.width - 5;
+		ghostFlip.y = getY(1) + 10;
+		ghostFlip.onUp.add((btn) ->
+		{
+			ghost.isPlayer = ghostFlip.value;
+			flipCheck(ghost);
+		});
+		tab.add(ghostFlip);
+		tab.add(createText(ghostFlip.x - 55, getY(1) + 12, "Ghost:", 0xFFD8DAF6));
+
 		var reload = new TextButton("Reload Sprite", false);
 		reload.x = getX("margin_right", reload.width);
 		reload.y = getY(0);
@@ -164,7 +186,6 @@ class CharacterEditor extends MusicBeatState
 		{
 			char.clearAnims();
 			char.loadCharacter(true);
-			char.debugMode = true;
 			char.setPosition(middlePoint.x - (char.width - middlePoint.width) / 2, middlePoint.y + (middlePoint.height / 2) - char.height);
 		});
 		tab.add(reload);
@@ -189,7 +210,6 @@ class CharacterEditor extends MusicBeatState
 				char.clearAnims();
 				char.loadCharacter(false);
 
-				char.debugMode = true;
 				char.setPosition(middlePoint.x - (char.width - middlePoint.width) / 2, middlePoint.y + (middlePoint.height / 2) - char.height);
 			}
 			ghost.alpha = 0.4;
@@ -216,6 +236,13 @@ class CharacterEditor extends MusicBeatState
 		 */
 
 		return tab;
+	}
+
+	function flipCheck(char:Character)
+	{
+		char.flipX = char.data.flipX;
+		if (char.isPlayer)
+			char.flipX = !char.flipX;
 	}
 
 	var spacingH:Float = 30;
@@ -289,7 +316,12 @@ class CharacterEditor extends MusicBeatState
 		tab.add(prefix);
 
 		var indices:PsychUIInputText;
-		indices = new PsychUIInputText(getX("margin_first"), getY(bottomY - 1), textWidth, "", 14);
+		indices = new PsychUIInputText(getX("margin_first"), getY(bottomY - 1), textWidth, animEditing.indices.join(", "), 14);
+		indices.onChange.add((old, cur, input) ->
+		{
+			animEditing.indices = cur.split(",").map(s -> Std.parseInt(s) ?? 0);
+			trace(animEditing.indices);
+		});
 		indices.cameras = [camHUD];
 		tab.add(indices);
 
@@ -364,6 +396,7 @@ class CharacterEditor extends MusicBeatState
 			curEditing = animEditing.name;
 			editText.text = 'Currently Editing: ${curEditing == "" ? "New" : curEditing}';
 			name.text = animEditing.name;
+			indices.text = animEditing.indices.join(", ");
 			prefix.text = animEditing.prefix;
 			fpsStepper.value = animEditing.framerate ?? 24;
 			loop.value = animEditing.loop ?? false;
@@ -376,40 +409,53 @@ class CharacterEditor extends MusicBeatState
 
 		saveButton.button.onUp.add((btn) ->
 		{
-			if (char.existsInList(curEditing))
+			//you have to actually be making something to save....
+			if (animEditing.name.length > 0 && animEditing.prefix.length > 0)
 			{
-				for (i in 0...char.data.anims.length)
+				if (char.existsInList(curEditing))
 				{
-					var anim = char.data.anims[i];
-					if (anim.name == curEditing)
+					for (i in 0...char.data.anims.length)
 					{
-						var oldOffset = anim.offset;
-						var oldEditing = curEditing;
-						char.data.anims[i] = DoidoSprite.copyAnim(animEditing);
-						char.data.anims[i].offset = oldOffset;
+						var anim = char.data.anims[i];
+						if (anim.name == curEditing)
+						{
+							var oldOffset = anim.offset;
+							var oldEditing = curEditing;
+							char.data.anims[i] = DoidoSprite.copyAnim(animEditing);
+							char.data.anims[i].offset = oldOffset;
 
-						curEditing = animEditing.name;
-						char.removeAnim(oldEditing);
-						char.addAnim(char.data.anims[i], i);
+							curEditing = animEditing.name;
+							char.removeAnim(oldEditing);
+							char.addAnim(char.data.anims[i], i);
 
-						if (char.curAnimName == oldEditing)
-							char.playAnim(curEditing);
+							if (char.curAnimName == oldEditing)
+								char.playAnim(curEditing);
 
-						break;
+							break;
+						}
 					}
 				}
-			}
-			else
-			{
-				char.data.anims.push(DoidoSprite.copyAnim(animEditing));
-				curEditing = animEditing.name;
-				char.addAnim(animEditing);
-			}
+				else
+				{
+					char.data.anims.push(DoidoSprite.copyAnim(animEditing));
+					curEditing = animEditing.name;
+					char.addAnim(animEditing);
+				}
 
-			editText.text = 'Currently Editing: ${curEditing == "" ? "New" : curEditing}';
-			anims.options = char.animList.concat(["Add New"]);
-			setDescs();
-			updateAnim();
+				// dont mind it, really
+				if (curEditing == char.idleAnims[0])
+				{
+					char.updateHitbox();
+					char.playAnim(char.idleAnims[0], true, (char.anim.curAnim == null) ? 0 : char.anim.curAnim.numFrames);
+					char.setPosition(middlePoint.x - (char.width - middlePoint.width) / 2, middlePoint.y + (middlePoint.height / 2) - char.height);
+				}
+
+				char.playAnim(curEditing);
+				editText.text = 'Currently Editing: ${curEditing == "" ? "New" : curEditing}';
+				anims.options = char.animList.concat(["Add New"]);
+				setDescs();
+				updateAnim();
+			}
 		});
 
 		deleteButton.button.onUp.add((btn) ->
@@ -435,6 +481,7 @@ class CharacterEditor extends MusicBeatState
 			curEditing = "";
 			editText.text = 'Currently Editing: ${curEditing == "" ? "New" : curEditing}';
 			name.text = animEditing.name;
+			indices.text = animEditing.indices.join(", ");
 			prefix.text = animEditing.prefix;
 			fpsStepper.value = animEditing.framerate ?? 24;
 			loop.value = animEditing.loop ?? false;
@@ -785,9 +832,6 @@ class AnimWindow extends BaseWindow
 		updateAnim();
 	}
 
-	var lastAnim:String = "";
-	var lastGhost:String = "";
-
 	public function updateAnim()
 	{
 		var char = characterEditor.char;
@@ -801,20 +845,15 @@ class AnimWindow extends BaseWindow
 		animName.x = bg.x + bg.width / 2 - animName.width / 2;
 		offsetTxt.x = bg.x + bg.width / 2 - offsetTxt.width / 2;
 
-		if (lastAnim != anim && char.animExists(anim))
+		if (char.animExists(anim))
 		{
 			charSlider.rangeMax = char.animation.curAnim.frames.length - 1;
 			charSlider.steps = char.animation.curAnim.frames.length - 1;
 			charSlider.snappingStrength = Math.POSITIVE_INFINITY;
-			lastAnim = anim;
 		}
 
-		if (lastGhost != ghost.curAnimName)
-		{
-			ghostSlider.rangeMax = ghost.animation.curAnim.frames.length - 1;
-			ghostSlider.steps = ghost.animation.curAnim.frames.length - 1;
-			ghostSlider.snappingStrength = Math.POSITIVE_INFINITY;
-			lastGhost == ghost.curAnimName;
-		}
+		ghostSlider.rangeMax = ghost.animation.curAnim.frames.length - 1;
+		ghostSlider.steps = ghost.animation.curAnim.frames.length - 1;
+		ghostSlider.snappingStrength = Math.POSITIVE_INFINITY;
 	}
 }

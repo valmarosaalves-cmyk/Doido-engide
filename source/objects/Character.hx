@@ -53,7 +53,7 @@ class Character extends DoidoSprite
 
 	public var debugMode:Bool = false;
 
-	var idleAnims:Array<String> = ["idle"];
+	public var idleAnims:Array<String> = ["idle"];
 
 	public var quickDancer:Bool = false;
 
