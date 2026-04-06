@@ -19,6 +19,7 @@ import flixel.util.FlxColor;
 import doido.objects.ui.QuickButton.TextButton;
 import doido.objects.ui.QuickButton.Checkmark;
 import haxe.Json;
+import doido.objects.DoidoSprite;
 
 class CharacterEditor extends MusicBeatState
 {
@@ -37,6 +38,8 @@ class CharacterEditor extends MusicBeatState
 
 	public var char:Character;
 	public var ghost:Character;
+
+	var middlePoint:FlxSprite;
 
 	var defaultAnim:Animation = {
 		name: "",
@@ -65,7 +68,7 @@ class CharacterEditor extends MusicBeatState
 		camChar = new DoidoCamera(false, true);
 		camHUD = new DoidoCamera(true, false);
 
-		animEditing = copyAnim(defaultAnim);
+		animEditing = DoidoSprite.copyAnim(defaultAnim);
 
 		camFollow = new FlxObject();
 		camChar.follow(camFollow, LOCKON, 1);
@@ -76,7 +79,7 @@ class CharacterEditor extends MusicBeatState
 		grid.screenCenter();
 		add(grid);
 
-		var middlePoint = new FlxSprite().loadImage('editors/point');
+		middlePoint = new FlxSprite().loadImage('editors/point');
 		middlePoint.setPosition((FlxG.width - middlePoint.width) / 2, FlxG.height - 200 - (middlePoint.height / 2));
 		middlePoint.color = 0xFFFF0000;
 
@@ -93,8 +96,6 @@ class CharacterEditor extends MusicBeatState
 		{
 			char.debugMode = true;
 			char.setPosition(middlePoint.x - (char.width - middlePoint.width) / 2, middlePoint.y + (middlePoint.height / 2) - char.height);
-			char.x += char.globalOffset.x;
-			char.y += char.globalOffset.y;
 		}
 
 		for (anim in char.animList)
@@ -108,20 +109,6 @@ class CharacterEditor extends MusicBeatState
 		add(animWindow);
 
 		addMain();
-	}
-
-	function copyAnim(anim:Animation):Animation
-	{
-		var newAnim:Animation = {name: "", prefix: ""};
-		newAnim.name = anim.name;
-		newAnim.prefix = anim.prefix;
-		newAnim.framerate = anim.framerate;
-		newAnim.loop = anim.loop;
-		newAnim.offset = MathUtil.copyPoint(anim.offset);
-		newAnim.indices = (anim.indices ?? []).copy();
-		newAnim.flipX = anim.flipX;
-		newAnim.flipY = anim.flipY;
-		return newAnim;
 	}
 
 	function createBasic(title:String = "test"):BaseWindow
@@ -169,19 +156,68 @@ class CharacterEditor extends MusicBeatState
 		tab.add(sprite);
 
 		var reload = new TextButton("Reload Sprite", false);
-		reload.x = getX("center_right", reload.width);
+		reload.x = getX("margin_right", reload.width);
 		reload.y = getY(1);
 		reload.button.setColorTransform(1, 0, 0);
 		reload.text.color = 0xFFFFFFFF;
-		reload.button.onUp.add((btn) -> {
+		reload.button.onUp.add((btn) ->
+		{
 			char.loadCharacter(true);
 		});
 		tab.add(reload);
+
+		var characters:PsychUIDropDownMenu;
+		var characterList = Assets.list("data/characters/", true, JSON).concat(["face"]);
+		characters = new PsychUIDropDownMenu(getX(), getY(1), characterList, (i, s) ->
+		{
+			for (char in [char, ghost])
+			{
+				char.curChar = s;
+
+				if (char.animList.length > 0)
+				{
+					for (anim in char.animList)
+					{
+						trace(anim);
+						char.anim.remove(anim);
+						char.animOffsets.remove(anim);
+					}
+
+					char.animList = [];
+				}
+
+				char.loadCharacter(false);
+
+				char.debugMode = true;
+				char.setPosition(middlePoint.x - (char.width - middlePoint.width) / 2, middlePoint.y + (middlePoint.height / 2) - char.height);
+			}
+			ghost.alpha = 0.4;
+			anims.options = char.animList.concat(["Add New"]);
+			setDescs();
+			updateAnim(false);
+		}, 100, false);
+		characters.selectedLabel = char.curChar;
+		characters.cameras = [camHUD];
+		tab.add(characters);
 
 		return tab;
 	}
 
 	var spacingH:Float = 30;
+
+	var anims:ChooserWindow;
+
+	function setDescs()
+	{
+		var offsets:Array<String> = [];
+		for (anim in char.animList)
+		{
+			var animoff = char.animOffsets.get(anim);
+			offsets.push('(${animoff.x}, ${animoff.y})');
+		}
+
+		anims.descs = offsets;
+	}
 
 	function createAnimations():BaseWindow
 	{
@@ -290,21 +326,21 @@ class CharacterEditor extends MusicBeatState
 
 		tab.add(createText(getX(), getY(0) + 3, "Search:", 0xFFD8DAF6));
 
-		var anims:ChooserWindow = new ChooserWindow(getX("center", 440), getY(1) + 5, 440, 265, [], null);
+		anims = new ChooserWindow(getX("center", 440), getY(1) + 5, 440, 265, [], null);
 		anims.view = LIST;
 		anims.type = NONE;
 		anims.options = char.animList.concat(["Add New"]);
 		anims.onClick = (str) ->
 		{
 			if (str == "Add New")
-				animEditing = copyAnim(defaultAnim);
+				animEditing = DoidoSprite.copyAnim(defaultAnim);
 			else
 			{
 				for (anim in char.data.anims)
 				{
 					if (anim.name == str)
 					{
-						animEditing = copyAnim(anim);
+						animEditing = DoidoSprite.copyAnim(anim);
 						break;
 					}
 				}
@@ -318,17 +354,6 @@ class CharacterEditor extends MusicBeatState
 			loop.value = animEditing.loop ?? false;
 		};
 
-		function setDescs()
-		{
-			var offsets:Array<String> = [];
-			for (anim in char.animList)
-			{
-				var animoff = char.animOffsets.get(anim);
-				offsets.push('(${animoff.x}, ${animoff.y})');
-			}
-
-			anims.descs = offsets;
-		}
 		setDescs();
 
 		anims.cameras = [camHUD];
@@ -345,7 +370,7 @@ class CharacterEditor extends MusicBeatState
 					{
 						var oldOffset = anim.offset;
 						var oldEditing = curEditing;
-						char.data.anims[i] = copyAnim(animEditing);
+						char.data.anims[i] = DoidoSprite.copyAnim(animEditing);
 						char.data.anims[i].offset = oldOffset;
 
 						curEditing = animEditing.name;
@@ -361,7 +386,7 @@ class CharacterEditor extends MusicBeatState
 			}
 			else
 			{
-				char.data.anims.push(copyAnim(animEditing));
+				char.data.anims.push(DoidoSprite.copyAnim(animEditing));
 				curEditing = animEditing.name;
 				char.addAnim(animEditing);
 			}
@@ -391,7 +416,7 @@ class CharacterEditor extends MusicBeatState
 				// ???
 			}
 
-			animEditing = copyAnim(defaultAnim);
+			animEditing = DoidoSprite.copyAnim(defaultAnim);
 			curEditing = "";
 			editText.text = 'Currently Editing: ${curEditing == "" ? "New" : curEditing}';
 			name.text = animEditing.name;
@@ -598,7 +623,6 @@ class CharacterEditor extends MusicBeatState
 		curAnim = FlxMath.wrap(curAnim, 0, char.animList.length - 1);
 
 		char.playAnim(char.animList[curAnim], true);
-		trace(char.animList);
 		updateAnim();
 		// updateTxt();
 	}

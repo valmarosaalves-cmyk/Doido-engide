@@ -28,5 +28,5 @@ class MathUtil
 		return {x: a.x + b.x, y: a.y + b.y};
 
 	inline public static function copyPoint(a:DoidoPoint):DoidoPoint
-		return {x: a.x, y: a.y};
+		return a == null ? {x: 0, y: 0} : {x: a.x, y: a.y};
 }

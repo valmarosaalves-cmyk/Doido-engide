@@ -136,7 +136,7 @@ class DoidoSprite extends FlxAnimate
 
 	public function playAnim(animName:String, forced:Bool = true, frame:Int = 0)
 	{
-		if (!existsInList(animName))
+		if (!animExists(animName))
 			return;
 
 		anim.play(animName, forced, false, frame);
@@ -203,4 +203,19 @@ class DoidoSprite extends FlxAnimate
 
 	public function get_curAnimFinished():Bool
 		return anim.curAnim.finished;
+
+	public static function copyAnim(anim:Animation):Animation
+	{
+		return
+		{
+			name:anim.name,
+			prefix:anim.prefix,
+			framerate:anim.framerate,
+			loop:anim.loop,
+			offset: MathUtil.copyPoint(anim.offset),
+			indices: (anim.indices ?? []).copy(),
+			flipX: anim.flipX,
+			flipY: anim.flipY
+		};
+	}
 }

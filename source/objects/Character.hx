@@ -80,6 +80,7 @@ class Character extends DoidoSprite
 			{
 				Logs.print('CHAR $curChar LOAD ERROR: $e', ERROR);
 				data = DEFAULT;
+				trace(data);
 			}
 		}
 
@@ -131,7 +132,7 @@ class Character extends DoidoSprite
 		origin.set(data.angleOrigin.x * width, data.angleOrigin.y * height);
 		scaleOffset = {x: offset.x, y: offset.y};
 
-		//playAnim(idleAnims[0], true, anim.curAnim.numFrames);
+		playAnim(idleAnims[0], true, anim.curAnim.numFrames ?? 0);
 	}
 
 	public function singTypeFromString(type:Null<String>)
@@ -205,5 +206,17 @@ class Character extends DoidoSprite
 				offset: {x: -23, y: 13}
 			}
 		]
+	}
+
+	//note: figure out better way to do this... later
+	override public function playAnim(animName:String, forced:Bool = true, frame:Int = 0)
+	{
+		if (!existsInList(animName))
+			return;
+
+		anim.play(animName, forced, false, frame);
+		curAnimName = animName;
+
+		updateOffset();
 	}
 }
