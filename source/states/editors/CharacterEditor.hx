@@ -163,6 +163,8 @@ class CharacterEditor extends MusicBeatState
 		reload.button.onUp.add((btn) ->
 		{
 			char.loadCharacter(true);
+			char.debugMode = true;
+			char.setPosition(middlePoint.x - (char.width - middlePoint.width) / 2, middlePoint.y + (middlePoint.height / 2) - char.height);
 		});
 		tab.add(reload);
 
@@ -199,6 +201,26 @@ class CharacterEditor extends MusicBeatState
 		characters.selectedLabel = char.curChar;
 		characters.cameras = [camHUD];
 		tab.add(characters);
+
+		var spriteType:PsychUIDropDownMenu;
+		spriteType = new PsychUIDropDownMenu(getX() + 120, getY(1), ["SPARROW", "ATLAS", "PACKER", "ASEPRITE"], (i, s) ->
+		{
+			char.data.spriteType = s;
+		}, 100, false);
+		spriteType.selectedLabel = char.data.spriteType;
+		spriteType.cameras = [camHUD];
+		tab.add(spriteType);
+
+		/*
+			var atlasType:PsychUIDropDownMenu;
+			atlasType = new PsychUIDropDownMenu(getX(), getY(1), ["SYMBOL", "FRAMELABEL"], (i, s) ->
+			{
+				char.data.atlasType = s;
+			}, 100, false);
+			atlasType.selectedLabel = char.data.atlasType;
+			atlasType.cameras = [camHUD];
+			tab.add(atlasType);
+		 */
 
 		return tab;
 	}

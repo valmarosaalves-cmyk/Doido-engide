@@ -132,7 +132,7 @@ class Character extends DoidoSprite
 		origin.set(data.angleOrigin.x * width, data.angleOrigin.y * height);
 		scaleOffset = {x: offset.x, y: offset.y};
 
-		playAnim(idleAnims[0], true, anim.curAnim.numFrames ?? 0);
+		playAnim(idleAnims[0], true, (anim.curAnim == null) ? 0 : anim.curAnim.numFrames);
 	}
 
 	public function singTypeFromString(type:Null<String>)
