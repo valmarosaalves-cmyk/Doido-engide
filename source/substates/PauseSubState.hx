@@ -1,5 +1,6 @@
 package substates;
 
+import substates.menus.OptionsSubState;
 import doido.objects.Alphabet;
 import states.PlayState;
 import flixel.text.FlxText;
@@ -20,6 +21,9 @@ class PauseSubState extends MusicBeatSubState
 	public function new()
 	{
 		super();
+		persistentUpdate = false;
+		persistentDraw = true;
+		
 		var bg = new FlxSprite().makeColor(FlxG.width + 10, FlxG.height + 10, 0xFF000000);
 		bg.alpha = 0.4;
 		add(bg);
@@ -119,6 +123,8 @@ class PauseSubState extends MusicBeatSubState
 					FlxG.sound.play(Assets.sound("cancel"));
 					PlayState.instance.botplay = !PlayState.instance.botplay;
 					botplayTxt.visible = PlayState.instance.botplay;
+				case 'options':
+					openSubState(new OptionsSubState(PlayState.instance));
 				case 'exit to menu':
 					MusicBeat.switchState(new states.DebugMenu());
 				default:

@@ -3,6 +3,7 @@ package substates.menus;
 import doido.objects.Alphabet;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.group.FlxSpriteGroup;
 import flixel.math.FlxMath;
 import states.PlayState;
 
@@ -26,6 +27,8 @@ class OptionsSubState extends MusicBeatSubState
     ];
     public var optionList:Map<String, Array<OptionData>> = [];
 
+    public var bg:FlxSprite;
+
     public var alphabetGrp:FlxTypedGroup<OptionAlphabet>;
     public var attachGrp:FlxTypedGroup<Attachment>;
 
@@ -33,17 +36,19 @@ class OptionsSubState extends MusicBeatSubState
     public var curCategory:Int = 0;
     public var curSelection:Int = 0;
 
+    public var curAttachType:AttachmentType = CATEGORY;
+
     public function new(?playState:PlayState)
     {
         super();
         this.playState = playState;
-        if (playState == null)
-        {
-            var bg = new FlxSprite().makeColor(FlxG.width + 10, FlxG.height + 10, 0xFF000000);
-            bg.screenCenter();
-            bg.alpha = 0.9;
-            add(bg);
-        }
+        //if (playState == null)
+        //{
+        bg = new FlxSprite().makeColor(FlxG.width * 0.8, FlxG.height * 0.8, 0xFF000000);
+        bg.screenCenter();
+        bg.alpha = 0.9;
+        add(bg);
+        //}
 
         optionList = [
             "Gameplay" => [
@@ -164,21 +169,41 @@ class OptionsSubState extends MusicBeatSubState
         });
 
         var catTitle:OptionAlphabet = alphabetGrp.recycle(OptionAlphabet);
-        catTitle.reloadStuff(40, curCategoryString, true);
+        catTitle.reloadStuff(bg.y + 20, curCategoryString, true);
         catTitle.ID = 0;
         if (!alphabetGrp.members.contains(catTitle))
             alphabetGrp.add(catTitle);
+
+        var catAttach:Attachment = attachGrp.recycle(Attachment);
+        catAttach.reloadStuff(catTitle, CATEGORY);
+        if (attachGrp.members.contains(catAttach))
+            attachGrp.add(catAttach);
 
         var _i:Int = 0;
         for (data in optionList.get(curCategoryString))
         {
             var optionText:OptionAlphabet = alphabetGrp.recycle(OptionAlphabet);
-            optionText.reloadStuff(140 + (80 * _i), data.name);
-            optionText.x = 80;
+            optionText.reloadStuff(bg.y + 110 + (60 * _i), data.name);
+            optionText.x = bg.x + 20;
             optionText.ID = _i + 1;
 
             if (!alphabetGrp.members.contains(optionText))
                 alphabetGrp.add(optionText);
+
+            var dataGet:Dynamic = data.get();
+            var attach:Attachment = attachGrp.recycle(Attachment);
+            if (Std.isOfType(dataGet, Bool))
+            {
+                attach.reloadStuff(optionText, CHECKMARK);
+                var check = attach.checkmark;
+                check.animation.play(cast(dataGet, Bool) ? "true" : "false", true);
+                check.animation.curAnim.curFrame = check.animation.curAnim.numFrames - 1;
+            }
+            else
+                attach.kill(); // no use for you sorry
+
+            if (attachGrp.members.contains(attach))
+                attachGrp.add(attach);
 
             _i++;
         }
@@ -197,8 +222,51 @@ class OptionsSubState extends MusicBeatSubState
                 alphabet.alpha = 1.0;
         });
         attachGrp.forEachAlive((attach) -> {
-            attach.alpha = attach.parent.alpha;
+            if (attach.parent.ID == curSelection)
+                curAttachType = attach.type;
         });
+    }
+
+    public function updatePlayState()
+    {
+        if (playState == null) return;
+        playState.updateOption(optionList.get(curCategoryString)[curSelection - 1].name);
+    }
+
+    override function draw()
+    {
+        attachGrp.forEachAlive((attach) -> {
+            attach.y = attach.parent.y - 25;
+            attach.alpha = attach.parent.alpha;
+
+            switch(attach.type)
+            {
+                case CATEGORY:
+                    for(arrow in attach.arrows)
+                    {
+                        arrow.y = attach.parent.y;
+                        arrow.x = attach.parent.x - (attach.parent.width / 2);
+                        if (arrow.ID == 0)
+                            arrow.x -= arrow.width;
+                        else
+                            arrow.x += attach.parent.width;
+
+                        if (attach.parent.ID != curSelection)
+                            arrow.animation.play("idle");
+                        else
+                        {
+                            if (arrow.ID == 0) arrow.animation.play(Controls.pressed(UI_LEFT) ? "push" : "idle");
+                            else arrow.animation.play(Controls.pressed(UI_RIGHT) ? "push" : "idle");
+                        }
+                    }
+                case SELECTOR:
+                    
+                case CHECKMARK:
+                    var check = attach.checkmark;
+                    check.x = attach.parent.x + attach.parent.width;
+            }            
+        });
+        super.draw();
     }
 
     override function update(elapsed:Float)
@@ -209,16 +277,30 @@ class OptionsSubState extends MusicBeatSubState
             close();
 
         if (Controls.justPressed(UI_UP)) changeSelection(-1);
-        if (Controls.justPressed(UI_DOWN)) changeSelection(1);
+        else if (Controls.justPressed(UI_DOWN)) changeSelection(1);
 
-        if (curSelection == 0)
+        switch (curAttachType)
         {
-            if (Controls.justPressed(UI_LEFT)) changeCategory(-1);
-            if (Controls.justPressed(UI_RIGHT)) changeCategory(1);
-        }
-        else
-        {
+            case CATEGORY:
+                if (Controls.justPressed(UI_LEFT)) changeCategory(-1);
+                else if (Controls.justPressed(UI_RIGHT)) changeCategory(1);
+            
+            case CHECKMARK:
+                if (Controls.justPressed(ACCEPT))
+                {
+                    var option = optionList.get(curCategoryString)[curSelection - 1];
+                    option.set(!option.get());
 
+                    attachGrp.forEachAlive((attach) -> {
+                        if (attach.parent.ID != curSelection) return;
+                        var check = attach.checkmark;
+                        check.animation.play(option.get() ? "true" : "false", true);
+                    });
+                    
+                    updatePlayState();
+                }
+            case SELECTOR:
+                
         }
     }
 }
@@ -241,23 +323,86 @@ class OptionAlphabet extends Alphabet
         {
             align = CENTER;
             x = FlxG.width / 2;
-            scale.set(1.0, 1.0);
+            scale.set(0.8, 0.8);
         }
         else
         {
             align = LEFT;
-            scale.set(0.8, 0.8);
+            scale.set(0.65, 0.65);
         }
         updateHitbox();
     }
 }
 
-class Attachment extends FlxSprite
+enum AttachmentType
+{
+    CATEGORY;
+    CHECKMARK;
+    SELECTOR;
+}
+class Attachment extends FlxSpriteGroup
 {
     public var startY:Float = 0.0;
     public var parent:OptionAlphabet;
 
-    public function new() {
+    public var type:AttachmentType = CHECKMARK;
+
+    public var checkmark:FlxSprite;
+    public var arrows:Array<FlxSprite> = [];
+
+    public function new()
+    {
         super();
+        checkmark = new FlxSprite();
+        checkmark.loadSparrow("menu/checkmark");
+        checkmark.animation.addByPrefix("false", "false", 24, false);
+        checkmark.animation.addByPrefix("true", "true", 24, false);
+        checkmark.animation.play("true");
+        checkmark.scale.set(0.7, 0.7);
+        checkmark.updateHitbox();
+        add(checkmark);
+
+        for (i in 0...2)
+        {
+            var dir:String = (i == 0 ? "left" : "right");
+            var arrow = new FlxSprite();
+            arrow.loadSparrow("menu/menuArrows");
+            arrow.animation.addByPrefix('idle', 'arrow $dir', 24, false);
+            arrow.animation.addByPrefix('push', 'arrow push $dir', 24, false);
+            arrow.animation.play("idle");
+            arrow.scale.set(0.7, 0.7);
+            arrow.updateHitbox();
+            arrows.push(arrow);
+            arrow.ID = i;
+            add(arrow);
+        }
+    }
+
+    public function reloadStuff(parent:OptionAlphabet, type:AttachmentType)
+    {
+        this.parent = parent;
+        this.type = type;
+
+        checkmark.kill();
+        for (arrow in arrows) arrow.kill();
+        switch(type)
+        {
+            case CATEGORY|SELECTOR:
+                for (arrow in arrows)
+                    arrow.revive();
+
+            case CHECKMARK:
+                checkmark.revive();
+            default:
+        }
+    }
+
+    public function getWidth()
+    {
+        switch(type)
+        {
+            case CHECKMARK: return checkmark.width;
+            default: return 0;
+        }
     }
 }

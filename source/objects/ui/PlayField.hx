@@ -31,10 +31,7 @@ class PlayField extends FlxGroup
 		NoteUtil.setUpDirections(4);
 
 		var wide:Bool = #if TOUCH_CONTROLS Save.data.modernControls #else false #end;
-
-		var strumPos:Array<Float> = [-FlxG.width / 4, FlxG.width / 4];
-		if (middlescroll)
-			strumPos = [-FlxG.width, 0];
+		var strumPos = getStrumlinePos(middlescroll);
 
 		dadStrumline = new Strumline(strumPos[0], downscroll, false, true, false);
 		strumlines.push(dadStrumline);
@@ -52,14 +49,26 @@ class PlayField extends FlxGroup
 		add(touchInput);
 	}
 
+	public function getStrumlinePos(middlescroll:Bool):Array<Float>
+	{
+		var strumPos:Array<Float> = [-FlxG.width / 4, FlxG.width / 4];
+		if (middlescroll)
+			strumPos = [-FlxG.width, 0];
+		return strumPos;
+	}
+
 	public var pressed:Array<Bool> = [];
 	public var justPressed:Array<Bool> = [];
 	public var released:Array<Bool> = [];
 	public var curStepFloat:Float = 0.0;
 
-	public function updateNotes(curStepFloat:Float)
+	public function updateNotes(?curStepFloat:Float)
 	{
-		this.curStepFloat = curStepFloat;
+		if (curStepFloat == null)
+			curStepFloat = this.curStepFloat;
+		else
+			this.curStepFloat = curStepFloat;
+		
 		pressed = [
 			Controls.pressed(LEFT)
 			|| touchInput.pressed("left"),

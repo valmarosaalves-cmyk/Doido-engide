@@ -578,6 +578,39 @@ class PlayState extends MusicBeatState implements Playable
 			audio.speed = defaultSongSpeed;
 	}
 
+	public function updateOption(optionName:String)
+	{
+		switch(optionName)
+		{
+			case "Downscroll":
+				downscroll = Save.data.downscroll;
+				//hudClass.play.downscroll = downscroll;
+				hudClass.updatePositions();
+
+				for(strumline in playField.strumlines)
+				{
+					strumline.downscroll = downscroll;
+					strumline.recalculateY();
+				}
+				playField.updateNotes();
+				
+			case "Middlescroll":
+				middlescroll = Save.data.middlescroll;
+				//hudClass.play.middlescroll = middlescroll;
+				hudClass.updatePositions();
+
+				var strumPos = playField.getStrumlinePos(middlescroll);
+				var _i:Int = 0;
+				for(strumline in playField.strumlines)
+				{
+					strumline.x = (FlxG.width / 2) + strumPos[_i % strumPos.length];
+					strumline.recalculateX();
+					_i++;
+				}
+				playField.updateNotes();
+		}
+	}
+
 	public function beatCamera(gameZoom:Float, hudZoom:Float)
 	{
 		camGame.zoom *= gameZoom;

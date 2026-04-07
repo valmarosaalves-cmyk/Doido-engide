@@ -70,7 +70,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 		if (align != v)
 		{
 			align = v;
-			reloadText();
+			updateHitbox();
 		}
 		return align;
 	}
@@ -114,6 +114,12 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 	public function updateAntialiasing(char:AlphaCharacter)
 	{
 		char.antialiasing = pixel ? false : flixel.FlxSprite.defaultAntialiasing;
+	}
+
+	override function revive()
+	{
+		super.revive();
+		reloadText();
 	}
 
 	/*public var outline(default, null):OutlineData = null;
@@ -164,8 +170,10 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 
 	public function reloadText()
 	{
-		for (char in members)
+		for (char in members) {
+			char.setPosition(x, y);
 			char.kill();
+		}
 
 		var lastWidth:Float = 0;
 		var daRow:Int = 0;

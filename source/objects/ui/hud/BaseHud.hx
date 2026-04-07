@@ -33,7 +33,7 @@ class BaseHud extends FlxGroup
 
 	public function updateScoreTxt() {}
 
-	function updatePositions()
+	public function updatePositions()
 	{
 		updateScoreTxt();
 	}
