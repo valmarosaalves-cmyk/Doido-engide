@@ -157,29 +157,29 @@ class CharacterEditor extends MusicBeatState
 
 		var player:Checkmark = new Checkmark(char.isPlayer);
 		player.x = getX("margin_right", player.width);
-		player.y = getY(1) + 10;
+		player.y = getY(1) -2;
 		player.onUp.add((btn) ->
 		{
 			char.isPlayer = player.value;
 			flipCheck(char);
 		});
 		tab.add(player);
-		tab.add(createText(player.x - 60, getY(1) + 12, "Player:", 0xFFD8DAF6));
+		tab.add(createText(player.x - 60, getY(1) + 2, "Player:", 0xFFD8DAF6));
 
 		var ghostFlip:Checkmark = new Checkmark(ghost.isPlayer);
 		ghostFlip.x = player.x - 60 - ghostFlip.width - 5;
-		ghostFlip.y = getY(1) + 10;
+		ghostFlip.y = getY(1) -2;
 		ghostFlip.onUp.add((btn) ->
 		{
 			ghost.isPlayer = ghostFlip.value;
 			flipCheck(ghost);
 		});
 		tab.add(ghostFlip);
-		tab.add(createText(ghostFlip.x - 55, getY(1) + 12, "Ghost:", 0xFFD8DAF6));
+		tab.add(createText(ghostFlip.x - 55, getY(1) + 2, "Ghost:", 0xFFD8DAF6));
 
-		var reload = new TextButton("Reload Sprite", false);
+		var reload = new TextButton("Reload Sprite", "small");
 		reload.x = getX("margin_right", reload.width);
-		reload.y = getY(0);
+		reload.y = getY(0) - 3;
 		reload.button.setColorTransform(1, 0, 0);
 		reload.text.color = 0xFFFFFFFF;
 		reload.button.onUp.add((btn) ->
@@ -357,15 +357,22 @@ class CharacterEditor extends MusicBeatState
 		}
 		tab.add(fpsStepper);
 
-		var saveButton = new TextButton("Save Anim", false);
-		saveButton.x = getX("center_left", saveButton.width);
+		var newButton = new TextButton("Save as New");
+		newButton.x = getX();
+		newButton.y = getY(bottomY);
+		newButton.button.setColorTransform(0, 1, 0);
+		newButton.text.color = 0xFFFFFFFF;
+		tab.add(newButton);
+
+		var saveButton = new TextButton("Save Current");
+		saveButton.x = getX("center", saveButton.width);
 		saveButton.y = getY(bottomY);
 		saveButton.button.setColorTransform(0.59, 0.78, 1);
 		saveButton.text.color = 0xFFFFFFFF;
 		tab.add(saveButton);
 
-		var deleteButton = new TextButton("Delete Anim", false);
-		deleteButton.x = getX("center_right", deleteButton.width);
+		var deleteButton = new TextButton("Delete Anim");
+		deleteButton.x = getX("margin_right", deleteButton.width);
 		deleteButton.y = getY(bottomY);
 		deleteButton.button.setColorTransform(1, 0, 0);
 		deleteButton.text.color = 0xFFFFFFFF;
@@ -407,13 +414,16 @@ class CharacterEditor extends MusicBeatState
 		anims.cameras = [camHUD];
 		tab.add(anims);
 
-		saveButton.button.onUp.add((btn) ->
+		function saveAnim(update:Bool = true)
 		{
 			// you have to actually be making something to save....
 			if (animEditing.name.length > 0 && animEditing.prefix.length > 0)
 			{
-				if (char.existsInList(curEditing))
+				if (char.existsInList(curEditing) && (update || char.existsInList(animEditing.name)))
 				{
+					if(char.existsInList(animEditing.name))
+						curEditing = animEditing.name;
+
 					for (i in 0...char.data.anims.length)
 					{
 						var anim = char.data.anims[i];
@@ -428,9 +438,6 @@ class CharacterEditor extends MusicBeatState
 							char.removeAnim(oldEditing);
 							char.addAnim(char.data.anims[i], i);
 
-							if (char.curAnimName == oldEditing)
-								char.playAnim(curEditing);
-
 							break;
 						}
 					}
@@ -443,9 +450,10 @@ class CharacterEditor extends MusicBeatState
 				}
 
 				// dont mind it, really
-				if (curEditing == char.idleAnims[0])
+				if (curEditing == char.idleAnims[0] && char.animExists(curEditing))
 				{
 					char.updateHitbox();
+					char.playAnim(char.idleAnims[0]);
 					char.playAnim(char.idleAnims[0], true, (char.anim.curAnim == null) ? 0 : char.anim.curAnim.numFrames);
 					char.setPosition(middlePoint.x - (char.width - middlePoint.width) / 2, middlePoint.y + (middlePoint.height / 2) - char.height);
 				}
@@ -456,7 +464,10 @@ class CharacterEditor extends MusicBeatState
 				setDescs();
 				updateAnim();
 			}
-		});
+		}
+
+		newButton.button.onUp.add((btn) -> saveAnim(false));
+		saveButton.button.onUp.add((btn) -> saveAnim(true));
 
 		deleteButton.button.onUp.add((btn) ->
 		{

@@ -447,7 +447,7 @@ class ChartingState extends MusicBeatState
 		});
 		tab.add(speedStepper);
 
-		var reloadButton = new TextButton("Reload Audio", false, (btn) ->
+		var reloadButton = new TextButton("Reload Audio", (btn) ->
 		{
 			playingSong = false;
 			audio.pause();
@@ -497,7 +497,7 @@ class ChartingState extends MusicBeatState
 		bfIcon.setPosition(getX() + 145 - bfIcon.width, getY(11) - 10);
 		tab.add(bfIcon);
 
-		var bfButton = new TextButton("", false);
+		var bfButton = new TextButton("");
 		bfButton.button.onUp.add((btn) ->
 		{
 			if (test.buttonId == "bf")
@@ -536,7 +536,7 @@ class ChartingState extends MusicBeatState
 		oppIcon.setPosition(getX("center", 145) + 145 - oppIcon.width, getY(11) - 10);
 		tab.add(oppIcon);
 
-		var oppButton = new TextButton("", false);
+		var oppButton = new TextButton("",);
 		oppButton.button.onUp.add((btn) ->
 		{
 			if (test.buttonId == "opp")
@@ -575,7 +575,7 @@ class ChartingState extends MusicBeatState
 		gfIcon.setPosition(getX("margin_right", 145) + 145 - gfIcon.width, getY(11) - 10);
 		tab.add(gfIcon);
 
-		var gfButton = new TextButton("", false);
+		var gfButton = new TextButton("");
 		gfButton.button.onUp.add((btn) ->
 		{
 			if (test.buttonId == "gf")
@@ -612,7 +612,7 @@ class ChartingState extends MusicBeatState
 
 		var stages:Array<String> = Assets.list("data/stages/", true, SCRIPT);
 		stages = stages.concat(stages);
-		var stageButton = new TextButton("", false);
+		var stageButton = new TextButton("");
 		stageButton.button.onUp.add((btn) ->
 		{
 			if (test.buttonId == "stages")

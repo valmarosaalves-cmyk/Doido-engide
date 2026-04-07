@@ -172,11 +172,11 @@ class TextButton extends FlxSpriteGroup
 	public var button:AnimatedButton;
 	public var text:FlxBitmapText;
 
-	public function new(label:String = "", big:Bool = false, ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
+	public function new(label:String = "", sprite:String = "big", ?onUp:QuickButton->Void, ?onDown:QuickButton->Void)
 	{
 		super();
 
-		button = new AnimatedButton("editors/charting/button_big", "buttonbig", onUp, onDown);
+		button = new AnimatedButton('editors/charting/button_$sprite', 'button$sprite', onUp, onDown);
 		add(button);
 
 		text = new FlxBitmapText(0, 0, Assets.bitmapFont("phantommuff"));
