@@ -409,7 +409,7 @@ class CharacterEditor extends MusicBeatState
 
 		saveButton.button.onUp.add((btn) ->
 		{
-			//you have to actually be making something to save....
+			// you have to actually be making something to save....
 			if (animEditing.name.length > 0 && animEditing.prefix.length > 0)
 			{
 				if (char.existsInList(curEditing))
@@ -460,34 +460,41 @@ class CharacterEditor extends MusicBeatState
 
 		deleteButton.button.onUp.add((btn) ->
 		{
-			if (char.existsInList(curEditing))
+			if (char.animList.length >= 2)
 			{
-				for (i in 0...char.data.anims.length)
+				if (char.existsInList(curEditing))
 				{
-					if (char.data.anims[i].name == curEditing)
+					if (char.curAnimName == curEditing)
 					{
-						char.data.anims.remove(char.data.anims[i]);
-						char.removeAnim(curEditing);
-						break;
+						char.playAnim(char.animList[FlxMath.wrap(char.animList.indexOf(curEditing) - 1, 0, char.animList.length - 1)]);
+					}
+					for (i in 0...char.data.anims.length)
+					{
+						if (char.data.anims[i].name == curEditing)
+						{
+							char.data.anims.remove(char.data.anims[i]);
+							char.removeAnim(curEditing);
+							break;
+						}
 					}
 				}
-			}
-			else
-			{
-				// ???
-			}
+				else
+				{
+					// ???
+				}
 
-			animEditing = DoidoSprite.copyAnim(defaultAnim);
-			curEditing = "";
-			editText.text = 'Currently Editing: ${curEditing == "" ? "New" : curEditing}';
-			name.text = animEditing.name;
-			indices.text = animEditing.indices.join(", ");
-			prefix.text = animEditing.prefix;
-			fpsStepper.value = animEditing.framerate ?? 24;
-			loop.value = animEditing.loop ?? false;
-			anims.options = char.animList.concat(["Add New"]);
-			setDescs();
-			updateAnim();
+				animEditing = DoidoSprite.copyAnim(defaultAnim);
+				curEditing = "";
+				editText.text = 'Currently Editing: ${curEditing == "" ? "New" : curEditing}';
+				name.text = animEditing.name;
+				indices.text = animEditing.indices.join(", ");
+				prefix.text = animEditing.prefix;
+				fpsStepper.value = animEditing.framerate ?? 24;
+				loop.value = animEditing.loop ?? false;
+				anims.options = char.animList.concat(["Add New"]);
+				setDescs();
+				updateAnim();
+			}
 		});
 
 		var filter:PsychUIInputText;
