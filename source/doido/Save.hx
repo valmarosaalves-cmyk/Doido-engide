@@ -6,24 +6,35 @@ import flixel.util.FlxSave;
 @:structInit
 class SaveVariables
 {
-	// gameplay
 	public var test:String = 'bullshit';
+
+	// gameplay
 	public var downscroll:Bool = false;
 	public var middlescroll:Bool = false;
-	// visuals
+
+	// preferences
+	public var darkMode:Bool = true;
 	public var quantNotes:Bool = false;
 	public var fpsCounter:Bool = #if desktop true #else false #end;
+	public var hitsounds:Bool = false;
+	public var hitsoundVolume:Float = 1.0;
+	public var flashingLights:String = "ON";
+	public var splashNotes:String = "ALWAYS";
+	
 	// graphics
 	public var fps:Int = 60;
+	public var windowSize:String = "1280x720";
 	public var gpuCaching:Bool = false;
 	public var antialiasing:Bool = true;
 	public var lowQuality:Bool = false;
+	
 	// mobile
+	public var modernControls:Bool = #if TOUCH_CONTROLS true #else false #end;
 	public var invertX:Bool = false;
 	public var invertY:Bool = false;
-	public var modernControls:Bool = #if TOUCH_CONTROLS true #else false #end;
+
 	// sound
-	public var volume:Float = 1;
+	public var volume:Float = 1.0;
 	public var muted:Bool = false;
 }
 

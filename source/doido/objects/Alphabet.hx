@@ -47,22 +47,31 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 
 	public function set_text(v:String):String
 	{
-		text = v;
-		reloadText();
+		if (text != v)
+		{
+			text = v;
+			reloadText();
+		}
 		return text;
 	}
 
 	public function set_bold(v:Bool):Bool
 	{
-		bold = v;
-		reloadText();
+		if (bold != v)
+		{
+			bold = v;
+			reloadText();
+		}
 		return bold;
 	}
 
 	public function set_align(v:AlphabetAlign):AlphabetAlign
 	{
-		align = v;
-		reloadText();
+		if (align != v)
+		{
+			align = v;
+			reloadText();
+		}
 		return align;
 	}
 
@@ -96,8 +105,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 	public function set_pixel(b:Bool):Bool
 	{
 		pixel = b;
-		forEachAlive(function(char:AlphaCharacter)
-		{
+		forEachAlive(function(char:AlphaCharacter) {
 			updateAntialiasing(char);
 		});
 		return pixel;
@@ -138,6 +146,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 			dropShadow = null;
 			reloadText();
 	}*/
+
 	// in any other engine we could cache the framescollection so it doesnt have to keep being loaded
 	// but we already have a cache to take care of that lol
 	public var fontFrames(get, never):FlxFramesCollection;
@@ -338,6 +347,16 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 				char.setColor(FlxColor.fromHSB(char.rainbowHue, 1, 1));
 			}
 		});
+	}
+
+	override function draw()
+	{
+		forEachAlive(function(char:AlphaCharacter)
+		{
+			char.angle = angle;
+			char.alpha = alpha;
+		});
+		super.draw();
 	}
 }
 

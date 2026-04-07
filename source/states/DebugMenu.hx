@@ -108,7 +108,10 @@ class DebugMenu extends MusicBeatState
 			switch (options[cur].toLowerCase())
 			{
 				case "options":
-					MusicBeat.switchState(new DebugOptions());
+					if (FlxG.keys.pressed.SHIFT)
+						openSubState(new substates.menus.OptionsSubState());
+					else
+						MusicBeat.switchState(new DebugOptions());
 				case "controls":
 					MusicBeat.switchState(new DebugControls());
 				case "crash handler":

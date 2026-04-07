@@ -168,7 +168,7 @@ class Main extends Sprite
 		return f;
 	}
 
-	public static function setFps(x:Int, y:Int)
+	public static function setFpsPos(x:Int, y:Int)
 	{
 		@:bypassAccessor {
 			fpsX = x;

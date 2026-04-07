@@ -42,8 +42,7 @@ class Splash extends BaseSplash
 class Cover extends BaseSplash
 {
 	public var strum:StrumNote = null;
-	public var isPlayer:Bool = false;
-
+	
 	override public function reloadSplash()
 	{
 		clearOffsets();
