@@ -23,7 +23,7 @@ class OptionsSubState extends MusicBeatSubState
         "Gameplay",
         "Preferences",
         "Graphics",
-        #if TOUCH_CONTROLS, "Mobile",#end
+        #if TOUCH_CONTROLS "Mobile",#end
     ];
     public var optionList:Map<String, Array<OptionData>> = [];
 
