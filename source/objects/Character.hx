@@ -131,7 +131,7 @@ class Character extends DoidoSprite
 		origin.set(data.angleOrigin.x * width, data.angleOrigin.y * height);
 		scaleOffset = {x: offset.x, y: offset.y};
 
-		playAnim(idleAnims[0], true, (anim.curAnim == null) ? 0 : anim.curAnim.numFrames);
+		playAnim(idleAnims[0], true, idleFrames);
 	}
 
 	public function singTypeFromString(type:Null<String>)
@@ -220,4 +220,9 @@ class Character extends DoidoSprite
 
 		updateOffset();
 	}
+
+	public var idleFrames(get, never):Int;
+
+	public function get_idleFrames():Int
+		return (anim.getByName(idleAnims[0]) == null) ? 0 : anim.getByName(idleAnims[0]).numFrames;
 }

@@ -157,7 +157,7 @@ class CharacterEditor extends MusicBeatState
 
 		var player:Checkmark = new Checkmark(char.isPlayer);
 		player.x = getX("margin_right", player.width);
-		player.y = getY(1) -2;
+		player.y = getY(1) - 2;
 		player.onUp.add((btn) ->
 		{
 			char.isPlayer = player.value;
@@ -168,7 +168,7 @@ class CharacterEditor extends MusicBeatState
 
 		var ghostFlip:Checkmark = new Checkmark(ghost.isPlayer);
 		ghostFlip.x = player.x - 60 - ghostFlip.width - 5;
-		ghostFlip.y = getY(1) -2;
+		ghostFlip.y = getY(1) - 2;
 		ghostFlip.onUp.add((btn) ->
 		{
 			ghost.isPlayer = ghostFlip.value;
@@ -421,7 +421,7 @@ class CharacterEditor extends MusicBeatState
 			{
 				if (char.existsInList(curEditing) && (update || char.existsInList(animEditing.name)))
 				{
-					if(char.existsInList(animEditing.name))
+					if (char.existsInList(animEditing.name))
 						curEditing = animEditing.name;
 
 					for (i in 0...char.data.anims.length)
@@ -449,16 +449,15 @@ class CharacterEditor extends MusicBeatState
 					char.addAnim(animEditing);
 				}
 
+				char.playAnim(curEditing);
+
 				// dont mind it, really
 				if (curEditing == char.idleAnims[0] && char.animExists(curEditing))
 				{
 					char.updateHitbox();
-					char.playAnim(char.idleAnims[0]);
-					char.playAnim(char.idleAnims[0], true, (char.anim.curAnim == null) ? 0 : char.anim.curAnim.numFrames);
 					char.setPosition(middlePoint.x - (char.width - middlePoint.width) / 2, middlePoint.y + (middlePoint.height / 2) - char.height);
 				}
 
-				char.playAnim(curEditing);
 				editText.text = 'Currently Editing: ${curEditing == "" ? "New" : curEditing}';
 				anims.options = char.animList.concat(["Add New"]);
 				setDescs();
