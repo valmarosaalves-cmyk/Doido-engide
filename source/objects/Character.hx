@@ -53,7 +53,7 @@ class Character extends DoidoSprite
 
 	public var debugMode:Bool = false;
 
-	public var idleAnims:Array<String> = ["idle"];
+	public var idleAnims(default, set):Array<String> = ["idle"];
 
 	public var quickDancer:Bool = false;
 
@@ -225,4 +225,14 @@ class Character extends DoidoSprite
 
 	public function get_idleFrames():Int
 		return (anim.getByName(idleAnims[0]) == null) ? 0 : anim.getByName(idleAnims[0]).numFrames;
+
+	public function set_idleAnims(a:Array<String>)
+	{
+		if(a.length >= 1)
+			idleAnims = a;
+		else
+			idleAnims = ["idle"];
+
+		return idleAnims;
+	}
 }
