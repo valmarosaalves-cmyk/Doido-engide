@@ -498,16 +498,18 @@ class OptionsSubState extends MusicBeatSubState
                             var newValue:Float = curOption.get() + change * step;
                             attach.setSliderValue(newValue, curOption);
 
-                            if (prevPercent != attach.sliderBar.percent)
+                            if (holdTimer < holdMax)
+                                holdTimerSfx = true;
+                            else
                             {
-                                if (holdTimer < holdMax)
-                                    holdTimerSfx = true;
+                                if (prevPercent == attach.sliderBar.percent)
+                                    holdTimerSfx = false;
                                 else
                                     holdTimerSfx = !holdTimerSfx;
-
-                                if (holdTimerSfx && curOption.canPlaySound())
-                                    playSound('options/slider-${change < 0 ? "down" : "up"}');
                             }
+
+                            if (holdTimerSfx && curOption.canPlaySound())
+                                playSound('options/slider-${change < 0 ? "down" : "up"}');
 
                             if (holdTimer >= holdMax)
 				                holdTimer = holdMax - 0.02; // 0.02

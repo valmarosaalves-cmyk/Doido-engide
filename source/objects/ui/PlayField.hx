@@ -332,7 +332,7 @@ class PlayField extends FlxGroup
 
 		if (strumline.isPlayer) {
 			playerHolding = true;
-			NoteUtil.playHitsound();
+			if (!note.isHold) NoteUtil.playHitsound();
 		}
 
 		if (!note.isHold)
