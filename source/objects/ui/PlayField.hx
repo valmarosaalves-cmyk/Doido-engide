@@ -290,9 +290,10 @@ class PlayField extends FlxGroup
 
 						// calculating the clipping by how much you held the note
 						// if (!strumline.pauseNotes)
-						if (true)
+						if (true && !hold.missed)
 						{
-							var daRect = new FlxRect(0, 0, hold.frameWidth, hold.frameHeight);
+							var daRect = (hold.clipRect ?? new FlxRect());
+							daRect.set(0, 0, hold.frameWidth, hold.frameHeight);
 
 							var rawSize:Float = holdHitLength - hold.holdIndex;
 							if (rawSize > 0)

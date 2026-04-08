@@ -70,9 +70,7 @@ class SpriteUtil
 	public static function clipToSprite(spr:FlxSprite, objects:Array<FlxSprite>):FlxSprite
     {
 		var clipRect = (spr.clipRect ?? new flixel.math.FlxRect());
-		clipRect.x = clipRect.y = 0;
-		clipRect.width = spr.frameWidth;
-		clipRect.height = spr.frameHeight;
+		clipRect.set(0, 0, spr.frameWidth, spr.frameHeight);
 		
         for(object in objects)
         {
