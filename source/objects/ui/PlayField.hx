@@ -45,6 +45,9 @@ class PlayField extends FlxGroup
 			add(strumline);
 		}
 
+		// cache
+		NoteUtil.playHitsound(0.0);
+
 		touchInput = new TouchInput(bfStrumline);
 		add(touchInput);
 	}
@@ -327,8 +330,10 @@ class PlayField extends FlxGroup
 		var strum = strumline.strums[note.data.lane];
 		var diff = noteDiff(note.data);
 
-		if (strumline.isPlayer)
+		if (strumline.isPlayer) {
 			playerHolding = true;
+			NoteUtil.playHitsound();
+		}
 
 		if (!note.isHold)
 		{
