@@ -92,8 +92,8 @@ class NoteUtil
 	inline public static function playHitsound(?key:String, ?volume:Float):FlxSound
 	{
 		if (key == null) key = Save.data.hitsound;
-		if (!Assets.fileExists("sounds/hitsounds/" + key, SOUND))
-			return null;
+		if (key == "OFF") return null;
+		if (!Assets.fileExists("sounds/hitsounds/" + key, SOUND)) return null;
 
 		var hitsound = FlxG.sound.load(Assets.sound("hitsounds/" + key));
 		hitsound.volume = volume ?? Save.data.hitsoundVolume;
