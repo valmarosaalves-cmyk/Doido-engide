@@ -94,16 +94,17 @@ class Main extends Sprite
 			scaleFps();
 		});
 
+		#if debug
+		FlxG.debugger.toggleKeys = [];
+		#end
+
 		// fullscreen bind fix
 		FlxG.stage.addEventListener(openfl.events.KeyboardEvent.KEY_DOWN, keyDown, false, 100);
 
+		// PLUGINS!!
+		FlxG.plugins.addPlugin(new InputDelayHandler());
 		#if SCREENSHOT_FEATURE
-		// screenshots!!
 		FlxG.plugins.addPlugin(new doido.system.Screenshot());
-		#end
-
-		#if debug
-		FlxG.debugger.toggleKeys = [];
 		#end
 	}
 

@@ -1,9 +1,10 @@
 package doido;
 
+import flixel.input.FlxInput.FlxInputState;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID as FlxPad;
-import flixel.input.FlxInput.FlxInputState;
 import flixel.input.gamepad.FlxGamepad.FlxGamepadModel;
+
 #if TOUCH_CONTROLS
 import doido.mobile.TouchHandler;
 #end
@@ -36,8 +37,22 @@ typedef Binds =
 	var rebindable:Bool;
 }
 
+class InputDelayHandler extends flixel.FlxBasic
+{
+	public function new() {
+		super();
+	}
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+		if (Controls.inputDelay > 0)
+			Controls.inputDelay--;
+	}
+}
 class Controls
 {
+	public static var inputDelay:Int = 0;
+
 	public static var bindMap:Map<DoidoKey, Binds> = [
 		// GAMEPLAY
 		LEFT => {
@@ -131,6 +146,9 @@ class Controls
 
 	public static function checkBind(bind:DoidoKey, inputState:FlxInputState):Bool
 	{
+		if (inputDelay > 0)
+			return false;
+
 		if (!bindMap.exists(bind))
 		{
 			Logs.print('Bind $bind not found', WARNING);
@@ -167,6 +185,9 @@ class Controls
 	#if TOUCH_CONTROLS
 	public static function checkMobile(bind:DoidoKey, inputState:FlxInputState)
 	{
+		if (inputDelay > 0)
+			return false;
+		
 		if (isUiBind(bind))
 			return TouchHandler.getSwipe(bind);
 		else if (bind == BACK)

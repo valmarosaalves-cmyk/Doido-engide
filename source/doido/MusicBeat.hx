@@ -113,6 +113,7 @@ class MusicBeatState extends FlxUIState
 
 	override function openSubState(subState:FlxSubState)
 	{
+		Controls.inputDelay = 2;
 		#if SCREENSHOT_FEATURE Screenshot.clearScreenshot(); #end
 		super.openSubState(subState);
 	}
@@ -212,6 +213,7 @@ class MusicBeatSubState extends FlxSubState
 
 	override function openSubState(subState:FlxSubState)
 	{
+		Controls.inputDelay = 2;
 		#if SCREENSHOT_FEATURE Screenshot.clearScreenshot(); #end
 		super.openSubState(subState);
 	}
