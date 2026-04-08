@@ -227,7 +227,8 @@ class PlayState extends MusicBeatState implements Playable
 			{
 				Timings.addScoreHold(note);
 				rating = Timings.addAccuracyHold(note.holdHitPercent);
-				if (note.missed) health -= 0.1;
+				if (note.missed)
+					health -= 0.1;
 			}
 			else
 			{
@@ -590,28 +591,28 @@ class PlayState extends MusicBeatState implements Playable
 
 	public function updateOption(optionName:String)
 	{
-		switch(optionName)
+		switch (optionName)
 		{
 			case "Downscroll":
-				downscroll = Save.data.downscroll;
-				//hudClass.play.downscroll = downscroll;
+				downscroll = (#if TOUCH_CONTROLS Save.data.modernControls #else false #end ?true:Save.data.downscroll);
+				// hudClass.play.downscroll = downscroll;
 				hudClass.updatePositions();
 
-				for(strumline in playField.strumlines)
+				for (strumline in playField.strumlines)
 				{
 					strumline.downscroll = downscroll;
 					strumline.recalculateY();
 				}
 				playField.updateNotes();
-				
+
 			case "Centered Notes":
-				middlescroll = Save.data.middlescroll;
-				//hudClass.play.middlescroll = middlescroll;
+				middlescroll = (#if TOUCH_CONTROLS Save.data.modernControls #else false #end ?true:Save.data.middlescroll);
+				// hudClass.play.middlescroll = middlescroll;
 				hudClass.updatePositions();
 
 				var strumPos = playField.getStrumlinePos(middlescroll);
 				var _i:Int = 0;
-				for(strumline in playField.strumlines)
+				for (strumline in playField.strumlines)
 				{
 					strumline.x = (FlxG.width / 2) + strumPos[_i % strumPos.length];
 					strumline.recalculateX();
