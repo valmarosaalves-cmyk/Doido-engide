@@ -149,9 +149,10 @@ class Timings
 		var scoreWin:Float = hold.data.length * hold.holdHitPercent;
 		if (hold.missed)
 		{
-			misses++;
+			if (hold.holdParent.gotHit)
+				misses++;
 			score -= Math.floor(50 * (hold.data.length - scoreWin));
-		}	
+		}
 		else
 			score += Math.ceil(50 * scoreWin);
 	}
