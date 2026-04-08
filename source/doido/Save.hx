@@ -16,7 +16,7 @@ class SaveVariables
 	public var darkMode:Bool = true;
 	public var quantNotes:Bool = false;
 	public var fpsCounter:Bool = #if desktop true #else false #end;
-	public var hitsounds:Bool = false;
+	public var hitsound:String = "OFF";
 	public var hitsoundVolume:Float = 1.0;
 	public var flashingLights:String = "ON";
 	public var splashNotes:String = "ALWAYS";

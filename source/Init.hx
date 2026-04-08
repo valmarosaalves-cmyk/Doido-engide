@@ -18,6 +18,8 @@ class Init extends MusicBeatState
 		Highscore.load();
 		DiscordIO.check();
 
+		Main.setWindowSize(Save.data.windowSize);
+
 		FlxG.fixedTimestep = false;
 		FlxG.mouse.useSystemCursor = true;
 		FlxG.mouse.visible = false;

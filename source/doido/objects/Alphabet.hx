@@ -356,16 +356,6 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 			}
 		});
 	}
-
-	override function draw()
-	{
-		forEachAlive(function(char:AlphaCharacter)
-		{
-			char.angle = angle;
-			char.alpha = alpha;
-		});
-		super.draw();
-	}
 }
 
 class AlphaCharacter extends FlxSprite

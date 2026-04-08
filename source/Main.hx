@@ -188,6 +188,25 @@ class Main extends Sprite
 		fpsCounter.x = game.x + (fpsX*scale);
 		fpsCounter.y = game.y + (fpsY*scale);
 	}
+
+	public static function setWindowSize(key:String):Void
+	{
+		var size:Array<String> = key.split("x");
+		if (size.length != 2) return;
+
+		var w:Null<Int> = Std.parseInt(size[0]);
+		var h:Null<Int> = Std.parseInt(size[1]);
+		if (w == null || h == null) return;
+
+		var window = lime.app.Application.current.window;
+
+		var centerX = window.x + window.width / 2;
+		var centerY = window.y + window.height / 2;
+		window.resize(w, h);
+
+		window.x = Std.int(centerX - w / 2);
+		window.y = Std.int(centerY - h / 2);
+	}
 }
 
 @:deprecated("Paths was moved to Assets")

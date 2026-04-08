@@ -1,6 +1,6 @@
 package substates.menus;
 
-import doido.objects.ui.DoidoBar;
+import flixel.util.FlxColor;
 import doido.objects.Alphabet;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
@@ -13,9 +13,13 @@ typedef OptionData =
 	var name:String;
 	var get:Void->Dynamic;
 	var set:Dynamic->Void;
+    var ?display:Dynamic->String;
+    var ?onChange:Void->Void;
+    // SELECTORS
+    var ?options:Array<String>;
+    // SLIDERS
     var ?step:Float;
     var ?limits:Array<Float>;
-    var ?display:Dynamic->String;
 }
 class OptionsSubState extends MusicBeatSubState
 {
@@ -36,6 +40,9 @@ class OptionsSubState extends MusicBeatSubState
     public var alphabetGrp:FlxTypedGroup<OptionAlphabet>;
     public var attachGrp:FlxTypedGroup<Attachment>;
 
+    public final enabledColor:FlxColor = FlxColor.WHITE;
+    public final disabledColor:FlxColor = FlxColor.WHITE.getDarkened(0.6);
+
     public var curCategoryString:String = "";
     public var curCategory:Int = 0;
     public var curSelection:Int = 0;
@@ -51,7 +58,7 @@ class OptionsSubState extends MusicBeatSubState
         this.playState = playState;
         //if (playState == null)
         //{
-        bg = new FlxSprite().makeColor(FlxG.width * 0.8, FlxG.height * 0.8, 0xFF000000);
+        bg = new FlxSprite().makeColor(0, 0, 0xFF000000);
         bg.screenCenter();
         bg.alpha = 0.9;
         add(bg);
@@ -89,9 +96,10 @@ class OptionsSubState extends MusicBeatSubState
                 },
                 #end
                 {
-                    name: "Hitsounds",
-                    get: () -> Save.data.hitsounds,
-                    set: (b:Bool) -> Save.data.hitsounds = b
+                    name: "Hitsound",
+                    get: () -> Save.data.hitsound,
+                    set: (b:String) -> Save.data.hitsound = b,
+                    options: ["OFF", "OSU", "NSWITCH", "CD"]
                 },
                 {
                     name: "Hitsound Volume",
@@ -104,7 +112,8 @@ class OptionsSubState extends MusicBeatSubState
                 {
                     name: "Flashing Lights",
                     get: () -> Save.data.flashingLights,
-                    set: (i:Int) -> Save.data.flashingLights = ["ON", "REDUCED", "OFF"][i]
+                    set: (s:String) -> Save.data.flashingLights = s,
+                    options: ["ON", "REDUCED", "OFF"]
                 },
             ],
             "Graphics" => [
@@ -118,7 +127,9 @@ class OptionsSubState extends MusicBeatSubState
                 {
                     name: "Window Size",
                     get: () -> Save.data.windowSize,
-                    set: (i:Int) -> Save.data.windowSize = ["640x360", "1280x720", "1920x1080"][i]
+                    set: (s:String) -> Save.data.windowSize = s,
+                    options: ["640x360","854x480","960x540","1024x576","1152x648","1280x720","1366x768","1600x900","1920x1080", "2560x1440", "3840x2160"],
+                    onChange: () -> Main.setWindowSize(Save.data.windowSize)
                 },
                 {
                     name: "GPU Caching",
@@ -213,7 +224,7 @@ class OptionsSubState extends MusicBeatSubState
             else if (Std.isOfType(dataGet, String))
             {
                 attach.reloadStuff(optionText, SELECTOR);
-                attach.selectorTxt.text = (data.display == null) ? '$dataGet' : data.display(dataGet);
+                attach.setSelectorValue(0, data);
             }
             else if (Std.isOfType(dataGet, Int) || Std.isOfType(dataGet, Float))
             {
@@ -271,9 +282,9 @@ class OptionsSubState extends MusicBeatSubState
         curSelection = FlxMath.wrap(curSelection + change, 0, optionList.get(curCategoryString).length);
 
         alphabetGrp.forEachAlive((alphabet) -> {
-            alphabet.alpha = 0.4;
+            alphabet.color = disabledColor;
             if (alphabet.ID == curSelection)
-                alphabet.alpha = 1.0;
+                alphabet.color = enabledColor;
         });
 
         curAttachType = null;
@@ -281,20 +292,45 @@ class OptionsSubState extends MusicBeatSubState
             if (attach.parent.ID == curSelection)
                 curAttachType = attach.type;
         });
+
+        curOption = optionList.get(curCategoryString)[curSelection - 1];
     }
 
     public function saveOptions()
     {
         Save.save();
+        if (curOption?.onChange != null) curOption?.onChange();
         if (playState == null) return;
         playState.updateOption(optionList.get(curCategoryString)[curSelection - 1].name);
     }
 
     override function draw()
     {
+        alphabetGrp.forEach((alphabet) -> {
+            for(char in alphabet.members) {
+                char.clipToSprite([bg]);
+            }
+        });
+        attachGrp.forEach((attach) -> {
+            for(item in attach.members) {
+                if (Std.isOfType(item, SliderBar))
+                {
+                    for(sprite in cast(item, SliderBar))
+                        sprite.clipToSprite([bg]);
+                }
+                else if(Std.isOfType(item, Alphabet))
+                {
+                    for(char in cast(item, Alphabet))
+                        char.clipToSprite([bg]);
+                }
+                else
+                    item.clipToSprite([bg]);
+            }
+        });
+
         attachGrp.forEachAlive((attach) -> {
             attach.y = attach.parent.y;
-            attach.alpha = attach.parent.alpha;
+            attach.color = attach.parent.color;
 
             for(arrow in attach.arrows)
             {
@@ -346,10 +382,10 @@ class OptionsSubState extends MusicBeatSubState
 
                     for(arrow in attach.arrows) {
                         arrow.y = attach.parent.y - 6;
-                        arrow.alpha = attach.parent.alpha;
+                        arrow.color = attach.parent.color;
                     }
-                    if (attach.sliderBar.percent <= 0.0) attach.arrows[1].alpha = 0.4;
-                    if (attach.sliderBar.percent >= 100) attach.arrows[0].alpha = 0.4;
+                    if (attach.sliderBar.percent <= 0.0) attach.arrows[1].color = disabledColor;
+                    if (attach.sliderBar.percent >= 100) attach.arrows[0].color = disabledColor;
                     
                 case CHECKMARK:
                     attach.y -= 25;
@@ -359,6 +395,8 @@ class OptionsSubState extends MusicBeatSubState
         });
         super.draw();
     }
+
+    public var curOption:OptionData;
 
     override function update(elapsed:Float)
     {
@@ -392,7 +430,6 @@ class OptionsSubState extends MusicBeatSubState
 
         if (curAttachType != null)
         {
-            var option = optionList.get(curCategoryString)[curSelection - 1];
             switch (curAttachType)
             {
                 case CATEGORY:
@@ -400,7 +437,18 @@ class OptionsSubState extends MusicBeatSubState
                     else if (Controls.justPressed(UI_RIGHT)) changeCategory(1);
 
                 case SELECTOR:
-                    // calcBGWidth();
+                    attachGrp.forEachAlive((attach) -> {
+                        if (attach.parent.ID != curSelection) return;
+
+                        var change:Int = (Controls.pressed(UI_RIGHT) ? 1 : 0) - (Controls.pressed(UI_LEFT) ? 1 : 0);
+
+                        if (Controls.justPressed(UI_LEFT) || Controls.justPressed(UI_RIGHT))
+                        {
+                            attach.setSelectorValue(change, curOption);
+                            calcBGWidth();
+                            saveOptions();
+                        }
+                    });
                 
                 case SLIDER:
                     attachGrp.forEachAlive((attach) -> {
@@ -417,9 +465,9 @@ class OptionsSubState extends MusicBeatSubState
                             if (holdTimer >= holdMax)
 				                holdTimer = holdMax - 0.02; // 0.02
 
-                            var step:Float = option.step ?? 1.0;
-                            var newValue:Float = option.get() + change * step;
-                            attach.setSliderValue(newValue, option);
+                            var step:Float = curOption.step ?? 1.0;
+                            var newValue:Float = curOption.get() + change * step;
+                            attach.setSliderValue(newValue, curOption);
 
                             saveOptions();
                         }
@@ -428,12 +476,12 @@ class OptionsSubState extends MusicBeatSubState
                 case CHECKMARK:
                     if (Controls.justPressed(ACCEPT))
                     {
-                        option.set(!option.get());
+                        curOption.set(!curOption.get());
 
                         attachGrp.forEachAlive((attach) -> {
                             if (attach.parent.ID != curSelection) return;
                             var check = attach.checkmark;
-                            check.animation.play(option.get() ? "true" : "false", true);
+                            check.animation.play(curOption.get() ? "true" : "false", true);
                         });
                         
                         saveOptions();
@@ -470,6 +518,14 @@ class OptionAlphabet extends Alphabet
         }
         updateHitbox();
     }
+
+    override function draw()
+	{
+		forEachAlive(function(char:AlphaCharacter) {
+			char.color = color;
+		});
+		super.draw();
+	}
 }
 
 enum AttachmentType
@@ -489,7 +545,7 @@ class Attachment extends FlxSpriteGroup
     public var checkmark:FlxSprite;
     public var arrows:Array<FlxSprite> = [];
     public var selectorTxt:Alphabet;
-    public var sliderBar:DoidoBar;
+    public var sliderBar:SliderBar;
     public var sliderBall:FlxSprite;
 
     public function new()
@@ -519,8 +575,7 @@ class Attachment extends FlxSpriteGroup
             add(arrow);
         }
 
-        sliderBar = new DoidoBar("menu/sliderBar", "menu/sliderBar-border");
-		sliderBar.sideR.color = 0xFF2A2C44;
+        sliderBar = new SliderBar();
 		add(sliderBar);
         
 		sliderBall = new FlxSprite().loadImage("menu/sliderBall");
@@ -543,30 +598,44 @@ class Attachment extends FlxSpriteGroup
         }
     }
 
-    public function setSliderValue(newValue:Float, option:OptionData)
+    public function setSliderValue(newValue:Float, data:OptionData)
     {
         if (type != SLIDER) return;
 
-        var step:Float = option.step ?? 1.0;
+        var step:Float = data.step ?? 1.0;
 
-        var limits = option.limits;
+        var limits = data.limits;
         if (limits == null) limits = [0, 100];
         if (newValue < Math.min(limits[0], limits[1]))
             newValue = Math.min(limits[0], limits[1]);
         if (newValue > Math.max(limits[1], limits[0]))
             newValue = Math.max(limits[1], limits[0]);
 
-        if (Std.isOfType(option.get(), Float))
-            option.set(Math.round(newValue / step) * step);
+        if (Std.isOfType(data.get(), Float))
+            data.set(Math.round(newValue / step) * step);
         else
-            option.set(Math.floor(newValue));
+            data.set(Math.floor(newValue));
         
-        selectorTxt.text = (option.display == null) ? '$newValue' : option.display(newValue);
+        selectorTxt.text = (data.display == null) ? '$newValue' : data.display(newValue);
         sliderBar.percent = FlxMath.remapToRange(
             newValue,
             limits[0], limits[1],
             100, 0
         );
+    }
+
+    public function setSelectorValue(change:Int, data:OptionData)
+    {
+        if (type != SELECTOR) return;
+
+        if (change != 0)
+        {
+            var curSel = data.options.indexOf(data.get());
+            curSel += change;
+            data.set(data.options[FlxMath.wrap(curSel, 0, data.options.length - 1)]);
+        }
+
+        selectorTxt.text = (data.display == null) ? data.get() : data.display(data.get());
     }
 
     public function reloadStuff(parent:OptionAlphabet, type:AttachmentType)
@@ -607,4 +676,65 @@ class Attachment extends FlxSpriteGroup
             default:
         }
     }
+
+    override function draw()
+	{
+		selectorTxt?.forEachAlive(function(char:AlphaCharacter) {
+			char.color = color;
+		});
+		super.draw();
+	}
+}
+class SliderBar extends FlxSpriteGroup
+{
+	public var border:FlxSprite;
+
+	public var sideL:FlxSprite;
+	public var sideR:FlxSprite;
+	public var percent(default, set):Float = 0;
+
+	public function set_percent(v:Float)
+	{
+		percent = v;
+		if (sideL != null && sideR != null)
+		{
+            sideL.scale.x = 1.0 - (percent / 100);
+            sideR.scale.x = (percent / 100);
+            sideL.updateHitbox();
+            sideR.updateHitbox();
+            updatePos();
+		}
+		return percent;
+	}
+
+	public function new()
+	{
+		super(x, y);
+		percent = 50;
+
+		sideR = new FlxSprite();
+		sideR.loadGraphic(Assets.image("menu/sliderBarR"));
+		sideL = new FlxSprite();
+		sideL.loadGraphic(Assets.image("menu/sliderBarL"));
+
+		add(sideR);
+		add(sideL);
+        
+		border = new FlxSprite().loadGraphic(Assets.image("menu/sliderBar-border"));
+		add(border);
+	}
+
+	public function updatePos()
+	{
+		for(item in members)
+			item.setPosition(x, y);
+        sideR.x += border.width - sideR.width;
+	}
+
+	override function draw()
+	{
+		for(item in members)
+			item.color = color;
+		super.draw();
+	}
 }
