@@ -23,7 +23,7 @@ class SaveVariables
 	
 	// graphics
 	public var fps:Int = 60;
-	public var windowSize:String = "1280x720";
+	public var windowSize:String = '${Main.gameWidth}x${Main.gameHeight}';
 	public var gpuCaching:Bool = false;
 	public var antialiasing:Bool = true;
 	public var lowQuality:Bool = false;

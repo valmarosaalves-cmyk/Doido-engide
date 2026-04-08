@@ -17,9 +17,8 @@ class Main extends Sprite
 {
 	public static var game:FlxGame;
 
-	// later we should have the window size options be determined automatically, probably
-	var gameWidth:Int = 1280;
-	var gameHeight:Int = 720;
+	public static var gameWidth:Int = 1280;
+	public static var gameHeight:Int = 720;
 	var framerate:Int = 60;
 	var skipSplash:Bool = true;
 
@@ -185,18 +184,34 @@ class Main extends Sprite
 
 		fpsCounter.scaleX = scale;
 		fpsCounter.scaleY = scale;
-		fpsCounter.x = game.x + (fpsX*scale);
-		fpsCounter.y = game.y + (fpsY*scale);
+		fpsCounter.x = game.x + (fpsX * scale);
+		fpsCounter.y = game.y + (fpsY * scale);
 	}
 
+	public static var windowSizes(get, never):Array<String>;
+	public static var windowScales:Array<Float> = [0.5, 2 / 3, 0.75, 0.8, 0.9, 1, 16 / 15, 1.25, 1.5, 2, 3];
+
+	public static function get_windowSizes():Array<String>
+	{
+		var out:Array<String> = [];
+
+		for(s in windowScales)
+			out.push('${Math.ceil(gameWidth*s)}x${Math.ceil(gameHeight*s)}');
+
+		return(out);
+	}
+	
 	public static function setWindowSize(key:String):Void
 	{
+		#if desktop
 		var size:Array<String> = key.split("x");
-		if (size.length != 2) return;
+		if (size.length != 2)
+			return;
 
 		var w:Null<Int> = Std.parseInt(size[0]);
 		var h:Null<Int> = Std.parseInt(size[1]);
-		if (w == null || h == null) return;
+		if (w == null || h == null)
+			return;
 
 		var window = lime.app.Application.current.window;
 
@@ -206,6 +221,7 @@ class Main extends Sprite
 
 		window.x = Std.int(centerX - w / 2);
 		window.y = Std.int(centerY - h / 2);
+		#end
 	}
 }
 

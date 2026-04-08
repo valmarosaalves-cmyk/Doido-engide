@@ -22,6 +22,7 @@ typedef OptionData =
     var ?options:Array<String>;
     // SLIDERS
     var ?step:Float;
+    var ?hold:Float;
     var ?limits:Array<Float>;
 }
 class OptionsSubState extends MusicBeatSubState
@@ -117,6 +118,7 @@ class OptionsSubState extends MusicBeatSubState
                     get: () -> Save.data.hitsoundVolume,
                     set: (i:Float) -> Save.data.hitsoundVolume = i,
                     step: 0.05,
+                    hold: 0.1,
                     limits: [0.0, 1.0],
                     display: (i:Float) -> return '${Math.floor(i * 100)}%',
                     canPlaySound: () -> return Save.data.hitsound == "OFF",
@@ -138,13 +140,14 @@ class OptionsSubState extends MusicBeatSubState
                     get: () -> Save.data.fps,
                     set: (i:Int) -> Save.data.fps = i,
                     limits: [30, 310],
-                    step: 5,
+                    step: 1,
+                    hold: 5
                 },
                 {
                     name: "Window Size",
                     get: () -> Save.data.windowSize,
                     set: (s:String) -> Save.data.windowSize = s,
-                    options: ["640x360","854x480","960x540","1024x576","1152x648","1280x720","1366x768","1600x900","1920x1080", "2560x1440", "3840x2160"],
+                    options: Main.windowSizes,
                     onChange: () -> Main.setWindowSize(Save.data.windowSize)
                 },
                 {
@@ -501,6 +504,8 @@ class OptionsSubState extends MusicBeatSubState
                             var prevPercent = attach.sliderBar.percent;
 
                             var step:Float = curOption.step ?? 1.0;
+                            if(holdTimer >= holdMax && curOption.hold != null)
+                                step = curOption.hold;
                             var newValue:Float = curOption.get() + change * step;
                             attach.setSliderValue(newValue, curOption);
 
