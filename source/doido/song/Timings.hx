@@ -150,7 +150,13 @@ class Timings
 		if (hold.missed)
 		{
 			if (hold.holdParent.gotHit)
+			{
 				misses++;
+				if (combo > 0)
+					combo = 0;
+				else
+					combo--;
+			}
 			score -= Math.floor(50 * (hold.data.length - scoreWin));
 		}
 		else

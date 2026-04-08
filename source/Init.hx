@@ -1,5 +1,6 @@
 package;
 
+import doido.system.Windows;
 import doido.Cache;
 import doido.MusicBeat.MusicBeatState;
 import doido.song.Highscore;
@@ -19,6 +20,9 @@ class Init extends MusicBeatState
 		DiscordIO.check();
 
 		Main.setWindowSize(Save.data.windowSize);
+		#if windows
+		doido.system.Windows.setDarkMode(Save.data.darkMode);
+		#end
 
 		FlxG.fixedTimestep = false;
 		FlxG.mouse.useSystemCursor = true;

@@ -28,7 +28,7 @@ class Windows
 		}
 		UpdateWindow(window);
 	')
-	public static function setDarkMode(title:String, enable:Bool)
+	public static function setDarkMode(?title:String = "idk", enable:Bool)
 	{
 		flixel.FlxG.stage.window.borderless = true;
 		flixel.FlxG.stage.window.borderless = false;

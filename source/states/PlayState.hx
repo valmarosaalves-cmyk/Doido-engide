@@ -604,7 +604,7 @@ class PlayState extends MusicBeatState implements Playable
 				}
 				playField.updateNotes();
 				
-			case "Middlescroll":
+			case "Centered Notes":
 				middlescroll = Save.data.middlescroll;
 				//hudClass.play.middlescroll = middlescroll;
 				hudClass.updatePositions();

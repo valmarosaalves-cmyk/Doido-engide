@@ -76,31 +76,36 @@ class OptionsSubState extends MusicBeatSubState
                     set: (b:Bool) -> Save.data.downscroll = b
                 },
                 {
-                    name: "Middlescroll",
+                    name: "Centered Notes",
                     get: () -> Save.data.middlescroll,
                     set: (b:Bool) -> Save.data.middlescroll = b
                 },
             ],
             "Preferences" => [
+                #if windows
                 {
                     name: "Dark Window Border",
                     get: () -> Save.data.darkMode,
-                    set: (b:Bool) -> Save.data.darkMode = b
+                    set: (b:Bool) -> Save.data.darkMode = b,
+                    onChange: () -> {
+                        doido.system.Windows.setDarkMode(Save.data.darkMode);
+                    }
                 },
+                #end
                 {
-                    name: "Quant Notes",
+                    name: "Note Quantization",
                     get: () -> Save.data.quantNotes,
                     set: (b:Bool) -> Save.data.quantNotes = b
                 },
                 #if desktop
                 {
-                    name: "FPS Counter",
+                    name: "View FPS Counter",
                     get: () -> Save.data.fpsCounter,
                     set: (b:Bool) -> Save.data.fpsCounter = b
                 },
                 #end
                 {
-                    name: "Hitsound",
+                    name: "Hitsound SFX",
                     get: () -> Save.data.hitsound,
                     set: (b:String) -> Save.data.hitsound = b,
                     options: ["OFF", "OSU", "NSWITCH", "CD"],
@@ -132,7 +137,8 @@ class OptionsSubState extends MusicBeatSubState
                     name: "FPS Cap",
                     get: () -> Save.data.fps,
                     set: (i:Int) -> Save.data.fps = i,
-                    limits: [30, 144],
+                    limits: [30, 310],
+                    step: 5,
                 },
                 {
                     name: "Window Size",
