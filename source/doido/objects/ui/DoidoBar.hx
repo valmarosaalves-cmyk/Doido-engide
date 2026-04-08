@@ -44,4 +44,17 @@ class DoidoBar extends FlxSpriteGroup
 			add(border);
 		}
 	}
+
+	public function updatePos()
+	{
+		for(item in members)
+			item.setPosition(x, y);
+	}
+
+	override function draw()
+	{
+		for(item in members)
+			item.alpha = alpha;
+		super.draw();
+	}
 }

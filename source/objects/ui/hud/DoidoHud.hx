@@ -109,6 +109,8 @@ class DoidoHud extends BaseHud
 
 		updateTimeTxt();
 		timeTxt.y = play.downscroll ? (FlxG.height - timeTxt.height - 14) : (14);
+
+		updateIconPos();
 	}
 
 	override function updateScoreTxt()

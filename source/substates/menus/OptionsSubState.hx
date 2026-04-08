@@ -1,5 +1,6 @@
 package substates.menus;
 
+import doido.objects.ui.DoidoBar;
 import doido.objects.Alphabet;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
@@ -13,6 +14,7 @@ typedef OptionData =
 	var get:Void->Dynamic;
 	var set:Dynamic->Void;
     var ?step:Float;
+    var ?limits:Array<Float>;
     var ?display:Dynamic->String;
 }
 class OptionsSubState extends MusicBeatSubState
@@ -28,6 +30,8 @@ class OptionsSubState extends MusicBeatSubState
     public var optionList:Map<String, Array<OptionData>> = [];
 
     public var bg:FlxSprite;
+    public var bgWidth:Float = 0.0;
+    public var bgHeight:Float = 0.0;
 
     public var alphabetGrp:FlxTypedGroup<OptionAlphabet>;
     public var attachGrp:FlxTypedGroup<Attachment>;
@@ -37,6 +41,9 @@ class OptionsSubState extends MusicBeatSubState
     public var curSelection:Int = 0;
 
     public var curAttachType:AttachmentType = CATEGORY;
+
+    public var holdTimer:Float = 0.0;
+    var holdMax:Float = 0.4;
 
     public function new(?playState:PlayState)
     {
@@ -89,8 +96,9 @@ class OptionsSubState extends MusicBeatSubState
                 {
                     name: "Hitsound Volume",
                     get: () -> Save.data.hitsoundVolume,
-                    set: (i:Float) -> Save.data.hitsoundVolume = FlxMath.bound(i, 0.0, 1.0),
-                    step: 0.1,
+                    set: (i:Float) -> Save.data.hitsoundVolume = i,
+                    step: 0.05,
+                    limits: [0.0, 1.0],
                     display: (i:Float) -> return '${Math.floor(i * 100)}%'
                 },
                 {
@@ -104,7 +112,8 @@ class OptionsSubState extends MusicBeatSubState
                 {
                     name: "FPS",
                     get: () -> Save.data.fps,
-                    set: (i:Int) -> Save.data.fps = Math.floor(FlxMath.bound(i, 30, 144))
+                    set: (i:Int) -> Save.data.fps = i,
+                    limits: [30, 144],
                 },
                 {
                     name: "Window Size",
@@ -169,7 +178,8 @@ class OptionsSubState extends MusicBeatSubState
         });
 
         var catTitle:OptionAlphabet = alphabetGrp.recycle(OptionAlphabet);
-        catTitle.reloadStuff(bg.y + 20, curCategoryString, true);
+        catTitle.reloadStuff(40, curCategoryString, true);
+        catTitle.y += bg.y;
         catTitle.ID = 0;
         if (!alphabetGrp.members.contains(catTitle))
             alphabetGrp.add(catTitle);
@@ -183,7 +193,8 @@ class OptionsSubState extends MusicBeatSubState
         for (data in optionList.get(curCategoryString))
         {
             var optionText:OptionAlphabet = alphabetGrp.recycle(OptionAlphabet);
-            optionText.reloadStuff(bg.y + 110 + (60 * _i), data.name);
+            optionText.reloadStuff(130 + (60 * _i), data.name);
+            optionText.y += bg.y;
             optionText.x = bg.x + 20;
             optionText.ID = _i + 1;
 
@@ -199,6 +210,16 @@ class OptionsSubState extends MusicBeatSubState
                 check.animation.play(cast(dataGet, Bool) ? "true" : "false", true);
                 check.animation.curAnim.curFrame = check.animation.curAnim.numFrames - 1;
             }
+            else if (Std.isOfType(dataGet, String))
+            {
+                attach.reloadStuff(optionText, SELECTOR);
+                attach.selectorTxt.text = (data.display == null) ? '$dataGet' : data.display(dataGet);
+            }
+            else if (Std.isOfType(dataGet, Int) || Std.isOfType(dataGet, Float))
+            {
+                attach.reloadStuff(optionText, SLIDER);
+                attach.setSliderValue(dataGet, data);
+            }
             else
                 attach.kill(); // no use for you sorry
 
@@ -209,10 +230,43 @@ class OptionsSubState extends MusicBeatSubState
         }
 
         changeSelection();
+        calcBGWidth();
+        calcBGHeight();
+    }
+
+    public function calcBGWidth()
+    {
+        var alphabetWidth:Float = 0.0;
+        alphabetGrp.forEachAlive((alphabet) -> {
+            alphabetWidth = Math.max(alphabetWidth, alphabet.width);
+        });
+        var rawAttachWidth:Float = 0.0;
+        var attachWidth:Float = 0.0;
+        attachGrp.forEachAlive((attach) -> {
+            if (attach.parent.width + attach.getWidth() > rawAttachWidth)
+            {
+                rawAttachWidth = attach.parent.width + attach.getWidth();
+                attachWidth = attach.getWidth() - alphabetWidth + attach.parent.width;
+            }
+        });
+
+        bgWidth = alphabetWidth + attachWidth + 20;
+    }
+
+    public function calcBGHeight()
+    {
+        var firstAlphabetY:Float = FlxG.height;
+        var lastAlphabetY:Float = 0.0;
+        alphabetGrp.forEachAlive((alphabet) -> {
+            firstAlphabetY = Math.min(firstAlphabetY, alphabet.y);
+            lastAlphabetY = Math.max(lastAlphabetY, alphabet.y + alphabet.height);
+        });
+        bgHeight = lastAlphabetY - firstAlphabetY;
     }
 
     public function changeSelection(?change:Int = 0)
     {
+        holdTimer = 0.0;
         if (change != 0) FlxG.sound.play(Assets.sound("scroll"));
         curSelection = FlxMath.wrap(curSelection + change, 0, optionList.get(curCategoryString).length);
 
@@ -221,14 +275,17 @@ class OptionsSubState extends MusicBeatSubState
             if (alphabet.ID == curSelection)
                 alphabet.alpha = 1.0;
         });
+
+        curAttachType = null;
         attachGrp.forEachAlive((attach) -> {
             if (attach.parent.ID == curSelection)
                 curAttachType = attach.type;
         });
     }
 
-    public function updatePlayState()
+    public function saveOptions()
     {
+        Save.save();
         if (playState == null) return;
         playState.updateOption(optionList.get(curCategoryString)[curSelection - 1].name);
     }
@@ -236,8 +293,22 @@ class OptionsSubState extends MusicBeatSubState
     override function draw()
     {
         attachGrp.forEachAlive((attach) -> {
-            attach.y = attach.parent.y - 25;
+            attach.y = attach.parent.y;
             attach.alpha = attach.parent.alpha;
+
+            for(arrow in attach.arrows)
+            {
+                if (arrow.alive)
+                {
+                    if (attach.parent.ID != curSelection)
+                        arrow.animation.play("idle");
+                    else
+                    {
+                        if (arrow.ID == 0) arrow.animation.play(Controls.pressed(UI_LEFT) ? "push" : "idle");
+                        else arrow.animation.play(Controls.pressed(UI_RIGHT) ? "push" : "idle");
+                    }
+                }
+            }
 
             switch(attach.type)
             {
@@ -247,23 +318,43 @@ class OptionsSubState extends MusicBeatSubState
                         arrow.y = attach.parent.y;
                         arrow.x = attach.parent.x - (attach.parent.width / 2);
                         if (arrow.ID == 0)
-                            arrow.x -= arrow.width;
+                            arrow.x -= arrow.width + 15;
                         else
-                            arrow.x += attach.parent.width;
-
-                        if (attach.parent.ID != curSelection)
-                            arrow.animation.play("idle");
-                        else
-                        {
-                            if (arrow.ID == 0) arrow.animation.play(Controls.pressed(UI_LEFT) ? "push" : "idle");
-                            else arrow.animation.play(Controls.pressed(UI_RIGHT) ? "push" : "idle");
-                        }
+                            arrow.x += attach.parent.width + 15;
                     }
                 case SELECTOR:
+                    attach.arrows[1].x = attach.parent.x + bgWidth - attach.arrows[1].width;
+                    attach.selectorTxt.x = attach.arrows[1].x - attach.selectorTxt.width - 10;
+                    attach.arrows[0].x = attach.selectorTxt.x - attach.arrows[0].width - 10;
+
+                    for(arrow in attach.arrows)
+                        arrow.y = attach.parent.y - 6;
+                
+                case SLIDER:
+                    attach.arrows[1].x = attach.parent.x + bgWidth - attach.arrows[1].width;
+                    attach.sliderBar.x = attach.arrows[1].x - attach.sliderBar.border.width - 20;
+                    attach.arrows[0].x = attach.sliderBar.x - attach.arrows[0].width - 20;
+                    
+                    attach.sliderBar.y = attach.parent.y + (attach.parent.height - attach.sliderBar.border.height) / 2;
+                    attach.sliderBall.setPosition(
+                        attach.sliderBar.x + (attach.sliderBar.border.width * (100 - attach.sliderBar.percent) / 100) - (attach.sliderBall.width / 2),
+                        attach.sliderBar.y + (attach.sliderBar.border.height - attach.sliderBall.height) / 2
+                    );
+                    attach.sliderBar.updatePos();
+
+                    attach.selectorTxt.x = attach.sliderBar.x + (attach.sliderBar.border.width - attach.selectorTxt.width) / 2;
+
+                    for(arrow in attach.arrows) {
+                        arrow.y = attach.parent.y - 6;
+                        arrow.alpha = attach.parent.alpha;
+                    }
+                    if (attach.sliderBar.percent <= 0.0) attach.arrows[1].alpha = 0.4;
+                    if (attach.sliderBar.percent >= 100) attach.arrows[0].alpha = 0.4;
                     
                 case CHECKMARK:
+                    attach.y -= 25;
                     var check = attach.checkmark;
-                    check.x = attach.parent.x + attach.parent.width;
+                    check.x = attach.parent.x + bgWidth - attach.getWidth();
             }            
         });
         super.draw();
@@ -272,35 +363,82 @@ class OptionsSubState extends MusicBeatSubState
     override function update(elapsed:Float)
     {
         super.update(elapsed);
-
         if (Controls.justPressed(BACK))
             close();
 
         if (Controls.justPressed(UI_UP)) changeSelection(-1);
         else if (Controls.justPressed(UI_DOWN)) changeSelection(1);
 
-        switch (curAttachType)
-        {
-            case CATEGORY:
-                if (Controls.justPressed(UI_LEFT)) changeCategory(-1);
-                else if (Controls.justPressed(UI_RIGHT)) changeCategory(1);
-            
-            case CHECKMARK:
-                if (Controls.justPressed(ACCEPT))
-                {
-                    var option = optionList.get(curCategoryString)[curSelection - 1];
-                    option.set(!option.get());
+        bg.scale.set(
+            FlxMath.lerp(bg.scale.x, bgWidth + 140, elapsed * 8),
+            FlxMath.lerp(bg.scale.y, bgHeight + 80, elapsed * 8)
+        );
+        bg.updateHitbox();
+        bg.screenCenter();
 
+        alphabetGrp.forEachAlive((alphabet) -> {
+            alphabet.y = FlxMath.lerp(
+                alphabet.y,
+                bg.y + alphabet.startY,
+                elapsed * 8
+            );
+            if (alphabet.ID == 0) return;
+            alphabet.x = FlxMath.lerp(
+                alphabet.x,
+                bg.x + (bg.width - bgWidth) / 2,
+                elapsed * 8
+            );
+        });
+
+        if (curAttachType != null)
+        {
+            var option = optionList.get(curCategoryString)[curSelection - 1];
+            switch (curAttachType)
+            {
+                case CATEGORY:
+                    if (Controls.justPressed(UI_LEFT)) changeCategory(-1);
+                    else if (Controls.justPressed(UI_RIGHT)) changeCategory(1);
+
+                case SELECTOR:
+                    // calcBGWidth();
+                
+                case SLIDER:
                     attachGrp.forEachAlive((attach) -> {
                         if (attach.parent.ID != curSelection) return;
-                        var check = attach.checkmark;
-                        check.animation.play(option.get() ? "true" : "false", true);
+
+                        var change:Int = (Controls.pressed(UI_RIGHT) ? 1 : 0) - (Controls.pressed(UI_LEFT) ? 1 : 0);
+                        if (change != 0)
+                            holdTimer += elapsed;
+                        else
+                            holdTimer = 0.0;
+
+                        if (Controls.justPressed(UI_LEFT) || Controls.justPressed(UI_RIGHT) || holdTimer >= holdMax)
+                        {
+                            if (holdTimer >= holdMax)
+				                holdTimer = holdMax - 0.02; // 0.02
+
+                            var step:Float = option.step ?? 1.0;
+                            var newValue:Float = option.get() + change * step;
+                            attach.setSliderValue(newValue, option);
+
+                            saveOptions();
+                        }
                     });
-                    
-                    updatePlayState();
-                }
-            case SELECTOR:
                 
+                case CHECKMARK:
+                    if (Controls.justPressed(ACCEPT))
+                    {
+                        option.set(!option.get());
+
+                        attachGrp.forEachAlive((attach) -> {
+                            if (attach.parent.ID != curSelection) return;
+                            var check = attach.checkmark;
+                            check.animation.play(option.get() ? "true" : "false", true);
+                        });
+                        
+                        saveOptions();
+                    }
+            }
         }
     }
 }
@@ -339,6 +477,7 @@ enum AttachmentType
     CATEGORY;
     CHECKMARK;
     SELECTOR;
+    SLIDER;
 }
 class Attachment extends FlxSpriteGroup
 {
@@ -349,6 +488,9 @@ class Attachment extends FlxSpriteGroup
 
     public var checkmark:FlxSprite;
     public var arrows:Array<FlxSprite> = [];
+    public var selectorTxt:Alphabet;
+    public var sliderBar:DoidoBar;
+    public var sliderBall:FlxSprite;
 
     public function new()
     {
@@ -376,6 +518,55 @@ class Attachment extends FlxSpriteGroup
             arrow.ID = i;
             add(arrow);
         }
+
+        sliderBar = new DoidoBar("menu/sliderBar", "menu/sliderBar-border");
+		sliderBar.sideR.color = 0xFF2A2C44;
+		add(sliderBar);
+        
+		sliderBall = new FlxSprite().loadImage("menu/sliderBall");
+		add(sliderBall);
+
+        selectorTxt = new Alphabet(x, y, "", true, LEFT);
+        selectorTxt.scale.set(0.65, 0.65);
+        selectorTxt.updateHitbox();
+        add(selectorTxt);
+    }
+
+    public function getWidth():Float
+    {
+        return switch(type)
+        {
+            case SELECTOR: arrows[1].width + selectorTxt.width + arrows[0].width + 20;
+            case SLIDER: arrows[1].width + sliderBar.border.width + arrows[0].width + 40;
+            case CHECKMARK: checkmark.width - 12;
+            default: 0.0;
+        }
+    }
+
+    public function setSliderValue(newValue:Float, option:OptionData)
+    {
+        if (type != SLIDER) return;
+
+        var step:Float = option.step ?? 1.0;
+
+        var limits = option.limits;
+        if (limits == null) limits = [0, 100];
+        if (newValue < Math.min(limits[0], limits[1]))
+            newValue = Math.min(limits[0], limits[1]);
+        if (newValue > Math.max(limits[1], limits[0]))
+            newValue = Math.max(limits[1], limits[0]);
+
+        if (Std.isOfType(option.get(), Float))
+            option.set(Math.round(newValue / step) * step);
+        else
+            option.set(Math.floor(newValue));
+        
+        selectorTxt.text = (option.display == null) ? '$newValue' : option.display(newValue);
+        sliderBar.percent = FlxMath.remapToRange(
+            newValue,
+            limits[0], limits[1],
+            100, 0
+        );
     }
 
     public function reloadStuff(parent:OptionAlphabet, type:AttachmentType)
@@ -385,24 +576,35 @@ class Attachment extends FlxSpriteGroup
 
         checkmark.kill();
         for (arrow in arrows) arrow.kill();
+        selectorTxt.kill();
+        sliderBar.kill();
+        sliderBall.kill();
         switch(type)
         {
-            case CATEGORY|SELECTOR:
+            case CATEGORY|SELECTOR|SLIDER:
                 for (arrow in arrows)
+                {
                     arrow.revive();
+                    switch(type)
+                    {
+                        case CATEGORY: arrow.scale.set(0.7, 0.7);
+                        default: arrow.scale.set(0.6, 0.6);
+                    }
+                    arrow.updateHitbox();
+                }
+                if (type != CATEGORY)
+                {
+                    selectorTxt.revive();
+                    if(type == SLIDER)
+                    {
+                        sliderBar.revive();
+                        sliderBall.revive();
+                    }
+                }
 
             case CHECKMARK:
                 checkmark.revive();
             default:
-        }
-    }
-
-    public function getWidth()
-    {
-        switch(type)
-        {
-            case CHECKMARK: return checkmark.width;
-            default: return 0;
         }
     }
 }
