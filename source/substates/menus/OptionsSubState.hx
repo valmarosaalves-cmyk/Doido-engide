@@ -92,11 +92,6 @@ class OptionsSubState extends MusicBeatSubState
                     }
                 },
                 #end
-                {
-                    name: "Note Quantization",
-                    get: () -> Save.data.quantNotes,
-                    set: (b:Bool) -> Save.data.quantNotes = b
-                },
                 #if desktop
                 {
                     name: "View FPS Counter",
@@ -104,6 +99,11 @@ class OptionsSubState extends MusicBeatSubState
                     set: (b:Bool) -> Save.data.fpsCounter = b
                 },
                 #end
+                {
+                    name: "Note Quantization",
+                    get: () -> Save.data.quantNotes,
+                    set: (b:Bool) -> Save.data.quantNotes = b
+                },
                 {
                     name: "Hitsound SFX",
                     get: () -> Save.data.hitsound,

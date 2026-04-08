@@ -1,6 +1,5 @@
 package;
 
-import doido.system.Windows;
 import doido.Cache;
 import doido.MusicBeat.MusicBeatState;
 import doido.song.Highscore;
