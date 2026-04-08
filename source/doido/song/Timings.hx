@@ -146,10 +146,14 @@ class Timings
 		if (timing.name != "miss")
 			ratingCount.set(timing.name, ratingCount.get(timing.name) + 1);
 
+		var scoreWin:Float = hold.data.length * hold.holdHitPercent;
 		if (hold.missed)
-			score -= 50;
+		{
+			misses++;
+			score -= Math.floor(50 * (hold.data.length - scoreWin));
+		}	
 		else
-			score += Math.ceil(50 * hold.data.length * hold.holdHitPercent);
+			score += Math.ceil(50 * scoreWin);
 	}
 
 	public static function addAccuracy(judge:Float)

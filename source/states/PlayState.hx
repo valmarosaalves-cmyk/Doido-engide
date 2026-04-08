@@ -227,6 +227,7 @@ class PlayState extends MusicBeatState implements Playable
 			{
 				Timings.addScoreHold(note);
 				rating = Timings.addAccuracyHold(note.holdHitPercent);
+				if (note.missed) health -= 0.1;
 			}
 			else
 			{
@@ -246,23 +247,41 @@ class PlayState extends MusicBeatState implements Playable
 			hudClass.updateScoreTxt();
 		}
 
+		function muteVoices()
+		{
+			if (Timings.combo >= 10)
+			{
+				if (gf.animExists("sad"))
+				{
+					gf.resetSingStep();
+					gf.playAnim("sad");
+				}
+			}
+
+			audio.muteVoices = true;
+		}
+
 		playField.onNoteHit = (note, strumline) ->
 		{
 			if (note.isHold && !note.isHoldEnd)
 				return;
 
-			if (!note.isHold)
+			if (!note.isHold || note.missed)
 			{
 				for (char in characters)
 				{
 					if (char.strumline == strumline)
-						char.playSingAnim(note);
+						char.playSingAnim(note, note.missed);
 				}
 			}
 
 			if (strumline.isPlayer)
 			{
-				audio.muteVoices = false;
+				if (note.missed)
+					muteVoices();
+				else
+					audio.muteVoices = false;
+
 				updateScore(note, playField.noteDiff(note.data));
 
 				// cool thingy
@@ -301,16 +320,7 @@ class PlayState extends MusicBeatState implements Playable
 
 			if (strumline.isPlayer)
 			{
-				if (Timings.combo >= 10)
-				{
-					if (gf.animExists("sad"))
-					{
-						gf.resetSingStep();
-						gf.playAnim("sad");
-					}
-				}
-
-				audio.muteVoices = true;
+				muteVoices();
 				updateScore(note, Timings.getTiming("miss").diff);
 			}
 			callScript("onNoteMiss", [note, strumline]);

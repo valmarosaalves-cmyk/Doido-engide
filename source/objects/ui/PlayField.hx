@@ -360,6 +360,9 @@ class PlayField extends FlxGroup
 		{
 			strum.playConfirm(note);
 			note.gotHit = true;
+			// misses if you hit less than good
+			if (note.holdHitPercent < Timings.getTiming("good").hold)
+				note.missed = true;
 			// turns transparent if you dont hit sick
 			if (note.holdHitPercent < Timings.getTiming("sick").hold)
 				note.alpha = 0.4;
