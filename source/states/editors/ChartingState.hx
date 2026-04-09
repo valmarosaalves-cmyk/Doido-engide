@@ -644,7 +644,7 @@ class ChartingState extends MusicBeatState
 		tab.add(stageButton);
 
 		tab.add(createText(getX("center", 145), getY(13), "Meta:", 0xFFD8DAF6));
-		// tab.add(createText(getX("margin_right", 145), getY(13), "Skins:", 0xFFD8DAF6));
+		tab.add(createText(getX("margin_right", 145), getY(13), "Assets:", 0xFFD8DAF6));
 
 		var metaButton = new TextButton("Edit");
 		metaButton.button.onUp.add((btn) ->
@@ -679,6 +679,40 @@ class ChartingState extends MusicBeatState
 		metaButton.x = getX("center", metaButton.width);
 		metaButton.y = getY(13) + 22;
 		tab.add(metaButton);
+
+		var skinsButton = new TextButton("Edit");
+		skinsButton.button.onUp.add((btn) ->
+		{
+			var metaStuff:Array<FlxSprite> = [];
+			metaStuff.push(createText((FlxG.width / 2) - (145) - 5, (FlxG.height / 2) - 22, "Opp Notes:", 0xFFD8DAF6));
+			metaStuff.push(createText((FlxG.width / 2) + 5, (FlxG.height / 2) - 22, "Player Notes:", 0xFFD8DAF6));
+
+			var dadnotes:PsychUIInputText;
+			dadnotes = new PsychUIInputText((FlxG.width / 2) - (145) - 5, (FlxG.height / 2), 145, META.assets.opponentNotes, 14);
+			dadnotes.onChange.add((old, cur, input) -> META.assets.opponentNotes = cur);
+			metaStuff.push(dadnotes);
+
+			var bfnotes:PsychUIInputText;
+			bfnotes = new PsychUIInputText((FlxG.width / 2) + 5, (FlxG.height / 2), 145, META.assets.playerNotes, 14);
+			bfnotes.onChange.add((old, cur, input) -> META.assets.playerNotes = cur);
+			metaStuff.push(bfnotes);
+
+			var ok = new TextButton("Ok", "small");
+			ok.screenCenter();
+			ok.y += 50;
+			metaStuff.push(ok);
+
+			var popup = new PopupSubState("Editing Assets:", 320, 150, metaStuff);
+			openSubState(popup);
+
+			ok.button.onUp.add((btn) ->
+			{
+				popup.close();
+			});
+		});
+		skinsButton.x = getX("margin_right", skinsButton.width);
+		skinsButton.y = getY(13) + 22;
+		tab.add(skinsButton);
 
 		//
 
@@ -1325,13 +1359,14 @@ class ChartingState extends MusicBeatState
 		{
 			var noteY:Float = grid.gridY + (noteData.stepTime * GRID_SIZE * GRID_ZOOM);
 			var noteHeight:Float = GRID_SIZE + (GRID_SIZE * GRID_ZOOM * (noteData.length + 1));
+			var noteskin:String = noteData.strumline == 0 ? META.assets.opponentNotes : META.assets.playerNotes;
 			if (noteY < -noteHeight)
 				continue;
 			if (noteY > FlxG.height)
 				break;
 
 			var note:ChartingNote = cast renderNotes.recycle(ChartingNote);
-			note.loadData(noteData);
+			note.loadData(noteData, noteskin);
 			note.reloadSprite();
 
 			note.setGraphicSize(GRID_SIZE, GRID_SIZE);
@@ -1355,7 +1390,7 @@ class ChartingState extends MusicBeatState
 			if (noteData.length > 0)
 			{
 				var hold:ChartingNote = cast renderNotes.recycle(ChartingNote);
-				hold.loadData(noteData);
+				hold.loadData(noteData, noteskin);
 				hold.isHold = true;
 				hold.reloadSprite();
 

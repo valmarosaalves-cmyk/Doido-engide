@@ -8,6 +8,7 @@ class Note extends FlxSprite
 {
 	// main data
 	public var data:NoteData;
+	public var skin:String = "base";
 	public var gotHit:Bool = false;
 	public var missed:Bool = false;
 
@@ -29,9 +30,13 @@ class Note extends FlxSprite
 	public var noteSpeed:Null<Float> = null;
 	public var noteSpeedMult:Float = 1.0;
 
-	//oop
-	public var canQuant:Bool = true;
+	// oop
+	public var rgb:Bool = false;
+	public var rgbColors:Array<FlxColor> = [];
 	public var colorShader:RGBPalette;
+
+	public var quant:Bool = false;
+	public var noteQuant:Int = 0;
 
 	public function new()
 	{
@@ -39,9 +44,8 @@ class Note extends FlxSprite
 		colorShader = new RGBPalette();
 	}
 
-	public function loadData(data:NoteData, ?quantNote:Bool = true)
+	public function loadData(data:NoteData, skin:String)
 	{
-		canQuant = quantNote;
 		// visual stuff
 		setPosition(-5000, -5000); // offscreen lol
 		visible = true;
@@ -50,6 +54,7 @@ class Note extends FlxSprite
 
 		// main data
 		this.data = data;
+		this.skin = skin;
 		gotHit = false;
 		missed = false;
 
@@ -78,48 +83,61 @@ class Note extends FlxSprite
 		clipRect = null;
 
 		var direction:String = NoteUtil.intToString(data.lane);
-		switch ("i told you ill do the skins later")
+		var hasRgb:Bool = false;
+		quant = skin.endsWith("-quant");
+		rgb = quant;
+
+		switch (skin.replace("-quant", ""))
 		{
+			case "pixel":
+				var path = 'notes/pixel/${rgb ? 'quant/' : ''}';
+				if (isHold)
+					path += 'ends';
+				else
+					path += 'notes';
+				this.loadImage(path, true, isHold ? 7 : 17, isHold ? 6 : 17);
+
+				animation.add(direction, [data.lane + ((isHold && !isHoldEnd) ? 0 : 4)], 0, false);
+				noteScale = 6;
+				antialiasing = false;
+				//hasRgb = true;
+
 			default:
-				if (canQuant) {
-					this.loadSparrow("notes/base/quant/notes");
-					if (shader != colorShader)
-						shader = colorShader;
-				} else {
-					this.loadSparrow("notes/base/notes");
-					shader = null;
-				}
+				rgb = skin.endsWith("-rgb") || skin.endsWith("-quant");
+				quant = skin.endsWith("-quant");
+				this.loadSparrow('notes/base/${rgb ? 'quant/' : ''}notes');
 
 				var postfix:String = (isHold ? " hold" + (isHoldEnd ? " end" : "") : "");
 				animation.addByPrefix(direction, 'note ${direction}${postfix}0', 0, false);
 				noteScale = 0.7;
+				hasRgb = true;
+		}
+
+		if (!hasRgb)
+		{
+			rgb = false;
+			quant = false;
 		}
 
 		scale.set(noteScale, noteScale);
 		updateHitbox();
 		animation.play(direction);
 
-		if (canQuant)
+		if (rgb)
 		{
-			getQuantColors("base");
-			noteQuant = NoteUtil.calcQuant(data);
-			
-			colorShader.setColor(
-				quantColors[noteQuant][0],
-				quantColors[noteQuant][1],
-				quantColors[noteQuant][2],
-			);
-		}
-	}
+			if (shader != colorShader)
+				shader = colorShader;
 
-	public var noteQuant:Int = 0;
-	public var quantModifier:String = "";
-	public var quantColors:Array<Array<FlxColor>> = [];
-	public function getQuantColors(quantModifier:String)
-	{
-		if (this.quantModifier == quantModifier) return;
-		this.quantModifier = quantModifier;
-		quantColors = NoteUtil.getQuantColors(quantModifier);
+			if (quant)
+			{
+				noteQuant = NoteUtil.calcQuant(data);
+				rgbColors = NoteUtil.getQuantColors(skin)[noteQuant];
+			}
+
+			colorShader.setColor(rgbColors[0], rgbColors[1], rgbColors[2]);
+		}
+		else
+			shader = null;
 	}
 
 	override function update(elapsed:Float)

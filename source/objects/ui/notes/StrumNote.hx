@@ -7,13 +7,15 @@ import shaders.RGBPalette;
 class StrumNote extends DoidoSprite
 {
 	public var lane:Int = 0;
+	public var skin:String = "base";
 
 	public var initialPos:FlxPoint = FlxPoint.get(0, 0);
 	public var strumScale:Float = 1.0;
 	public var strumAngle:Float = 0.0;
-	
-	public var canQuant:Bool = false;
+
+	public var rgb:Bool = false;
 	public var colorShader:RGBPalette;
+	public var colorFallback:Array<FlxColor> = [0xFF87a3ad, 0xFFFFFFFF, 0xFF000000];
 
 	public function new()
 	{
@@ -21,31 +23,46 @@ class StrumNote extends DoidoSprite
 		colorShader = new RGBPalette();
 	}
 
-	public function reloadStrum(lane:Int, quantNotes:Bool = false)
+	public function reloadStrum(lane:Int, skin:String)
 	{
-		canQuant = quantNotes;
+		this.skin = skin;
 		this.lane = lane;
 		this.strumScale = 1.0;
 
 		var direction:String = NoteUtil.intToString(lane);
+		var hasRgb:Bool = false;
+		rgb = skin.endsWith("-quant");
 
-		switch ("ill do it later")
+		switch (skin.replace("-quant", ""))
 		{
+			case "pixel":
+				this.loadImage('notes/pixel/${rgb ? 'quant/' : ''}notes', true, 17, 17);
+
+				animation.add("static", [lane], 12, false);
+				animation.add("pressed", [lane + 8], 12, false);
+				animation.add("confirm", [lane + 12, lane + 16], 12, false);
+
+				antialiasing = false;
+				strumScale = 6;
+				hasRgb = true;
+
 			default:
-				if (canQuant) {
-					this.loadSparrow("notes/base/quant/strums");
-				} else {
-					this.loadSparrow("notes/base/strums");
-					shader = null;
-				}
+				this.loadSparrow('notes/base/${rgb ? 'quant/' : ''}strums');
 
 				for (anim in ["static", "pressed", "confirm"])
 					animation.addByPrefix(anim, 'strum $direction $anim', 24, false);
 
 				strumScale = 0.7;
+				hasRgb = true;
 		}
 
-		if (canQuant) getQuantColors("base");
+		if (!hasRgb)
+			rgb = false;
+		if (rgb)
+			shader = colorShader;
+		else
+			shader = null;
+
 		scale.set(strumScale, strumScale);
 		updateHitbox();
 		playAnim("static");
@@ -53,48 +70,44 @@ class StrumNote extends DoidoSprite
 
 	override function playAnim(animName:String, forced:Bool = false, frame:Int = 0)
 	{
-		if (canQuant)
-		{
-			if (animName == "static")
-				shader = null;
-			else {
-				if (shader != colorShader)
-					shader = colorShader;
+		if (animName != "confirm")
+			setRGB(animName, null);
 
-				if (animName == "pressed")
-					playConfirm(null);
-			}
-		}
 		super.playAnim(animName, forced, frame);
-	}
-
-	public var quantModifier:String = "";
-	public var quantColors:Array<Array<FlxColor>> = [];
-	public function getQuantColors(quantModifier:String)
-	{
-		if (this.quantModifier == quantModifier) return;
-		this.quantModifier = quantModifier;
-		quantColors = NoteUtil.getQuantColors(quantModifier);
 	}
 
 	public function playConfirm(note:Note)
 	{
-		if (note != null) playAnim("confirm");
-		if (!canQuant) return;
+		playAnim("confirm");
+		setRGB("confirm", note);
+	}
 
-		var colorArray:Array<FlxColor> = [];
-		if (note == null)
-			colorArray = quantColors[quantColors.length - 1];
-		else	
-			colorArray = note.quantColors[note.noteQuant];
-		
-		if (colorArray.length < 3) return;
+	public function setRGB(anim:String, note:Note)
+	{
+		if (!rgb)
+			return;
 
-		colorShader.setColor(
-			colorArray[0],
-			colorArray[1],
-			colorArray[2],	
-		);
+		if (anim == "static")
+		{
+			shader = null;
+			return;
+		}
+		else
+		{
+			if (shader != colorShader)
+				shader = colorShader;
+
+			var colorArray:Array<FlxColor> = [];
+			if (note == null)
+				colorArray = colorFallback;
+			else
+				colorArray = note.rgbColors;
+
+			if (colorArray.length < 3)
+				return;
+
+			colorShader.setColor(colorArray[0], colorArray[1], colorArray[2]);
+		}
 	}
 
 	override function update(elapsed:Float)

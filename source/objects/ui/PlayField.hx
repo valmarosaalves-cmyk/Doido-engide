@@ -1,5 +1,6 @@
 package objects.ui;
 
+import doido.song.SongHandler.AssetModifiers;
 import flixel.math.FlxMath;
 import flixel.math.FlxRect;
 import flixel.tweens.FlxEase;
@@ -24,7 +25,9 @@ class PlayField extends FlxGroup
 	public var bfStrumline:Strumline;
 	public var touchInput:TouchInput;
 
-	public function new(spawnNotes:Array<NoteData>, speed:Float, downscroll:Bool, middlescroll:Bool)
+	public var noteskins:Array<String> = ["base", "base"];
+
+	public function new(spawnNotes:Array<NoteData>, speed:Float, downscroll:Bool, middlescroll:Bool, assets:AssetModifiers)
 	{
 		super();
 		this.spawnNotes = spawnNotes;
@@ -33,10 +36,10 @@ class PlayField extends FlxGroup
 		var wide:Bool = #if TOUCH_CONTROLS Save.data.modernControls #else false #end;
 		var strumPos = getStrumlinePos(middlescroll);
 
-		dadStrumline = new Strumline(strumPos[0], downscroll, false, true, false);
+		dadStrumline = new Strumline(strumPos[0], downscroll, false, true, false, assets.opponentNotes);
 		strumlines.push(dadStrumline);
 
-		bfStrumline = new Strumline(strumPos[1], downscroll, true, false, wide);
+		bfStrumline = new Strumline(strumPos[1], downscroll, true, false, wide, assets.playerNotes);
 		strumlines.push(bfStrumline);
 
 		for (strumline in strumlines)

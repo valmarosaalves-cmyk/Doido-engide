@@ -3,5 +3,9 @@
     "player2": "face",
     "gf": "gf",
     "stage": "debug",
-    "composer": "Yoisabo"
+    "composer": "Yoisabo",
+    "assets": {
+        "playerNotes": "base",
+        "opponentNotes": "pixel"
+    }
 }

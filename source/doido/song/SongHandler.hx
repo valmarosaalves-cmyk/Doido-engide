@@ -32,6 +32,13 @@ typedef DoidoMeta =
 	var ?stage:String;
 	var ?composer:String;
 	var ?charter:String;
+	var ?assets:AssetModifiers;
+}
+
+typedef AssetModifiers =
+{
+	var ?playerNotes:String;
+	var ?opponentNotes:String;
 }
 
 typedef NoteData =
@@ -145,7 +152,7 @@ class SongHandler
 		return EVENTS;
 	}
 
-    // note: make better?
+	// note: make better?
 	private static function mergeEvents(a:DoidoEvents, b:DoidoEvents):DoidoEvents
 	{
 		if (a == null)
@@ -166,7 +173,11 @@ class SongHandler
 			gf: "gf",
 			stage: "stage",
 			composer: "Unknown",
-			charter: "Unknown"
+			charter: "Unknown",
+			assets: {
+				playerNotes: "base",
+				opponentNotes: "base"
+			},
 			// difficulties: ["normal"]
 		};
 
@@ -194,6 +205,7 @@ class SongHandler
 		meta.stage = (b.stage ?? a.stage);
 		meta.composer = (b.composer ?? a.composer);
 		meta.charter = (b.charter ?? a.charter);
+		meta.assets = mergeAssets(a.assets, b.assets);
 
 		/* -- INVESTIGATE LATER...
 			for (key in Reflect.fields(a))
@@ -201,6 +213,20 @@ class SongHandler
 		 */
 
 		return meta;
+	}
+
+	private static function mergeAssets(a:AssetModifiers, b:AssetModifiers):AssetModifiers
+	{
+		if (a == null)
+			return b;
+		if (b == null)
+			return a;
+
+		var mod:AssetModifiers = {};
+		mod.playerNotes = (b.playerNotes ?? a.playerNotes);
+		mod.opponentNotes = (b.opponentNotes ?? a.opponentNotes);
+
+		return mod;
 	}
 
 	/* --- OTHER --- */

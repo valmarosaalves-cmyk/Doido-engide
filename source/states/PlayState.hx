@@ -174,7 +174,7 @@ class PlayState extends MusicBeatState implements Playable
 		callScript("create");
 		changeStage(META.stage);
 
-		playField = new PlayField(CHART.notes, CHART.speed, downscroll, middlescroll);
+		playField = new PlayField(CHART.notes, CHART.speed, downscroll, middlescroll, META.assets);
 		playField.cameras = [camStrum];
 		add(playField);
 
