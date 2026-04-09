@@ -45,10 +45,8 @@ class NoteUtil
 
 	public static function getSingAnims(howMany:Int = 4):Array<String>
 	{
-		if (howMany < 1)
-			howMany = 1;
-		if (howMany > 9)
-			howMany = 9;
+		if (howMany < 1) howMany = 1;
+		if (howMany > 9) howMany = 9;
 		return switch (howMany)
 		{
 			case 1: ["singUP"];
@@ -58,27 +56,8 @@ class NoteUtil
 			case 5: ["singLEFT", "singDOWN", "singUP", "singUP", "singRIGHT"];
 			case 6: ["singLEFT", "singDOWN", "singRIGHT", "singLEFT", "singUP", "singRIGHT"];
 			case 7: ["singLEFT", "singDOWN", "singRIGHT", "singUP", "singLEFT", "singUP", "singRIGHT"];
-			case 8: [
-					"singLEFT",
-					"singDOWN",
-					"singUP",
-					"singRIGHT",
-					"singLEFT",
-					"singDOWN",
-					"singUP",
-					"singRIGHT"
-				];
-			case 9: [
-					"singLEFT",
-					"singDOWN",
-					"singUP",
-					"singRIGHT",
-					"singUP",
-					"singLEFT",
-					"singDOWN",
-					"singUP",
-					"singRIGHT"
-				];
+			case 8: ["singLEFT", "singDOWN", "singUP", "singRIGHT", "singLEFT", "singDOWN", "singUP", "singRIGHT"];
+			case 9: ["singLEFT", "singDOWN", "singUP", "singRIGHT", "singUP", "singLEFT", "singDOWN", "singUP", "singRIGHT"];
 			default: ["how???"];
 		}
 	}
@@ -89,6 +68,12 @@ class NoteUtil
 	public static function stringToInt(direction:String):Int
 		return directions.indexOf(direction);
 
+	inline public static function getHitsounds():Array<String>
+	{
+		var hits = Assets.txtToArray('sounds/hitsounds/hitsound-order');
+		hits.push("OFF");
+		return hits;
+	}
 	inline public static function playHitsound(?key:String, ?volume:Float):FlxSound
 	{
 		if (key == null)
@@ -102,6 +87,21 @@ class NoteUtil
 		hitsound.volume = volume ?? Save.data.hitsoundVolume;
 		hitsound.play();
 		return hitsound;
+	}
+	
+	public static var missSoundList:Array<String> = [];
+	public static function loadMissSounds()
+	{
+		missSoundList = Assets.list("sounds/miss", true, SOUND);
+		for(i in 0...missSoundList.length)
+		{
+			missSoundList[i] = 'miss/${missSoundList[i]}';
+			FlxG.sound.play(Assets.sound(missSoundList[i]), 0.0);
+		}
+	}
+	inline public static function playMissSound(?preload:Bool = false)
+	{
+		FlxG.sound.play(Assets.sound(FlxG.random.getObject(missSoundList)), 0.6);
 	}
 
 	public static final quantArray:Array<Int> = [4, 8, 12, 16, 20, 24, 32, 48, 64, 192];

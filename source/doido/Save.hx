@@ -6,9 +6,11 @@ import flixel.util.FlxSave;
 @:structInit
 class SaveVariables
 {
+	// add custom saves here!!
 	public var test:String = 'bullshit';
 
 	// gameplay
+	public var ghostTapping:String = "idle";
 	public var downscroll:Bool = false;
 	public var middlescroll:Bool = false;
 

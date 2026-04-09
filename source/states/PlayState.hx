@@ -1,12 +1,15 @@
 package states;
 
+import doido.objects.DoidoCamera;
+import doido.utils.LerpUtil;
+import flixel.FlxSprite;
 import flixel.sound.FlxSound;
 import flixel.math.FlxMath;
 import doido.song.*;
 import doido.song.SongHandler;
 import doido.song.SongHandler.DoidoChart;
 import doido.song.SongHandler.DoidoEvents;
-import flixel.FlxSprite;
+import doido.utils.NoteUtil;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import hscript.iris.Iris;
@@ -17,8 +20,7 @@ import objects.ui.hud.*;
 import objects.ui.notes.*;
 import states.editors.ChartingState;
 import substates.PauseSubState;
-import doido.objects.DoidoCamera;
-import doido.utils.LerpUtil;
+
 #if TOUCH_CONTROLS
 import doido.objects.DoidoHitbox;
 #end
@@ -54,6 +56,7 @@ class PlayState extends MusicBeatState implements Playable
 
 	public var defaultSongSpeed:Float = 1.0;
 	public var startedSong:Bool = false;
+	public var startedCountdown:Bool = false;
 
 	public var stageBuild:Stage;
 
@@ -149,6 +152,7 @@ class PlayState extends MusicBeatState implements Playable
 		}
 
 		// temporary caching
+		NoteUtil.loadMissSounds();
 		Assets.image("hud/base/numbers");
 		Assets.image("hud/base/ratings");
 		Assets.sparrow("notes/base/splashes");
@@ -224,7 +228,7 @@ class PlayState extends MusicBeatState implements Playable
 				Timings.addScoreHold(note);
 				rating = Timings.addAccuracyHold(note.holdHitPercent);
 				if (note.missed)
-					health -= 0.1;
+					health -= 0.04;
 			}
 			else
 			{
@@ -255,6 +259,7 @@ class PlayState extends MusicBeatState implements Playable
 				}
 			}
 
+			NoteUtil.playMissSound();
 			audio.muteVoices = true;
 		}
 
@@ -268,7 +273,7 @@ class PlayState extends MusicBeatState implements Playable
 				for (char in characters)
 				{
 					if (char.strumline == strumline)
-						char.playSingAnim(note, note.missed);
+						char.playSingAnim(note.data.lane, note.missed);
 				}
 			}
 
@@ -312,7 +317,7 @@ class PlayState extends MusicBeatState implements Playable
 			for (char in characters)
 			{
 				if (char.strumline == strumline)
-					char.playSingAnim(note, true);
+					char.playSingAnim(note.data.lane, true);
 			}
 
 			if (strumline.isPlayer)
@@ -331,7 +336,7 @@ class PlayState extends MusicBeatState implements Playable
 					if (char.singType == LAST)
 						char.resetSingStep();
 					else if (char.curAnimFrame == char.singLoop || char.singType == FIRST)
-						char.playSingAnim(note);
+						char.playSingAnim(note.data.lane);
 				}
 			}
 
@@ -341,11 +346,33 @@ class PlayState extends MusicBeatState implements Playable
 			callScript("onNoteHold", [note, strumline]);
 		};
 
-		playField.onGhostTap = (lane, direction) ->
+		// doing this so it doesn't update when you change the setting mid-song
+		var ghostTapping:String = Save.data.ghostTapping.toLowerCase();
+
+		playField.onGhostTap = (lane, strumline) ->
 		{
-			// Logs.print("GHOST TAPPED " + direction.toUpperCase(), WARNING);
-			hudClass.updateScoreTxt();
-			callScript("onGhostTap", [lane, direction]);
+			if (!startedCountdown) return;
+
+			if (ghostTapping == "off" || (ghostTapping == "idle" && !strumline.ghostTappingIdle))
+			{
+				health -= 0.08;
+
+				Timings.score -= 100;
+				Timings.addAccuracy(Timings.getTiming("miss").judge);
+				
+				Timings.addCombo(-1);
+				NoteUtil.playMissSound();
+				for (char in characters)
+				{
+					if (char.strumline == strumline) {
+						char.playSingAnim(lane, true);
+					}
+				}
+				hudClass.updateScoreTxt();
+			}
+			callScript("onGhostTap", [lane, strumline]);
+
+			// Logs.print("GHOST TAPPED " + lane, WARNING);
 		};
 	}
 
@@ -585,39 +612,6 @@ class PlayState extends MusicBeatState implements Playable
 			audio.speed = defaultSongSpeed;
 	}
 
-	public function updateOption(optionName:String)
-	{
-		switch (optionName)
-		{
-			case "Downscroll":
-				downscroll = (#if TOUCH_CONTROLS Save.data.modernControls #else false #end ?true:Save.data.downscroll);
-				// hudClass.play.downscroll = downscroll;
-				hudClass.updatePositions();
-
-				for (strumline in playField.strumlines)
-				{
-					strumline.downscroll = downscroll;
-					strumline.recalculateY();
-				}
-				playField.updateNotes();
-
-			case "Centered Notes":
-				middlescroll = (#if TOUCH_CONTROLS Save.data.modernControls #else false #end ?true:Save.data.middlescroll);
-				// hudClass.play.middlescroll = middlescroll;
-				hudClass.updatePositions();
-
-				var strumPos = playField.getStrumlinePos(middlescroll);
-				var _i:Int = 0;
-				for (strumline in playField.strumlines)
-				{
-					strumline.x = (FlxG.width / 2) + strumPos[_i % strumPos.length];
-					strumline.recalculateX();
-					_i++;
-				}
-				playField.updateNotes();
-		}
-	}
-
 	public function beatCamera(gameZoom:Float, hudZoom:Float)
 	{
 		camGame.zoom *= gameZoom;
@@ -681,6 +675,8 @@ class PlayState extends MusicBeatState implements Playable
 			{
 				// trace(curBeat + 4);
 				countdownSfx[curBeat + 4].play();
+				if (!startedCountdown)
+					startedCountdown = true;
 			}
 		}
 

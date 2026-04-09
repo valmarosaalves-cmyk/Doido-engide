@@ -128,11 +128,17 @@ class PlayField extends FlxGroup
 
 		for (strumline in strumlines)
 		{
+			strumline.ghostTappingIdle = true;
+
 			// deleting notes
 			for (note in strumline.notes)
 			{
 				if (!note.isHold)
 				{
+					// if theres a note near your strumline, you're not idling
+					if (Math.abs(note.data.stepTime - curStepFloat) <= 2)
+						strumline.ghostTappingIdle = false;
+
 					if (strumline.botplay)
 					{
 						if (curStepFloat > note.data.stepTime)
@@ -146,6 +152,12 @@ class PlayField extends FlxGroup
 						if (noteDiff(note.data) < -Timings.getTiming("good").diff)
 							_onNoteMiss(note, strumline);
 					}
+				}
+				else
+				{
+					// if you're pressing a hold note, you're not idling
+					if (note.data.stepTime + note.data.length >= curStepFloat && !note.missed && note.holdHitPercent > 0.0)
+						strumline.ghostTappingIdle = false;
 				}
 
 				var despawnStep:Float = 12; // kills after 12 steps
@@ -234,10 +246,10 @@ class PlayField extends FlxGroup
 							}
 							else if (onGhostTap != null)
 							{
-								onGhostTap(i, NoteUtil.directions[i]);
+								onGhostTap(i, strumline);
 								/*if(startedCountdown)
 									{
-										if(ghostTapping == "NEVER" || (ghostTapping == "WHILE IDLING" && !isIdling))
+										
 										{
 											onGhostTap(i, NoteUtil.directions[i]);
 										}
@@ -405,7 +417,7 @@ class PlayField extends FlxGroup
 			onNoteMiss(note, strumline);
 	}
 
-	public var onGhostTap:(lane:Int, direction:String) -> Void;
+	public var onGhostTap:(lane:Int, strumline:Strumline) -> Void;
 
 	override function update(elapsed:Float)
 	{

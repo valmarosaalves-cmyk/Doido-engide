@@ -30,21 +30,18 @@ class Note extends FlxSprite
 	public var noteSpeedMult:Float = 1.0;
 
 	//oop
-	public var canQuant:Bool = false;
-	public var quantShader:RGBPalette;
+	public var canQuant:Bool = true;
+	public var colorShader:RGBPalette;
 
 	public function new()
 	{
 		super();
-		if (Save.data.quantNotes)
-		{
-			quantShader = new RGBPalette();
-			canQuant = true;
-		}
+		colorShader = new RGBPalette();
 	}
 
-	public function loadData(data:NoteData)
+	public function loadData(data:NoteData, ?quantNote:Bool = true)
 	{
+		canQuant = quantNote;
 		// visual stuff
 		setPosition(-5000, -5000); // offscreen lol
 		visible = true;
@@ -86,8 +83,8 @@ class Note extends FlxSprite
 			default:
 				if (canQuant) {
 					this.loadSparrow("notes/base/quant/notes");
-					if (shader != quantShader)
-						shader = quantShader;
+					if (shader != colorShader)
+						shader = colorShader;
 				} else {
 					this.loadSparrow("notes/base/notes");
 					shader = null;
@@ -107,7 +104,7 @@ class Note extends FlxSprite
 			getQuantColors("base");
 			noteQuant = NoteUtil.calcQuant(data);
 			
-			quantShader.setColor(
+			colorShader.setColor(
 				quantColors[noteQuant][0],
 				quantColors[noteQuant][1],
 				quantColors[noteQuant][2],

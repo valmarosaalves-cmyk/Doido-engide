@@ -16,13 +16,16 @@ class Strumline extends FlxGroup
 	public var wide:Bool = false;
 	public var hasModchart:Bool = false;
 
-	public var strumlineData:Int = 0;
-
 	public var scrollSpeed:Float = 1.0;
 
+	// checking if you can ghost tap with the "idle" option
+	public var ghostTappingIdle:Bool = true;
+	//public var strumlineData:Int = 0;
 	public var holdingNotes:Array<Bool> = [];
 
-	// use these to access the actual data
+	public var quantNotes:Bool = Save.data.quantNotes;
+
+	// use these to access the sprites
 	public var strums:Array<StrumNote> = [];
 	public var notes:Array<Note> = [];
 
@@ -41,7 +44,7 @@ class Strumline extends FlxGroup
 		for (i in 0...NoteUtil.directions.length)
 		{
 			var strum = new StrumNote();
-			strum.reloadStrum(i);
+			strum.reloadStrum(i, quantNotes);
 			strum.setZ(0);
 			strums.push(strum);
 			add(strum);
@@ -54,7 +57,7 @@ class Strumline extends FlxGroup
 	public function addNote(noteData:NoteData)
 	{
 		var note:Note = cast recycle(Note);
-		note.loadData(noteData);
+		note.loadData(noteData, quantNotes);
 		note.reloadSprite();
 		note.setZ(2);
 		notes.push(note);
@@ -145,7 +148,7 @@ class Strumline extends FlxGroup
 	public function addSplash(note:Note)
 	{
 		var splash:Splash = cast recycle(Splash);
-		splash.loadData(note);
+		splash.loadData(note, quantNotes);
 		splash.setZ(3);
 		splash.x = strums[note.data.lane].x;
 		splash.y = strums[note.data.lane].y;
@@ -158,7 +161,7 @@ class Strumline extends FlxGroup
 	public function addCover(note:Note)
 	{
 		var cover:Cover = cast recycle(Cover);
-		cover.loadData(note);
+		cover.loadData(note, quantNotes);
 		cover.setZ(3);
 		cover.x = strums[note.data.lane].x;
 		cover.y = strums[note.data.lane].y;

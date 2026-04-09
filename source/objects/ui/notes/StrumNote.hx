@@ -13,20 +13,17 @@ class StrumNote extends DoidoSprite
 	public var strumAngle:Float = 0.0;
 	
 	public var canQuant:Bool = false;
-	public var quantShader:RGBPalette;
+	public var colorShader:RGBPalette;
 
 	public function new()
 	{
 		super();
-		if (Save.data.quantNotes)
-		{
-			quantShader = new RGBPalette();
-			canQuant = true;
-		}
+		colorShader = new RGBPalette();
 	}
 
-	public function reloadStrum(lane:Int)
+	public function reloadStrum(lane:Int, quantNotes:Bool = false)
 	{
+		canQuant = quantNotes;
 		this.lane = lane;
 		this.strumScale = 1.0;
 
@@ -61,8 +58,8 @@ class StrumNote extends DoidoSprite
 			if (animName == "static")
 				shader = null;
 			else {
-				if (shader != quantShader)
-					shader = quantShader;
+				if (shader != colorShader)
+					shader = colorShader;
 
 				if (animName == "pressed")
 					playConfirm(null);
@@ -91,7 +88,9 @@ class StrumNote extends DoidoSprite
 		else	
 			colorArray = note.quantColors[note.noteQuant];
 		
-		quantShader.setColor(
+		if (colorArray.length < 3) return;
+
+		colorShader.setColor(
 			colorArray[0],
 			colorArray[1],
 			colorArray[2],	

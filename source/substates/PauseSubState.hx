@@ -11,7 +11,7 @@ import flixel.tweens.FlxTween;
 
 class PauseSubState extends MusicBeatSubState
 {
-	var options:Array<String> = ["Resume", "Restart Song", "Change Difficulty", "Botplay", "Exit To Menu"];
+	var options:Array<String> = ["Resume", "Restart Song", "Options", "Botplay", "Exit To Menu"];
 	var optionText:Array<Alphabet> = [];
 	var title:FlxText;
 	var creditsText:FlxText;
@@ -28,8 +28,12 @@ class PauseSubState extends MusicBeatSubState
 		bg.alpha = 0.4;
 		add(bg);
 
-		if (PlayState.instance.startedSong)
-			options.insert(3, "Options");
+		if (true) // difficultyList.length > 0 or something like that
+			options.insert(2, "Change Difficulty");
+
+		// i hope this wont break anything
+		/*if (PlayState.instance.startedSong)
+			options.insert(3, "Options");*/
 
 		for (i in 0...options.length)
 		{
