@@ -27,7 +27,7 @@ class DebugMenu extends MusicBeatState
 		"Controls",
 		"Options",
 		"Credits",
-		#if !mobile "Character Editor", "Crash Handler" #end
+		#if !mobile "Character Editor", "Crash Handler", "Popup" #end
 	];
 	var text:FlxText;
 	var title:FlxText;
@@ -107,6 +107,8 @@ class DebugMenu extends MusicBeatState
 			{
 				case "options":
 					openSubState(new substates.menus.OptionsSubState());
+				case "popup":
+					openSubState(new substates.editors.PopupSubState());
 				case "controls":
 					MusicBeat.switchState(new DebugControls());
 				case "crash handler":

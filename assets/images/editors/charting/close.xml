@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="close.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="close0000" x="2" y="2" width="26" height="25"/>
+	<SubTexture name="close0001" x="30" y="2" width="26" height="25"/>
+</TextureAtlas>

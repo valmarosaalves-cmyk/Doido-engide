@@ -1,5 +1,6 @@
 package states.editors;
 
+import substates.editors.PopupSubState;
 import doido.Cache;
 import flixel.graphics.frames.FlxFramesCollection;
 import openfl.geom.Rectangle;
@@ -642,18 +643,56 @@ class ChartingState extends MusicBeatState
 		// stageButton.text.color = 0xFFFFFFFF;
 		tab.add(stageButton);
 
-		tab.add(createText(getX("center", 145), getY(13), "Composer:", 0xFFD8DAF6));
-		tab.add(createText(getX("margin_right", 145), getY(13), "Charter:", 0xFFD8DAF6));
+		tab.add(createText(getX("center", 145), getY(13), "Meta:", 0xFFD8DAF6));
+		// tab.add(createText(getX("margin_right", 145), getY(13), "Skins:", 0xFFD8DAF6));
 
-		var composer:PsychUIInputText;
-		composer = new PsychUIInputText(getX("center", 145), getY(13) + 22, 145, META.composer, 14);
-		composer.onChange.add((old, cur, input) -> META.composer = cur);
-		tab.add(composer);
+		var metaButton = new TextButton("Edit");
+		metaButton.button.onUp.add((btn) ->
+		{
+			var metaStuff:Array<FlxSprite> = [];
+			metaStuff.push(createText((FlxG.width / 2) - (145) - 5, (FlxG.height / 2) - 22, "Composer:", 0xFFD8DAF6));
+			metaStuff.push(createText((FlxG.width / 2) + 5, (FlxG.height / 2) - 22, "Charter:", 0xFFD8DAF6));
 
-		var charter:PsychUIInputText;
-		charter = new PsychUIInputText(getX("margin_right", 145), getY(13) + 22, 145, META.charter, 14);
-		charter.onChange.add((old, cur, input) -> META.charter = cur);
-		tab.add(charter);
+			var composer:PsychUIInputText;
+			composer = new PsychUIInputText((FlxG.width / 2) - (145) - 5, (FlxG.height / 2), 145, META.composer, 14);
+			composer.onChange.add((old, cur, input) -> META.composer = cur);
+			metaStuff.push(composer);
+
+			var charter:PsychUIInputText;
+			charter = new PsychUIInputText((FlxG.width / 2) + 5, (FlxG.height / 2), 145, META.charter, 14);
+			charter.onChange.add((old, cur, input) -> META.charter = cur);
+			metaStuff.push(charter);
+
+			var ok = new TextButton("Ok", "small");
+			ok.screenCenter();
+			ok.y += 50;
+			metaStuff.push(ok);
+
+			var popup = new PopupSubState("Editing Meta:", 320, 150, metaStuff);
+			openSubState(popup);
+
+			ok.button.onUp.add((btn) ->
+			{
+				popup.close();
+			});
+		});
+		metaButton.x = getX("center", metaButton.width);
+		metaButton.y = getY(13) + 22;
+		tab.add(metaButton);
+
+		//
+
+		/*
+			var composer:PsychUIInputText;
+			composer = new PsychUIInputText(getX("center", 145), getY(13) + 22, 145, META.composer, 14);
+			composer.onChange.add((old, cur, input) -> META.composer = cur);
+			tab.add(composer);
+
+			var charter:PsychUIInputText;
+			charter = new PsychUIInputText(getX("margin_right", 145), getY(13) + 22, 145, META.charter, 14);
+			charter.onChange.add((old, cur, input) -> META.charter = cur);
+			tab.add(charter);
+		 */
 
 		return tab;
 	}
