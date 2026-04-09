@@ -120,10 +120,10 @@ class CharGroup extends FlxTypedGroup<Character>
 		return angle;
 	}
 
-	public function playSingAnim(note:Note, miss:Bool = false)
+	public function playSingAnim(lane:Int, miss:Bool = false)
 	{
 		resetSingStep();
-		playAnim(NoteUtil.getSingAnims(4)[note.data.lane] + (miss ? "miss" : ""), true);
+		playAnim(NoteUtil.getSingAnims(4)[lane] + (miss ? "miss" : ""), true);
 	}
 
 	public function resetSingStep()

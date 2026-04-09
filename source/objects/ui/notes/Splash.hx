@@ -124,15 +124,12 @@ class BaseSplash extends DoidoSprite
 	public function new()
 	{
 		super();
-		if (Save.data.quantNotes)
-		{
-			quantShader = new RGBPalette();
-			canQuant = true;
-		}
+		quantShader = new RGBPalette();
 	}
 
-	public function loadData(note:Note)
+	public function loadData(note:Note, quantNotes:Bool = false)
 	{
+		canQuant = quantNotes;
 		visible = true;
 		splashed = false;
 		this.note = note;

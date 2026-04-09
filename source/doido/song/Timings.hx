@@ -111,6 +111,25 @@ class Timings
 		}
 		return timing;
 	}
+	
+	public static function addCombo(dir:Int)
+	{
+		if (dir < 0)
+		{
+			misses++;
+			if (combo > 0)
+				combo = 0;
+			else
+				combo--;
+		}
+		else
+		{
+			if (combo < 0)
+				combo = 0;
+			
+			combo++;
+		}
+	}
 
 	public static function addScore(note:Note, noteDiff:Float)
 	{
@@ -120,19 +139,12 @@ class Timings
 
 		if (note.missed)
 		{
-			if (combo > 0)
-				combo = 0;
-			else
-				combo--;
+			addCombo(-1);
 			score += Math.ceil(100 * timing.judge);
-			misses++;
 		}
 		else
 		{
-			if (combo < 0)
-				combo = 0;
-			combo++;
-
+			addCombo(1);
 			if (noteDiff <= 5)
 				score += 100;
 			else
@@ -150,13 +162,8 @@ class Timings
 		if (hold.missed)
 		{
 			if (hold.holdParent.gotHit)
-			{
-				misses++;
-				if (combo > 0)
-					combo = 0;
-				else
-					combo--;
-			}
+				addCombo(-1);
+			
 			score -= Math.floor(50 * (hold.data.length - scoreWin));
 		}
 		else

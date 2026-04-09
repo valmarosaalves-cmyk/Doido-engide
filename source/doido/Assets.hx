@@ -244,6 +244,9 @@ class Assets
 	/*
 	 *   DATA
 	 */
+	public static inline function text(key:String, ?library:String):String
+		return getAsset('$key', library, TEXT);
+
 	public static inline function json(key:String, ?library:String = ""):Dynamic
 		return Json.parse(getAsset(key, library, JSON));
 
@@ -252,6 +255,16 @@ class Assets
 
 	public static inline function font(key:String, ?library:String = ""):String
 		return getAsset('fonts/$key', library, FONT);
+
+	public static inline function txtToArray(key:String, ?library:String = ""):Array<String>
+	{
+		var daList:Array<String> = text(key, library).split('\n');
+
+		for(i in 0...daList.length)
+			daList[i] = daList[i].trim();
+
+		return daList;
+	}
 
 	/*
 	 *   IMAGES

@@ -476,7 +476,7 @@ class AlphaCharacter extends FlxSprite
 		{
 			case "-":
 				charOffset.y = -20;
-			case '"' | "'":
+			case '"' | "'" | "*":
 				charOffset.y = -40;
 		}
 	}

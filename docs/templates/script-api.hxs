@@ -15,7 +15,7 @@ function updatePost(elapsed:Float) {}
 function onNoteHit(note:Note, strumline:Strumline) {}
 function onNoteMiss(note:Note, strumline:Strumline) {}
 function onNoteHold(note:Note, strumline:Strumline) {}
-function onGhostTap(lane:Int, direction:String) {}
+function onGhostTap(lane:Int, strumline:Strumline) {}
 
 function playEvent(name:String, data:Array<Dynamic>) {}
 

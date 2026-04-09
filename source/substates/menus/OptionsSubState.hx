@@ -15,11 +15,19 @@ typedef OptionData =
 	var name:String;
 	var get:Void->Dynamic;
 	var set:Dynamic->Void;
+
+    // extra settings
     var ?display:Dynamic->String;
     var ?onChange:Void->Void;
     var ?canPlaySound:Void->Bool;
+
+    // playstate stuff
+    var ?updatePlayState:PlayState->Void;
+    var ?playStateWarning:Bool;
+
     // SELECTORS
     var ?options:Array<String>;
+
     // SLIDERS
     var ?step:Float;
     var ?hold:Float;
@@ -44,12 +52,15 @@ class OptionsSubState extends MusicBeatSubState
     public var alphabetGrp:FlxTypedGroup<OptionAlphabet>;
     public var attachGrp:FlxTypedGroup<Attachment>;
 
+    public var warningWidth:Float = 0.0;
+    public var warningTxt:Alphabet;
+
     public final enabledColor:FlxColor = FlxColor.WHITE;
     public final disabledColor:FlxColor = FlxColor.WHITE.getDarkened(0.6);
 
-    public var curCategoryString:String = "";
-    public var curCategory:Int = 0;
-    public var curSelection:Int = 0;
+    static var curCategoryString:String = "";
+    static var curCategory:Int = 0;
+    static var curSelection:Int = 0;
 
     public var curAttachType:AttachmentType = CATEGORY;
 
@@ -61,25 +72,66 @@ class OptionsSubState extends MusicBeatSubState
     {
         super();
         this.playState = playState;
-        //if (playState == null)
-        //{
         bg = new FlxSprite().makeColor(0, 0, 0xFF000000);
         bg.screenCenter();
         bg.alpha = 0.9;
         add(bg);
-        //}
 
         optionList = [
             "Gameplay" => [
                 {
+                    name: "Ghost Tapping",
+                    get: () -> Save.data.ghostTapping,
+                    set: (b:String) -> Save.data.ghostTapping = b,
+                    options: ["off", "idle", "on"],
+                    display: (i:String) -> {
+                        return switch(i) {
+                            case "idle": "IDLE";
+                            default: i.toUpperCase();
+                        }
+                    },
+                    playStateWarning: true,
+                },
+                {
                     name: "Downscroll",
                     get: () -> Save.data.downscroll,
-                    set: (b:Bool) -> Save.data.downscroll = b
+                    set: (b:Bool) -> Save.data.downscroll = b,
+                    updatePlayState: (playState) -> {
+                        playState.downscroll = Save.data.downscroll;
+                        #if TOUCH_CONTROLS
+                        if (Save.data.modernControls) playState.downscroll = true;
+                        #end
+                        playState.hudClass.updatePositions();
+
+                        for (strumline in playState.playField.strumlines)
+                        {
+                            strumline.downscroll = playState.downscroll;
+                            strumline.recalculateY();
+                        }
+                        playState.playField.updateNotes();
+                    }
                 },
                 {
                     name: "Centered Notes",
                     get: () -> Save.data.middlescroll,
-                    set: (b:Bool) -> Save.data.middlescroll = b
+                    set: (b:Bool) -> Save.data.middlescroll = b,
+                    updatePlayState: (playState) -> {
+                        playState.middlescroll = Save.data.middlescroll;
+                        #if TOUCH_CONTROLS
+                        if (Save.data.modernControls) playState.middlescroll = true;
+                        #end
+                        playState.hudClass.updatePositions();
+
+                        var strumPos = playState.playField.getStrumlinePos(playState.middlescroll);
+                        var _i:Int = 0;
+                        for (strumline in playState.playField.strumlines)
+                        {
+                            strumline.x = (FlxG.width / 2) + strumPos[_i % strumPos.length];
+                            strumline.recalculateX();
+                            _i++;
+                        }
+                        playState.playField.updateNotes();
+                    }
                 },
             ],
             "Preferences" => [
@@ -103,13 +155,14 @@ class OptionsSubState extends MusicBeatSubState
                 {
                     name: "Note Quantization",
                     get: () -> Save.data.quantNotes,
-                    set: (b:Bool) -> Save.data.quantNotes = b
+                    set: (b:Bool) -> Save.data.quantNotes = b,
+                    playStateWarning: true
                 },
                 {
                     name: "Hitsound SFX",
                     get: () -> Save.data.hitsound,
                     set: (b:String) -> Save.data.hitsound = b,
-                    options: ["OFF", "OSU", "NSWITCH", "CD"],
+                    options: NoteUtil.getHitsounds(),
                     canPlaySound: () -> return Save.data.hitsound == "OFF",
                     onChange: () -> NoteUtil.playHitsound()
                 },
@@ -141,7 +194,7 @@ class OptionsSubState extends MusicBeatSubState
                     set: (i:Int) -> Save.data.fps = i,
                     limits: [30, 310],
                     step: 1,
-                    hold: 5
+                    hold: 2
                 },
                 {
                     name: "Window Size",
@@ -191,6 +244,13 @@ class OptionsSubState extends MusicBeatSubState
         add(alphabetGrp = new FlxTypedGroup<OptionAlphabet>());
         add(attachGrp = new FlxTypedGroup<Attachment>());
 
+        warningTxt = new Alphabet(FlxG.width / 2, 0, '<color value=#FF0000>RESTART THE SONG TO APPLY SOME SETTINGS</color>', false, CENTER);
+        warningWidth = warningTxt.width;
+        warningTxt.scale.set(0.5, 0.5);
+        warningTxt.updateHitbox();
+        warningTxt.visible = false;
+        add(warningTxt);
+
         changeCategory();
     }
 
@@ -202,8 +262,15 @@ class OptionsSubState extends MusicBeatSubState
         curSound.play();
     }
 
+    public function triggerWarning()
+    {
+        NoteUtil.playMissSound();
+        warningTxt.visible = true;
+    }
+
     public function changeCategory(?change:Int = 0)
     {
+        warningTxt.y = FlxG.height;
         //if (change != 0) FlxG.sound.play(Assets.sound("scroll"));
         var sfx = FlxG.sound.load(Assets.sound("options/options-open"));
         sfx.pitch = FlxG.random.float(0.9, 1.1);
@@ -236,8 +303,15 @@ class OptionsSubState extends MusicBeatSubState
         {
             if (data.canPlaySound == null) data.canPlaySound = () -> true;
 
+            var formatName:String = data.name;
+            if (playState != null)
+            {
+                if (data.playStateWarning ?? false)
+                    formatName += '*';
+            }
+
             var optionText:OptionAlphabet = alphabetGrp.recycle(OptionAlphabet);
-            optionText.reloadStuff(130 + (60 * _i), data.name);
+            optionText.reloadStuff(130 + (60 * _i), formatName);
             optionText.y += bg.y;
             optionText.x = bg.x + 20;
             optionText.ID = _i + 1;
@@ -332,13 +406,19 @@ class OptionsSubState extends MusicBeatSubState
     public function saveOptions()
     {
         Save.save();
-        if (curOption?.onChange != null) curOption?.onChange();
+        if (curOption.onChange != null) curOption.onChange();
         if (playState == null) return;
-        playState.updateOption(optionList.get(curCategoryString)[curSelection - 1].name);
+        if (curOption.updatePlayState != null) curOption.updatePlayState(playState);
+        if (curOption.playStateWarning ?? false) triggerWarning();
     }
 
     override function draw()
     {
+        if (warningTxt.visible)
+            for(char in warningTxt.members) {
+                char.clipToSprite([bg]);
+            }
+        
         alphabetGrp.forEach((alphabet) -> {
             for(char in alphabet.members) {
                 char.clipToSprite([bg]);
@@ -445,10 +525,22 @@ class OptionsSubState extends MusicBeatSubState
 
         bg.scale.set(
             FlxMath.lerp(bg.scale.x, bgWidth + 140, elapsed * 8),
-            FlxMath.lerp(bg.scale.y, bgHeight + 80, elapsed * 8)
+            FlxMath.lerp(bg.scale.y, bgHeight + 80 + (warningTxt.visible ? warningTxt.height : 0), elapsed * 8)
         );
         bg.updateHitbox();
         bg.screenCenter();
+        
+        warningTxt.scale.x = FlxMath.lerp(
+            warningTxt.scale.x,
+            ((bg.width - 40) / warningWidth),
+            elapsed * 8
+        );
+        warningTxt.updateHitbox();
+        warningTxt.y = FlxMath.lerp(
+            warningTxt.y,
+            bg.y + bg.height - warningTxt.height - 20,
+            elapsed * 8
+        );
 
         alphabetGrp.forEachAlive((alphabet) -> {
             alphabet.y = FlxMath.lerp(
