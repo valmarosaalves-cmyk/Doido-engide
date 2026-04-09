@@ -103,8 +103,6 @@ class Cover extends BaseSplash
 					"splash" => getArr([4, 5, 6, 7, 8]),
 				];
 
-				trace(anims);
-
 				this.loadImage('notes/pixel/${rgb ? 'quant/' : ''}covers', true, 33, 33);
 				for (anim => frameArr in anims)
 					animation.add(anim, frameArr, 18, (anim == "loop"));
