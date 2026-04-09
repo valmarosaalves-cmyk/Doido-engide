@@ -5,7 +5,7 @@ import flixel.math.FlxRect;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import doido.song.Conductor;
-import doido.song.chart.SongHandler.NoteData;
+import doido.song.SongHandler.NoteData;
 import doido.song.Timings;
 import doido.utils.NoteUtil;
 import flixel.FlxSprite;
@@ -71,7 +71,7 @@ class PlayField extends FlxGroup
 			curStepFloat = this.curStepFloat;
 		else
 			this.curStepFloat = curStepFloat;
-		
+
 		pressed = [
 			Controls.pressed(LEFT)
 			|| touchInput.pressed("left"),
@@ -331,9 +331,11 @@ class PlayField extends FlxGroup
 		var strum = strumline.strums[note.data.lane];
 		var diff = noteDiff(note.data);
 
-		if (strumline.isPlayer) {
+		if (strumline.isPlayer)
+		{
 			playerHolding = true;
-			if (!note.isHold) NoteUtil.playHitsound();
+			if (!note.isHold)
+				NoteUtil.playHitsound();
 		}
 
 		if (!note.isHold)

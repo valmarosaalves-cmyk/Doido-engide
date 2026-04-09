@@ -1,8 +1,8 @@
 package doido.utils;
 
 import flixel.sound.FlxSound;
-import doido.song.chart.SongHandler.EventData;
-import doido.song.chart.SongHandler.NoteData;
+import doido.song.SongHandler.EventData;
+import doido.song.SongHandler.NoteData;
 import flixel.FlxSprite;
 import flixel.math.FlxAngle;
 import flixel.util.FlxColor;
@@ -88,12 +88,15 @@ class NoteUtil
 
 	public static function stringToInt(direction:String):Int
 		return directions.indexOf(direction);
-	
+
 	inline public static function playHitsound(?key:String, ?volume:Float):FlxSound
 	{
-		if (key == null) key = Save.data.hitsound;
-		if (key == "OFF") return null;
-		if (!Assets.fileExists("sounds/hitsounds/" + key, SOUND)) return null;
+		if (key == null)
+			key = Save.data.hitsound;
+		if (key == "OFF")
+			return null;
+		if (!Assets.fileExists("sounds/hitsounds/" + key, SOUND))
+			return null;
 
 		var hitsound = FlxG.sound.load(Assets.sound("hitsounds/" + key));
 		hitsound.volume = volume ?? Save.data.hitsoundVolume;

@@ -1,6 +1,6 @@
-package doido.song.chart;
+package doido.song.compat;
 
-import doido.song.chart.SongHandler;
+import doido.song.SongHandler;
 
 typedef LegacySong =
 {
@@ -36,8 +36,21 @@ typedef LegacyBPMChange =
 	var bpm:Float;
 }
 
+// THIS CLASS IS STILL WIP
+// WE WANT TO ADD SUPPORT FOR OTHER ENGINE'S CHARTS
+// SO STAY TUNED :-)
+
 class Legacy
 {
+	inline public static function getMetaFromLegacy(legacySong:LegacySong):DoidoMeta
+	{
+		return {
+			player1: legacySong.player1,
+			player2: legacySong.player2,
+			gf: (legacySong.gfVersion == "stage-set") ? null : legacySong.gfVersion,
+		}
+	}
+
 	inline public static function getChartFromLegacy(legacySong:LegacySong):DoidoChart
 	{
 		var CHART:DoidoChart = {
@@ -121,6 +134,7 @@ class Legacy
 		return CHART;
 	}
 
+	// TO - DO: convert actual events + make the camera section shit not suck!
 	public static function getEventsFromLegacy(legacySong:LegacySong):DoidoEvents
 	{
 		var EVENTS:DoidoEvents = {
@@ -158,7 +172,6 @@ class Legacy
 			sectionTime += section.lengthInSteps ?? (section.sectionBeats * 4) ?? 16;
 		}
 
-		trace(EVENTS);
 		return EVENTS;
 	}
 

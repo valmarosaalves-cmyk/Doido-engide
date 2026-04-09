@@ -15,13 +15,13 @@ import doido.objects.ui.*;
 import flixel.util.FlxStringUtil;
 import flixel.util.FlxTimer;
 import doido.utils.EditorUtil;
-import doido.song.chart.SongHandler.NoteData;
+import doido.song.SongHandler.NoteData;
 import doido.song.AudioHandler;
 import doido.song.Conductor;
-import doido.song.chart.SongHandler.DoidoSong;
-import doido.song.chart.SongHandler.DoidoChart;
-import doido.song.chart.SongHandler.DoidoEvents;
-import doido.song.chart.SongHandler.DoidoMeta;
+import doido.song.SongHandler.DoidoSong;
+import doido.song.SongHandler.DoidoChart;
+import doido.song.SongHandler.DoidoEvents;
+import doido.song.SongHandler.DoidoMeta;
 import doido.utils.NoteUtil;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
@@ -639,7 +639,7 @@ class ChartingState extends MusicBeatState
 		stageButton.x = getX(); // bfButton.width
 		stageButton.y = getY(13) + 22;
 		stageButton.text.text = META.stage;
-		//stageButton.text.color = 0xFFFFFFFF;
+		// stageButton.text.color = 0xFFFFFFFF;
 		tab.add(stageButton);
 
 		tab.add(createText(getX("center", 145), getY(13), "Composer:", 0xFFD8DAF6));

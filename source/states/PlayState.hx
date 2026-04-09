@@ -3,9 +3,9 @@ package states;
 import flixel.sound.FlxSound;
 import flixel.math.FlxMath;
 import doido.song.*;
-import doido.song.chart.SongHandler;
-import doido.song.chart.SongHandler.DoidoChart;
-import doido.song.chart.SongHandler.DoidoEvents;
+import doido.song.SongHandler;
+import doido.song.SongHandler.DoidoChart;
+import doido.song.SongHandler.DoidoEvents;
 import flixel.FlxSprite;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
@@ -79,13 +79,9 @@ class PlayState extends MusicBeatState implements Playable
 
 	public var loadedScripts:Array<Iris> = [];
 
-	public static function loadSong(jsonInput:String, ?diff:String = "normal")
+	public static function loadSong(input:String, ?diff:String = "normal")
 	{
-		SONG = {
-			CHART: SongHandler.loadChart(jsonInput, diff),
-			EVENTS: SongHandler.loadEvents(jsonInput, diff),
-			META: SongHandler.loadMeta(jsonInput, diff)
-		};
+		SONG = SongHandler.loadSong(input, diff);
 	}
 
 	public function resetStatics()
