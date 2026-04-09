@@ -72,7 +72,7 @@ class Strumline extends FlxGroup
 			for (i in 0...holdLength)
 			{
 				var hold:Note = cast recycle(Note);
-				hold.loadData(noteData);
+				hold.loadData(noteData, quantNotes);
 
 				hold.isHold = true;
 				hold.isHoldEnd = (i == holdLength - 1);
