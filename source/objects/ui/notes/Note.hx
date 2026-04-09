@@ -100,7 +100,7 @@ class Note extends FlxSprite
 				animation.add(direction, [data.lane + ((isHold && !isHoldEnd) ? 0 : 4)], 0, false);
 				noteScale = 6;
 				antialiasing = false;
-				//hasRgb = true;
+				hasRgb = true;
 
 			default:
 				rgb = skin.endsWith("-rgb") || skin.endsWith("-quant");
