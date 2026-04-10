@@ -649,18 +649,21 @@ class ChartingState extends MusicBeatState
 		var metaButton = new TextButton("Edit");
 		metaButton.button.onUp.add((btn) ->
 		{
+			var metaComposer:String = META.composer;
+			var metaCharter:String = META.charter;
+
 			var metaStuff:Array<FlxSprite> = [];
 			metaStuff.push(createText((FlxG.width / 2) - (145) - 5, (FlxG.height / 2) - 22, "Composer:", 0xFFD8DAF6));
 			metaStuff.push(createText((FlxG.width / 2) + 5, (FlxG.height / 2) - 22, "Charter:", 0xFFD8DAF6));
 
 			var composer:PsychUIInputText;
-			composer = new PsychUIInputText((FlxG.width / 2) - (145) - 5, (FlxG.height / 2), 145, META.composer, 14);
-			composer.onChange.add((old, cur, input) -> META.composer = cur);
+			composer = new PsychUIInputText((FlxG.width / 2) - (145) - 5, (FlxG.height / 2), 145, metaComposer, 14);
+			composer.onChange.add((old, cur, input) -> metaComposer = cur);
 			metaStuff.push(composer);
 
 			var charter:PsychUIInputText;
-			charter = new PsychUIInputText((FlxG.width / 2) + 5, (FlxG.height / 2), 145, META.charter, 14);
-			charter.onChange.add((old, cur, input) -> META.charter = cur);
+			charter = new PsychUIInputText((FlxG.width / 2) + 5, (FlxG.height / 2), 145, metaCharter, 14);
+			charter.onChange.add((old, cur, input) -> metaCharter = cur);
 			metaStuff.push(charter);
 
 			var ok = new TextButton("Ok", "small");
@@ -673,6 +676,8 @@ class ChartingState extends MusicBeatState
 
 			ok.button.onUp.add((btn) ->
 			{
+				META.composer = metaComposer;
+				META.charter = metaCharter;
 				popup.close();
 			});
 		});
@@ -683,18 +688,21 @@ class ChartingState extends MusicBeatState
 		var skinsButton = new TextButton("Edit");
 		skinsButton.button.onUp.add((btn) ->
 		{
+			var dadSkin:String = META.assets.opponentNotes;
+			var bfSkin:String = META.assets.playerNotes;
+
 			var metaStuff:Array<FlxSprite> = [];
 			metaStuff.push(createText((FlxG.width / 2) - (145) - 5, (FlxG.height / 2) - 22, "Opp Notes:", 0xFFD8DAF6));
 			metaStuff.push(createText((FlxG.width / 2) + 5, (FlxG.height / 2) - 22, "Player Notes:", 0xFFD8DAF6));
 
 			var dadnotes:PsychUIInputText;
-			dadnotes = new PsychUIInputText((FlxG.width / 2) - (145) - 5, (FlxG.height / 2), 145, META.assets.opponentNotes, 14);
-			dadnotes.onChange.add((old, cur, input) -> META.assets.opponentNotes = cur);
+			dadnotes = new PsychUIInputText((FlxG.width / 2) - (145) - 5, (FlxG.height / 2), 145, dadSkin, 14);
+			dadnotes.onChange.add((old, cur, input) -> dadSkin = cur);
 			metaStuff.push(dadnotes);
 
 			var bfnotes:PsychUIInputText;
-			bfnotes = new PsychUIInputText((FlxG.width / 2) + 5, (FlxG.height / 2), 145, META.assets.playerNotes, 14);
-			bfnotes.onChange.add((old, cur, input) -> META.assets.playerNotes = cur);
+			bfnotes = new PsychUIInputText((FlxG.width / 2) + 5, (FlxG.height / 2), 145, bfSkin, 14);
+			bfnotes.onChange.add((old, cur, input) -> bfSkin = cur);
 			metaStuff.push(bfnotes);
 
 			var ok = new TextButton("Ok", "small");
@@ -707,6 +715,8 @@ class ChartingState extends MusicBeatState
 
 			ok.button.onUp.add((btn) ->
 			{
+				META.assets.opponentNotes = dadSkin;
+				META.assets.playerNotes = bfSkin;
 				popup.close();
 			});
 		});

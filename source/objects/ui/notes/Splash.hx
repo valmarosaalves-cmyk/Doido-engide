@@ -10,7 +10,7 @@ class Splash extends BaseSplash
 	{
 		clearOffsets();
 		var direction:String = NoteUtil.intToString(note.data.lane);
-		var hasRgb:Bool = false;
+		hasRgb = false;
 		rgb = skin.endsWith("-quant");
 
 		switch (skin.replace("-quant", ""))
@@ -47,19 +47,6 @@ class Splash extends BaseSplash
 				hasRgb = true;
 		}
 
-		if (!hasRgb)
-			rgb = false;
-		if (!rgb || note == null)
-			shader = null;
-		else
-		{
-			if (shader != colorShader)
-				shader = colorShader;
-
-			var colorArray = note.rgbColors;
-			colorShader.setColor(colorArray[0], colorArray[1], colorArray[2],);
-		}
-
 		super.reloadSplash();
 		playRandom();
 	}
@@ -80,7 +67,7 @@ class Cover extends BaseSplash
 	{
 		clearOffsets();
 		var direction:String = NoteUtil.intToString(note.data.lane);
-		var hasRgb:Bool = false;
+		hasRgb = false;
 		rgb = skin.endsWith("-quant");
 
 		switch (skin.replace("-quant", ""))
@@ -127,19 +114,6 @@ class Cover extends BaseSplash
 					for (anim in ["start", "loop", "splash"])
 						addOffset(anim, {x: 6, y: -32});
 				}
-		}
-
-		if (!hasRgb)
-			rgb = false;
-		if (!rgb || note == null)
-			shader = null;
-		else
-		{
-			if (shader != colorShader)
-				shader = colorShader;
-
-			var colorArray = note.rgbColors;
-			colorShader.setColor(colorArray[0], colorArray[1], colorArray[2]);
 		}
 
 		super.reloadSplash();
@@ -190,6 +164,8 @@ class BaseSplash extends DoidoSprite
 	public var rgb:Bool = false;
 	public var colorShader:RGBPalette;
 
+	public var hasRgb:Bool = true;
+
 	public function new()
 	{
 		super();
@@ -206,6 +182,19 @@ class BaseSplash extends DoidoSprite
 
 	public function reloadSplash()
 	{
+		if (!hasRgb)
+			rgb = false;
+		if (!rgb || note == null)
+			shader = null;
+		else
+		{
+			if (shader != colorShader)
+				shader = colorShader;
+
+			var colorArray = note.rgbColors;
+			colorShader.setColor(colorArray[0], colorArray[1], colorArray[2]);
+		}
+
 		alpha = startAlpha;
 		scale.set(splashScale, splashScale);
 		updateHitbox();
