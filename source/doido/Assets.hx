@@ -342,7 +342,7 @@ class Assets
 		var path = getPath('images/$key.png', library);
 
 		var bitmap = BitmapData.fromFile(path);
-		var palettes = [];
+		var palettes:Array<Array<FlxColor>> = [];
 
 		for (paletteIndex in 0...bitmap.height) {
 			var palette = [];
@@ -354,7 +354,8 @@ class Assets
 			}
 			palettes.push(palette);
 		}
-
+		
+		bitmap.dispose();
 		return palettes;
 	}
 }
