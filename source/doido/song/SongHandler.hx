@@ -39,6 +39,7 @@ typedef AssetModifiers =
 {
 	var ?playerNotes:String;
 	var ?opponentNotes:String;
+	var ?hudType:String;
 }
 
 typedef NoteData =
@@ -176,7 +177,8 @@ class SongHandler
 			charter: "Unknown",
 			assets: {
 				playerNotes: "base",
-				opponentNotes: "base"
+				opponentNotes: "base",
+				hudType: "doido"
 			},
 			// difficulties: ["normal"]
 		};
@@ -225,6 +227,7 @@ class SongHandler
 		var mod:AssetModifiers = {};
 		mod.playerNotes = (b.playerNotes ?? a.playerNotes);
 		mod.opponentNotes = (b.opponentNotes ?? a.opponentNotes);
+		mod.hudType = (b.hudType ?? a.hudType);
 
 		return mod;
 	}

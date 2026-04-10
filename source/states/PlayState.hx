@@ -162,8 +162,9 @@ class PlayState extends MusicBeatState implements Playable
 			countdownSfx.push(FlxG.sound.load(Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i])));
 		}
 
-		hudClass = switch (CHART.song)
+		hudClass = switch (META.assets.hudType)
 		{
+			case "vslice": new VSliceHud(this);
 			default: new DoidoHud(this);
 		}
 		add(hudClass);
