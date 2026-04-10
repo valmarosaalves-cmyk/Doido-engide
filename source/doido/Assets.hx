@@ -7,9 +7,11 @@ import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.text.FlxBitmapFont;
+import flixel.util.FlxColor;
 import haxe.Json;
 import haxe.io.Path;
 import openfl.Assets as OpenFLAssets;
+import openfl.display.BitmapData;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
 import openfl.media.Sound;
@@ -150,6 +152,9 @@ class Assets
 
 		return getExt(path, extensions.get(type)[index]);
 	}
+
+	inline public static function cleanPath(path:String):String
+		return Path.withoutExtension(Path.withoutDirectory(path));
 
 	public static function getAsset<T>(key:String, ?library:String = "", type:Asset, ext:Bool = true):T
 	{
@@ -330,6 +335,26 @@ class Assets
 		return frames;
 	}
 
-	public static inline function cleanPath(path:String):String
-		return Path.withoutExtension(Path.withoutDirectory(path));
+	public static function loadPaletteFromFile(key:String, ?library:String = ""):Array<Array<FlxColor>>
+	{
+		if(key.endsWith('.png'))
+			key = key.substring(0, key.lastIndexOf('.png'));
+		var path = getPath('images/$key.png', library);
+
+		var bitmap = BitmapData.fromFile(path);
+		var palettes = [];
+
+		for (paletteIndex in 0...bitmap.height) {
+			var palette = [];
+			for (colorIndex in 0...bitmap.width) {
+				var color:FlxColor = bitmap.getPixel32(colorIndex, paletteIndex);
+				if (color.alpha != 0.0) {
+					palette.push(color);
+				}
+			}
+			palettes.push(palette);
+		}
+
+		return palettes;
+	}
 }

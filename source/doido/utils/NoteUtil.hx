@@ -104,28 +104,39 @@ class NoteUtil
 		FlxG.sound.play(Assets.sound(FlxG.random.getObject(missSoundList)), 0.6);
 	}
 
-	public static final quantArray:Array<Int> = [4, 8, 12, 16, 20, 24, 32, 48, 64, 192];
-
-	public static function getQuantColors(assetModifier:String):Array<Array<FlxColor>>
+	public static var loadedQuantColors:Map<String, Array<Array<FlxColor>>> = [];
+	public static function getQuantColors(skin:String):Array<Array<FlxColor>>
 	{
-		switch (assetModifier)
-		{
-			default:
-				return [
-					[0xFFff3535, 0xFFFFFFFF, 0xFF651038], // red
-					[0xFF536bef, 0xFFFFFFFF, 0xFF0f1c54], // blue
-					[0xFFc24b99, 0xFFFFFFFF, 0xFF3c1f56], // magenta
-					[0xFF00e550, 0xFFFFFFFF, 0xFF0a4447], // lime
-					[0xFF606789, 0xFFFFFFFF, 0xFF232a4c], // gray
-					[0xFFff7ad7, 0xFFFFFFFF, 0xFF4d0954], // pink
-					[0xFFffe83d, 0xFFFFFFFF, 0xFF514100], // yellow
-					[0xFFae36e6, 0xFFFFFFFF, 0xFF19246a], // purple
-					[0xFF0fe7ff, 0xFFFFFFFF, 0xFF153e72], // cyan
-					[0xFF606789, 0xFFFFFFFF, 0xFF232a4c], // light gray
-				];
-		}
+		if (!loadedQuantColors.exists(skin))
+			switch (skin)
+			{
+				default:
+					loadedQuantColors.set(
+						skin, Assets.loadPaletteFromFile("notes/base/quant/palette")
+					);
+					// if you'd rather use a hardcoded array
+					// instead of an image palette, here you go
+					/*loadedQuantColors.set(
+						skin,
+						[
+							[0xFFff3535, 0xFFFFFFFF, 0xFF651038], // red
+							[0xFF536bef, 0xFFFFFFFF, 0xFF0f1c54], // blue
+							[0xFFc24b99, 0xFFFFFFFF, 0xFF3c1f56], // magenta
+							[0xFF00e550, 0xFFFFFFFF, 0xFF0a4447], // lime
+							[0xFF606789, 0xFFFFFFFF, 0xFF232a4c], // gray
+							[0xFFff7ad7, 0xFFFFFFFF, 0xFF4d0954], // pink
+							[0xFFffe83d, 0xFFFFFFFF, 0xFF514100], // yellow
+							[0xFFae36e6, 0xFFFFFFFF, 0xFF19246a], // purple
+							[0xFF0fe7ff, 0xFFFFFFFF, 0xFF153e72], // cyan
+							[0xFF606789, 0xFFFFFFFF, 0xFF232a4c], // light gray
+						];
+					);*/
+			}
+
+		return loadedQuantColors.get(skin);
 	}
 
+	public static final quantArray:Array<Int> = [4, 8, 12, 16, 20, 24, 32, 48, 64, 192];
 	public static function calcQuant(data:NoteData)
 	{
 		var stepInMeasure:Float = data.stepTime % 16;

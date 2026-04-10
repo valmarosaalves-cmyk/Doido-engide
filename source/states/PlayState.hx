@@ -341,7 +341,7 @@ class PlayState extends MusicBeatState implements Playable
 			}
 
 			if (strumline.isPlayer)
-				health += FlxG.elapsed * 0.08;
+				health += FlxG.elapsed * 0.25;
 
 			callScript("onNoteHold", [note, strumline]);
 		};
@@ -358,7 +358,7 @@ class PlayState extends MusicBeatState implements Playable
 				health -= 0.08;
 
 				Timings.score -= 100;
-				Timings.addAccuracy(Timings.getTiming("miss").judge);
+				Timings.addAccuracy(Timings.getTiming("bad").judge);
 				
 				Timings.addCombo(-1);
 				NoteUtil.playMissSound();
