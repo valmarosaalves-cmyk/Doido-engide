@@ -89,6 +89,7 @@ class MusicBeatState extends FlxUIState
 	override function create()
 	{
 		super.create();
+		flixel.FlxSprite.defaultAntialiasing = Save.data.antialiasing;
 		MusicBeat.activeState = this;
 		Logs.print('switched to ${Type.getClassName(Type.getClass(this))}');
 		persistentDraw = true;

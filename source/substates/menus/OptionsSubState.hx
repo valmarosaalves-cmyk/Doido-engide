@@ -212,7 +212,8 @@ class OptionsSubState extends MusicBeatSubState
                 {
                     name: "Antialiasing",
                     get: () -> Save.data.antialiasing,
-                    set: (b:Bool) -> Save.data.antialiasing = b
+                    set: (b:Bool) -> Save.data.antialiasing = b,
+                    playStateWarning: true
                 },
                 {
                     name: "Low Quality",

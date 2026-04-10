@@ -93,8 +93,6 @@ class Save
 			FlxG.updateFramerate = data.fps;
 		}
 
-		flixel.FlxSprite.defaultAntialiasing = data.antialiasing;
-
 		if (Main.fpsCounter != null)
 			Main.fpsCounter.visible = data.fpsCounter;
 	}
