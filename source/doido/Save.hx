@@ -14,12 +14,12 @@ class SaveVariables
 	public var ghostTapping:String = "idle";
 	public var downscroll:Bool = false;
 	public var middlescroll:Bool = false;
+	public var quantNotes:Bool = false;
 
 	// preferences
 	public var darkMode:Bool = true;
 	public var discordRPC:Bool = #if DISCORD_RPC true #else false #end;
 	public var fpsCounter:Bool = #if desktop true #else false #end;
-	public var quantNotes:Bool = false;
 	public var hitsound:String = "OFF";
 	public var hitsoundVolume:Float = 0.4;
 	public var flashingLights:String = "ON";

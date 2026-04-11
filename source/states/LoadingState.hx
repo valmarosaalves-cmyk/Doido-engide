@@ -76,7 +76,7 @@ class LoadingState extends MusicBeatState
 			loadSounds();
 			loadingPercent = 0.25;
 
-			doingWhat = "Loading Characters";
+			doingWhat = "Loading Backgrounds'n'Characters";
 			loadGame();
 			loadingPercent = 0.75;
 
@@ -176,10 +176,10 @@ class LoadingState extends MusicBeatState
 	{
 		var audio = new AudioHandler(CHART.song);
 		NoteUtil.loadMissSounds();
+		NoteUtil.playHitsound(0.0);
 
 		// temporary caching
-		for (i in 0...4)
-		{
+		for (i in 0...4) {
 			Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i]);
 		}
 	}
@@ -215,6 +215,9 @@ class LoadingState extends MusicBeatState
 
 		for (skin in skins)
 		{
+			if (Save.data.quantNotes)
+				skin += '-quant';
+
 			var strum = cast strums.recycle(StrumNote);
 			strum.reloadStrum(0, skin);
 			if (!strums.members.contains(strum))
@@ -237,7 +240,6 @@ class LoadingState extends MusicBeatState
 					notes.add(note);
 
 				var holdLength:Int = Math.ceil(noteData.length + 1);
-				var holdIndex:Float = 0.0;
 				for (i in 0...holdLength)
 				{
 					var hold:Note = cast notes.recycle(Note);
@@ -245,27 +247,12 @@ class LoadingState extends MusicBeatState
 
 					hold.isHold = true;
 					hold.isHoldEnd = (i == holdLength - 1);
-					if (i == holdLength - 2)
-					{
-						var endDiff:Float = noteData.length - Math.floor(noteData.length);
-						if (endDiff <= 0.0)
-							endDiff = 1.0; // oh well
-						hold.holdStep = endDiff;
-					}
-					else if (hold.isHoldEnd)
-						hold.holdStep = 0.5;
-					else
-						hold.holdStep = 1.0;
-					hold.holdIndex = holdIndex;
 					note.children.push(hold);
 
 					hold.reloadSprite();
 					hold.holdParent = note;
-					hold.setZ(1);
 					if (!notes.members.contains(hold))
 						notes.add(hold);
-
-					holdIndex += hold.holdStep;
 				}
 
 				var splash:Splash = cast splashes.recycle(Splash);
@@ -290,7 +277,7 @@ class LoadingState extends MusicBeatState
 	}
 
 	function formatImage(image:String)
-		return image.replace("assets/", "").replace("images/", "").replace(".png", "");
+		return image.replace("assets/images/", "").replace(".png", "");
 
 	var byeLol:Bool = false;
 

@@ -133,6 +133,12 @@ class OptionsSubState extends MusicBeatSubState
                         playState.playField.updateNotes();
                     }
                 },
+                {
+                    name: "Note Quantization",
+                    get: () -> Save.data.quantNotes,
+                    set: (b:Bool) -> Save.data.quantNotes = b,
+                    playStateWarning: true
+                },
             ],
             "Preferences" => [
                 #if windows
@@ -159,12 +165,6 @@ class OptionsSubState extends MusicBeatSubState
                     set: (b:Bool) -> Save.data.discordRPC = b
                 },
                 #end
-                {
-                    name: "Note Quantization",
-                    get: () -> Save.data.quantNotes,
-                    set: (b:Bool) -> Save.data.quantNotes = b,
-                    playStateWarning: true
-                },
                 {
                     name: "Hitsound SFX",
                     get: () -> Save.data.hitsound,
