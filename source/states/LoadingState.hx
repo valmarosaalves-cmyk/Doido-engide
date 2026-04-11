@@ -13,6 +13,7 @@ import objects.ui.HealthIcon;
 import objects.ui.HealthIcon.IconData;
 import sys.thread.Mutex;
 import sys.thread.Thread;
+import flixel.ui.FlxBar;
 
 class LoadingState extends MusicBeatState
 {
@@ -28,7 +29,7 @@ class LoadingState extends MusicBeatState
 
 	var loadingPercent:Float = 0.0;
 	var doingWhat:String = "";
-
+	var loadingBar:FlxBar;
 	override function create()
 	{
 		super.create();
@@ -51,6 +52,11 @@ class LoadingState extends MusicBeatState
 		add(loadingTxt);
 
 		loadingPercent = 0.0;
+		loadingBar = new FlxBar(0, FlxG.height - 8, LEFT_TO_RIGHT, FlxG.width, 8, this, 'loadingPercent', 0, 1.0, true);
+		loadingBar.createFilledBar(FlxColor.BLACK, FlxColor.WHITE);
+
+		add(loadingBar);
+
 		doingWhat = "Loading Characters";
 
 		var SONG = PlayState.SONG;
