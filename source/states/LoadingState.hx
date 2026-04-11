@@ -13,6 +13,7 @@ import objects.ui.HealthIcon;
 import objects.ui.HealthIcon.IconData;
 import sys.thread.Mutex;
 import sys.thread.Thread;
+import flixel.math.FlxMath;
 
 class LoadingState extends MusicBeatState
 {
@@ -28,7 +29,7 @@ class LoadingState extends MusicBeatState
 
 	var loadingPercent:Float = 0.0;
 	var doingWhat:String = "";
-
+	var loadingBar:FlxSprite;
 	override function create()
 	{
 		super.create();
@@ -43,7 +44,7 @@ class LoadingState extends MusicBeatState
 		add(bg);
 
 		var splashTxt = new Alphabet(40, 0, '<wave intensity=5 speed=5>LOADING...</wave>', true, LEFT);
-		splashTxt.y = FlxG.height - splashTxt.height - 60;
+		splashTxt.y = FlxG.height - splashTxt.height - 70;
 		add(splashTxt);
 
 		loadingTxt = new Alphabet(40, splashTxt.y + splashTxt.height, "", false, LEFT);
@@ -51,6 +52,10 @@ class LoadingState extends MusicBeatState
 		add(loadingTxt);
 
 		loadingPercent = 0.0;
+
+		loadingBar = new FlxSprite(0, FlxG.height - 8).makeGraphic(FlxG.width, 8, 0xFFFFFFFF);
+		add(loadingBar);
+
 		doingWhat = "Loading Characters";
 
 		var SONG = PlayState.SONG;
@@ -188,6 +193,9 @@ class LoadingState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		loadingBar.scale.x = FlxMath.lerp(loadingBar.scale.x, loadingPercent, elapsed * 6);
+		loadingBar.updateHitbox();
 
 		if (loadingTxt.text != doingWhat)
 			loadingTxt.text = '<color value=#${loadingTxtColor}><wave intensity=2 speed=5>${doingWhat}</wave></color>';
