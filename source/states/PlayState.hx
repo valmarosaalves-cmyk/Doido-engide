@@ -629,7 +629,7 @@ class PlayState extends MusicBeatState implements Playable
 
 		if (validScore)
 		{
-			Highscore.addScore(CHART.song.toLowerCase() /* + '-' + songDiff*/, {
+			Highscore.addScore(CHART.song.toLowerCase() + '-' + songDiff, {
 				score: Timings.score,
 				accuracy: Timings.accuracy,
 				misses: Timings.misses,

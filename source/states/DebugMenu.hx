@@ -307,7 +307,7 @@ class Freeplay extends MusicBeatState
 
 	function drawScore()
 	{
-		var newscore:ScoreData = Highscore.getScore(options[curSong].name);
+		var newscore:ScoreData = Highscore.getScore(options[curSong].name + '-' + options[curSong].diffs[curDiff]);
 		var rank = Timings.getRank(newscore.accuracy, newscore.misses, false, true);
 		score.text = "";
 		if (options[curSong].name == "Load Other")
