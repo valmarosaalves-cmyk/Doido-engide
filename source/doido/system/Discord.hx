@@ -106,7 +106,9 @@ class DiscordAPI
 		else // Old discriminators
 			Logs.print('(Discord) Connected to User (${cast (requestPtr.username, String)})');
 
-		DiscordIO.nickname = requestPtr.globalName;
+		var globalName = requestPtr.globalName.toString();
+		var username = requestPtr.username.toString();
+		DiscordIO.nickname = (globalName.length > 0 ? globalName : username);
 		changePresence(DiscordIO.lastDetails);
 	}
 

@@ -1,5 +1,11 @@
 package states;
 
+import flixel.group.FlxGroup.FlxTypedGroup;
+import doido.song.SongHandler.NoteData;
+import objects.ui.notes.Note;
+import objects.ui.notes.StrumNote;
+import objects.ui.notes.Splash.BaseSplash;
+import objects.ui.notes.Splash;
 import doido.Cache;
 import doido.objects.Alphabet;
 import doido.objects.DoidoSprite;
@@ -14,13 +20,11 @@ import objects.ui.HealthIcon.IconData;
 import sys.thread.Mutex;
 import sys.thread.Thread;
 import flixel.math.FlxMath;
+import doido.song.SongHandler;
 
 class LoadingState extends MusicBeatState
 {
 	var threadActive:Bool = true;
-
-	var images:Array<String> = [];
-	var sounds:Array<String> = [];
 
 	var bgFile:String = "";
 	var bg:FlxSprite;
@@ -30,6 +34,7 @@ class LoadingState extends MusicBeatState
 	var loadingPercent:Float = 0.0;
 	var doingWhat:String = "";
 	var loadingBar:FlxSprite;
+
 	override function create()
 	{
 		super.create();
@@ -48,125 +53,234 @@ class LoadingState extends MusicBeatState
 		add(splashTxt);
 
 		loadingTxt = new Alphabet(40, splashTxt.y + splashTxt.height, "", false, LEFT);
-		loadingTxt.scale.set(0.5,0.5);
+		loadingTxt.scale.set(0.5, 0.5);
 		add(loadingTxt);
 
 		loadingPercent = 0.0;
 
 		loadingBar = new FlxSprite(0, FlxG.height - 8).makeGraphic(FlxG.width, 8, 0xFFFFFFFF);
+		loadingBar.scale.x = 0;
+		loadingBar.updateHitbox();
 		add(loadingBar);
 
-		doingWhat = "Loading Characters";
+		doingWhat = "Starting...";
 
-		var SONG = PlayState.SONG;
 		var mutex = new Mutex();
 		Thread.create(function()
 		{
 			mutex.acquire();
 			Logs.print("Loading Started!");
 			Cache.loading = true;
-			
-			var charList:Array<String> = [SONG.META.player1, SONG.META.player2];
-			var gfList:Array<String> = [SONG.META.gf];
 
-			var stageBuild = new Stage(null);
-			stageBuild.reloadStage(SONG.META.stage);
+			doingWhat = "Loading Sounds";
+			loadSounds();
+			loadingPercent = 0.25;
 
-			if (!gfList.contains(stageBuild.gfVersion) || stageBuild.gfVersion != "")
-				gfList.push(stageBuild.gfVersion);
-
-			for (event in SONG.EVENTS.events)
-			{
-				switch (event.name)
-				{
-					/*case 'Change Character':
-						charList.push(daEvent.value2);
-						switch (daEvent.value1)
-						{
-							case 'bf' | 'boyfriend': playerChars.push(daEvent.value2);
-						}
-					 */
-					case 'Change Stage':
-						stageBuild.reloadStage(event.data[0]);
-
-						if (!gfList.contains(stageBuild.gfVersion) || stageBuild.gfVersion != "")
-							gfList.push(stageBuild.gfVersion);
-				}
-			}
-
-			for (char in charList.concat(gfList))
-			{
-				var data:DoidoCharacter;
-				try {
-					data = cast(Assets.json('data/characters/$char'));
-				} catch (e) {
-					Logs.print('CHAR $char LOAD ERROR: $e', ERROR);
-					data = Character.defaultCharacter();
-				}
-
-				var extrasheets:Array<String> = [];
-				if ((data.extrasheets ?? []).length > 0)
-				{
-					for (sheet in (data.extrasheets ?? []))
-						extrasheets.push('images/characters/$sheet');
-				}
-
-				Assets.framesCollection('characters/${data.spritesheet}', extrasheets, DoidoSprite.stringToSpriteType(data.spriteType));
-
-				if (!gfList.contains(char))
-				{
-					var icon:IconData;
-					try {
-						icon = cast(Assets.json('data/icons/$char'));
-					} catch (e) {
-						Logs.print('ICON $char LOAD ERROR: $e', ERROR);
-						icon = HealthIcon.defaultIcon();
-					}
-
-					Assets.image('icons/${icon.image ?? char}');
-				}
-			}
-
-			loadingPercent = 0.5;
-			doingWhat = "Loading Audio";
-
-			var audio = new AudioHandler(SONG.CHART.song);
-			NoteUtil.loadMissSounds();
-
-			// temporary caching
-			for (i in 0...4) {
-				Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i]);
-			}
-
+			doingWhat = "Loading Characters";
+			loadGame();
 			loadingPercent = 0.75;
+
 			doingWhat = "Loading HUD";
-
-			// temporary caching
-			for (folder in ["", "/quant"]) {
-				for (file in ["splashes", "covers"])
-					Assets.sparrow('ui/notes/base$folder/$file');
-			}
-
-			pushImage(Assets.list('images/ui/hud/${SONG.META.assets.hudType}/', false, IMAGE));
-			pushImage(Assets.list('images/ui/ratings/${SONG.META.assets.hudType}/', false, IMAGE));
-
+			loadHud();
+			loadNotes();
 			loadingPercent = 0.9;
-			doingWhat = "Loading Other";
 
-			for (image in images)
-				Assets.image(image);
-
-			for (sound in sounds)
-				Assets.sound(sound);
-			
+			doingWhat = "Finishing...";
+			// Add other assets here, if you need
+			switch (CHART.song)
+			{
+				default:
+					//
+			}
 			loadingPercent = 1.0;
+
 			doingWhat = "Done!";
 			Logs.print("Loading Ended!");
-
 			Cache.loading = false;
 			threadActive = false;
 			mutex.release();
 		});
+	}
+
+	function loadGame()
+	{
+		var charList:Array<String> = [META.player1, META.player2];
+		var gfList:Array<String> = [META.gf];
+
+		var stageBuild = new Stage(null);
+		stageBuild.reloadStage(META.stage);
+
+		if (!gfList.contains(stageBuild.gfVersion) || stageBuild.gfVersion != "")
+			gfList.push(stageBuild.gfVersion);
+
+		for (event in EVENTS.events)
+		{
+			switch (event.name)
+			{
+				/*case 'Change Character':
+					charList.push(daEvent.value2);
+					switch (daEvent.value1)
+					{
+						case 'bf' | 'boyfriend': playerChars.push(daEvent.value2);
+					}
+				 */
+				case 'Change Stage':
+					stageBuild.reloadStage(event.data[0]);
+
+					if (!gfList.contains(stageBuild.gfVersion) || stageBuild.gfVersion != "")
+						gfList.push(stageBuild.gfVersion);
+			}
+		}
+
+		for (char in charList.concat(gfList))
+		{
+			var data:DoidoCharacter;
+			try
+			{
+				data = cast(Assets.json('data/characters/$char'));
+			}
+			catch (e)
+			{
+				Logs.print('CHAR $char LOAD ERROR: $e', ERROR);
+				data = Character.defaultCharacter();
+			}
+
+			var extrasheets:Array<String> = [];
+			if ((data.extrasheets ?? []).length > 0)
+			{
+				for (sheet in (data.extrasheets ?? []))
+					extrasheets.push('images/characters/$sheet');
+			}
+
+			Assets.framesCollection('characters/${data.spritesheet}', extrasheets, DoidoSprite.stringToSpriteType(data.spriteType));
+
+			if (!gfList.contains(char))
+			{
+				var icon:IconData;
+				try
+				{
+					icon = cast(Assets.json('data/icons/$char'));
+				}
+				catch (e)
+				{
+					Logs.print('ICON $char LOAD ERROR: $e', ERROR);
+					icon = HealthIcon.defaultIcon();
+				}
+
+				Assets.image('icons/${icon.image ?? char}');
+			}
+		}
+	}
+
+	function loadSounds()
+	{
+		var audio = new AudioHandler(CHART.song);
+		NoteUtil.loadMissSounds();
+
+		// temporary caching
+		for (i in 0...4)
+		{
+			Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i]);
+		}
+	}
+
+	function loadHud()
+	{
+		for (image in Assets.list('images/ui/hud/${META.assets.hudType}/', false, IMAGE))
+			Assets.image(formatImage(image));
+
+		for (image in Assets.list('images/ui/ratings/${META.assets.hudType}/', false, IMAGE))
+			Assets.image(formatImage(image));
+	}
+
+	function loadNotes()
+	{
+		var skins:Array<String> = [META.assets.opponentNotes];
+		var types:Array<String> = [];
+		if (!skins.contains(META.assets.playerNotes))
+			skins.push(META.assets.playerNotes);
+
+		for (note in CHART.notes)
+			if (!types.contains(note.type))
+				types.push(note.type);
+
+		var notes:FlxTypedGroup<Note>;
+		notes = new FlxTypedGroup<Note>();
+
+		var strums:FlxTypedGroup<StrumNote>;
+		strums = new FlxTypedGroup<StrumNote>();
+
+		var splashes:FlxTypedGroup<BaseSplash>;
+		splashes = new FlxTypedGroup<BaseSplash>();
+
+		for (skin in skins)
+		{
+			var strum = cast strums.recycle(StrumNote);
+			strum.reloadStrum(0, skin);
+			if (!strums.members.contains(strum))
+				strums.add(strum);
+
+			for (type in types)
+			{
+				var noteData:NoteData = {
+					stepTime: 0,
+					lane: 0,
+					strumline: 0,
+					type: type,
+					length: 4
+				};
+
+				var note:Note = cast notes.recycle(Note);
+				note.loadData(noteData, skin);
+				note.reloadSprite();
+				if (!notes.members.contains(note))
+					notes.add(note);
+
+				var holdLength:Int = Math.ceil(noteData.length + 1);
+				var holdIndex:Float = 0.0;
+				for (i in 0...holdLength)
+				{
+					var hold:Note = cast notes.recycle(Note);
+					hold.loadData(noteData, skin);
+
+					hold.isHold = true;
+					hold.isHoldEnd = (i == holdLength - 1);
+					if (i == holdLength - 2)
+					{
+						var endDiff:Float = noteData.length - Math.floor(noteData.length);
+						if (endDiff <= 0.0)
+							endDiff = 1.0; // oh well
+						hold.holdStep = endDiff;
+					}
+					else if (hold.isHoldEnd)
+						hold.holdStep = 0.5;
+					else
+						hold.holdStep = 1.0;
+					hold.holdIndex = holdIndex;
+					note.children.push(hold);
+
+					hold.reloadSprite();
+					hold.holdParent = note;
+					hold.setZ(1);
+					if (!notes.members.contains(hold))
+						notes.add(hold);
+
+					holdIndex += hold.holdStep;
+				}
+
+				var splash:Splash = cast splashes.recycle(Splash);
+				splash.loadData(note, skin);
+				splash.reloadSplash();
+				if (!splashes.members.contains(splash))
+					splashes.add(splash);
+
+				var cover:Cover = cast splashes.recycle(Cover);
+				cover.loadData(note, skin);
+				cover.reloadSplash();
+				if (!splashes.members.contains(cover))
+					splashes.add(cover);
+			}
+		}
 	}
 
 	override function destroy()
@@ -175,18 +289,8 @@ class LoadingState extends MusicBeatState
 		super.destroy();
 	}
 
-	function pushImage(?path:String, ?list:Array<String>)
-	{
-		if (path != null)
-			images.push(formatImage(path));
-
-		if (list != null)
-			for (image in list)
-				images.push(formatImage(image));
-	}
-
 	function formatImage(image:String)
-		return image.replace("assets/images/", "").replace(".png", "");
+		return image.replace("assets/", "").replace("images/", "").replace(".png", "");
 
 	var byeLol:Bool = false;
 
@@ -207,4 +311,19 @@ class LoadingState extends MusicBeatState
 			MusicBeat.switchState(new states.PlayState());
 		}
 	}
+
+	public static var CHART(get, never):DoidoChart;
+
+	public static function get_CHART():DoidoChart
+		return PlayState.SONG.CHART;
+
+	public static var EVENTS(get, never):DoidoEvents;
+
+	public static function get_EVENTS():DoidoEvents
+		return PlayState.SONG.EVENTS;
+
+	public static var META(get, never):DoidoMeta;
+
+	public static function get_META():DoidoMeta
+		return PlayState.SONG.META;
 }
