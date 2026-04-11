@@ -84,7 +84,7 @@ class HealthIcon extends FlxSprite
 		animation.curAnim.curFrame = daFrame;
 	}
 
-	function defaultIcon():IconData
+	public static function defaultIcon():IconData
 	{
 		return {
 			image: "face",

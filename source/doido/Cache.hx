@@ -23,6 +23,7 @@ class Cache
 	public static var permanent:Cached;
 
 	public static var initialized:Bool = false;
+	public static var loading:Bool = false;
 
 	// whatever dude
 	public static function initCache()
@@ -89,6 +90,34 @@ class Cache
 	public static function isGraphicCached(key:String)
 		return current.graphics.exists(key) || permanent.graphics.exists(key);
 
+	public static function pushToGPU(bitmap:BitmapData)
+	{
+		bitmap.lock();
+		if (bitmap.__texture == null)
+		{
+			bitmap.image.premultiplied = true;
+			bitmap.getTexture(FlxG.stage.context3D);
+		}
+		bitmap.getSurface();
+		bitmap.disposeImage();
+		bitmap.image.data = null;
+		bitmap.image = null;
+		bitmap.readable = true;
+	}
+
+	public static function pushAll()
+	{
+		if (waitingList.length <= 0 && Save.data.gpuCaching)
+			return;
+
+		for (key in waitingList)
+			pushToGPU(getCachedGraphic(key).bitmap);
+
+		waitingList = [];
+	}
+
+	public static var waitingList:Array<String> = [];
+
 	// HAS TO GET THE FULL PATH ex: "assets/images/image.png"
 	public static function getGraphic(key:String, persist:Bool = false):FlxGraphic
 	{
@@ -101,16 +130,10 @@ class Cache
 
 		if (Save.data.gpuCaching)
 		{
-			if (bitmap.__texture == null)
-			{
-				bitmap.image.premultiplied = true;
-				bitmap.getTexture(FlxG.stage.context3D);
-			}
-			bitmap.getSurface();
-			bitmap.disposeImage();
-			bitmap.image.data = null;
-			bitmap.image = null;
-			bitmap.readable = true;
+			if (!loading)
+				pushToGPU(bitmap);
+			else
+				waitingList.push(key);
 		}
 
 		var graphic:Null<FlxGraphic> = FlxGraphic.fromBitmapData(bitmap, false, null, false); // note: if this doesnt work, set last field to true

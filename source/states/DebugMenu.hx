@@ -350,7 +350,7 @@ class Freeplay extends MusicBeatState
 						else
 							PlayState.skip = false;
 
-						MusicBeat.switchState(new states.PlayState());
+						MusicBeat.switchState(new states.LoadingState());
 					}
 				}
 				catch (e)

@@ -101,6 +101,8 @@ class MusicBeatState extends FlxUIState
 		if (!MusicBeat.skipClearCache)
 			Cache.clearCache();
 
+		Cache.pushAll();
+
 		if (!MusicBeat.skipTrans)
 			openSubState(new Transition(true, MusicBeat.nextTransition));
 

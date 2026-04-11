@@ -178,7 +178,7 @@ class SongHandler
 			assets: {
 				playerNotes: "base",
 				opponentNotes: "base",
-				hudType: "doido"
+				hudType: "base"
 			},
 			// difficulties: ["normal"]
 		};

@@ -20,7 +20,6 @@ import objects.ui.hud.*;
 import objects.ui.notes.*;
 import states.editors.ChartingState;
 import substates.PauseSubState;
-
 #if TOUCH_CONTROLS
 import doido.objects.DoidoHitbox;
 #end
@@ -31,7 +30,7 @@ class PlayState extends MusicBeatState implements Playable
 	public static var skip:Bool = false;
 
 	public var playField:PlayField;
-	public var hudClass:BaseHud;
+	public var hudClass:ClassHud;
 	public var debugInfo:DebugInfo;
 
 	public var camGame:DoidoCamera;
@@ -152,11 +151,8 @@ class PlayState extends MusicBeatState implements Playable
 		}
 
 		// temporary caching
-		NoteUtil.loadMissSounds();
-		Assets.image("hud/base/numbers");
-		Assets.image("hud/base/ratings");
-		Assets.sparrow("notes/base/splashes");
-		Assets.sparrow("notes/base/covers");
+		Assets.sparrow("ui/notes/base/splashes");
+		Assets.sparrow("ui/notes/base/covers");
 		for (i in 0...4)
 		{
 			countdownSfx.push(FlxG.sound.load(Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i])));
@@ -165,7 +161,7 @@ class PlayState extends MusicBeatState implements Playable
 		hudClass = switch (META.assets.hudType)
 		{
 			case "vslice": new VSliceHud(this);
-			default: new DoidoHud(this);
+			default: new BaseHud(this);
 		}
 		add(hudClass);
 
@@ -352,7 +348,8 @@ class PlayState extends MusicBeatState implements Playable
 
 		playField.onGhostTap = (lane, strumline) ->
 		{
-			if (!startedCountdown) return;
+			if (!startedCountdown)
+				return;
 
 			if (ghostTapping == "off" || (ghostTapping == "idle" && !strumline.ghostTappingIdle))
 			{
@@ -360,12 +357,13 @@ class PlayState extends MusicBeatState implements Playable
 
 				Timings.score -= 100;
 				Timings.addAccuracy(Timings.getTiming("bad").judge);
-				
+
 				Timings.addCombo(-1);
 				NoteUtil.playMissSound();
 				for (char in characters)
 				{
-					if (char.strumline == strumline) {
+					if (char.strumline == strumline)
+					{
 						char.playSingAnim(lane, true);
 					}
 				}

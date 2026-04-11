@@ -19,7 +19,7 @@ class RatingSprite extends FlxSprite
 				baseScale = 0.7;
 		}
 
-		var ratingGraph = Assets.image('hud/$assetPath/ratings');
+		var ratingGraph = Assets.image('ui/ratings/$assetPath/ratings');
 		loadGraphic(ratingGraph, true, Math.floor(ratingGraph.width), Math.floor(ratingGraph.height / 4));
 		for (i in 0...ratingArray.length)
 			animation.add(ratingArray[i], [i], 0, false);
@@ -78,7 +78,7 @@ class ComboSprite extends FlxSprite
 				badColor = 0xFF828282;
 		}
 
-		var numberGraph = Assets.image('hud/$assetPath/numbers');
+		var numberGraph = Assets.image('ui/ratings/$assetPath/numbers');
 		loadGraphic(numberGraph, true, Math.floor(numberGraph.width / 11), Math.floor(numberGraph.height));
 		for (i in 0...11)
 			animation.add((i <= 9 ? '$i' : "-"), [i], 0, false);

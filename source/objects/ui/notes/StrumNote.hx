@@ -36,7 +36,7 @@ class StrumNote extends DoidoSprite
 		switch (skin.replace("-quant", ""))
 		{
 			case "pixel":
-				this.loadImage('notes/pixel/${rgb ? 'quant/' : ''}notes', true, 17, 17);
+				this.loadImage('ui/notes/pixel/${rgb ? 'quant/' : ''}notes', true, 17, 17);
 
 				animation.add("static", [lane], 12, false);
 				animation.add("pressed", [lane + 8], 12, false);
@@ -47,7 +47,7 @@ class StrumNote extends DoidoSprite
 				hasRgb = true;
 
 			default:
-				this.loadSparrow('notes/base/${rgb ? 'quant/' : ''}strums');
+				this.loadSparrow('ui/notes/base/${rgb ? 'quant/' : ''}strums');
 
 				for (anim in ["static", "pressed", "confirm"])
 					animation.addByPrefix(anim, 'strum $direction $anim', 24, false);

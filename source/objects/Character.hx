@@ -83,8 +83,8 @@ class Character extends DoidoSprite
 			}
 		}
 
-		spriteTypeFromString(data.spriteType);
-		atlasTypeFromString(data.atlasType);
+		spriteType = DoidoSprite.stringToSpriteType(data.spriteType);
+		atlasType = DoidoSprite.stringToAtlasType(data.atlasType);
 
 		var extrasheets:Array<String> = [];
 		if ((data.extrasheets ?? []).length > 0)
@@ -174,7 +174,7 @@ class Character extends DoidoSprite
 		offset.y += scaleOffset.y;
 	}
 
-	function defaultCharacter():DoidoCharacter
+	public static function defaultCharacter():DoidoCharacter
 	{
 		return {
 			spritesheet: "face",

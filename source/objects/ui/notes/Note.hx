@@ -90,7 +90,7 @@ class Note extends FlxSprite
 		switch (skin.replace("-quant", ""))
 		{
 			case "pixel":
-				var path = 'notes/pixel/${rgb ? 'quant/' : ''}';
+				var path = 'ui/notes/pixel/${rgb ? 'quant/' : ''}';
 				if (isHold)
 					path += 'ends';
 				else
@@ -105,7 +105,7 @@ class Note extends FlxSprite
 			default:
 				rgb = skin.endsWith("-rgb") || skin.endsWith("-quant");
 				quant = skin.endsWith("-quant");
-				this.loadSparrow('notes/base/${rgb ? 'quant/' : ''}notes');
+				this.loadSparrow('ui/notes/base/${rgb ? 'quant/' : ''}notes');
 
 				var postfix:String = (isHold ? " hold" + (isHoldEnd ? " end" : "") : "");
 				animation.addByPrefix(direction, 'note ${direction}${postfix}0', 0, false);

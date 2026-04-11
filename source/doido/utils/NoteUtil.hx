@@ -112,7 +112,7 @@ class NoteUtil
 			{
 				default:
 					loadedQuantColors.set(
-						skin, Assets.loadPaletteFromFile("notes/base/quant/palette")
+						skin, Assets.loadPaletteFromFile("ui/notes/base/quant/palette")
 					);
 					// if you'd rather use a hardcoded array
 					// instead of an image palette, here you go

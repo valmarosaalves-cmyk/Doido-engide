@@ -3,10 +3,10 @@ package objects.ui.hud;
 import flixel.util.FlxColor;
 import doido.objects.Alphabet;
 import flixel.math.FlxMath;
-import objects.ui.hud.BaseHud.IconChange;
+import objects.ui.hud.ClassHud.IconChange;
 import doido.song.Conductor;
 
-class VSliceHud extends BaseHud
+class VSliceHud extends ClassHud
 {
 	public var scoreTxt:FlxBitmapText;
 
@@ -26,7 +26,7 @@ class VSliceHud extends BaseHud
 		add(numberGrp);
 		add(ratingGrp);
 
-		healthBar = new DoidoBar("hud/base/healthBar", "hud/base/healthBar-border");
+		healthBar = new DoidoBar("ui/hud/base/healthBar", "ui/hud/base/healthBar-border");
 		healthBar.sideL.color = 0xFFFF0000;
 		healthBar.sideR.color = 0xFF66FF33;
 		add(healthBar);

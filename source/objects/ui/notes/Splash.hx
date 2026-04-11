@@ -27,7 +27,7 @@ class Splash extends BaseSplash
 					}
 				}
 
-				this.loadImage('notes/pixel/${rgb ? 'quant/' : ''}splashes', true, 33, 33);
+				this.loadImage('ui/notes/pixel/${rgb ? 'quant/' : ''}splashes', true, 33, 33);
 				for (i in 0...2)
 					animation.add('splash$i', frameArr, 18, false, (i == 1));
 				splashScale = 6;
@@ -35,7 +35,7 @@ class Splash extends BaseSplash
 				hasRgb = true;
 
 			default:
-				this.loadSparrow('notes/base/${rgb ? 'quant/' : ''}splashes');
+				this.loadSparrow('ui/notes/base/${rgb ? 'quant/' : ''}splashes');
 				direction = rgb ? "" : direction + " ";
 
 				for (i in 1...3)
@@ -90,7 +90,7 @@ class Cover extends BaseSplash
 					"splash" => getArr([4, 5, 6, 7, 8]),
 				];
 
-				this.loadImage('notes/pixel/${rgb ? 'quant/' : ''}covers', true, 33, 33);
+				this.loadImage('ui/notes/pixel/${rgb ? 'quant/' : ''}covers', true, 33, 33);
 				for (anim => frameArr in anims)
 					animation.add(anim, frameArr, 18, (anim == "loop"));
 				splashScale = 6;
@@ -98,7 +98,7 @@ class Cover extends BaseSplash
 				hasRgb = true;
 
 			default:
-				this.loadSparrow('notes/base/${rgb ? 'quant/' : ''}covers');
+				this.loadSparrow('ui/notes/base/${rgb ? 'quant/' : ''}covers');
 				direction = rgb ? "" : direction.toUpperCase();
 
 				animation.addByPrefix("start", 'holdCoverStart$direction', 24, false);

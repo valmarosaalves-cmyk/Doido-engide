@@ -43,7 +43,7 @@ class TouchInput extends FlxSpriteGroup
 				add(button);
 
 				var colors:Array<FlxColor> = [0xFFC24B99, 0xFF00FFFF, 0xFF12FA05, 0xFFF9393F];
-				var hint:FlxSprite = new FlxSprite().loadImage("notes/other/hitbox", true, 320, 720);
+				var hint:FlxSprite = new FlxSprite().loadImage("ui/notes/other/hitbox", true, 320, 720);
 				hint.animation.add("idle", [0], 0, false);
 				hint.animation.add("pressed", [1], 0, false);
 				hint.color = colors[i];

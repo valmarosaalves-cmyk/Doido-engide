@@ -1,116 +1,211 @@
 package objects.ui.hud;
 
+import flixel.util.FlxColor;
+import doido.objects.Alphabet;
 import flixel.math.FlxMath;
+import objects.ui.hud.ClassHud.IconChange;
+import doido.song.Conductor;
 
-enum IconChange
+class BaseHud extends ClassHud
 {
-	PLAYER;
-	ENEMY;
-}
+	public var scoreTxt:FlxBitmapText;
+	public var timeTxt:FlxBitmapText;
 
-class BaseHud extends FlxGroup
-{
-	public var play:Playable;
-	public var hudName:String = "base";
-	public var separator:String = " | ";
-	public var health:Float = 1;
-	public var numberGrp:FlxGroup;
-	public var ratingGrp:FlxGroup;
+	var botplaySin:Float = 0;
+	var botplayTxt:Alphabet;
 
-	public function new(hudName:String, play:Playable)
+	var badScoreText:String = "SCORE WON'T BE SAVED";
+	var validScore:Bool = true;
+
+	public var healthBar:DoidoBar;
+	public var iconP1:HealthIcon;
+	public var iconP2:HealthIcon;
+
+	public function new(play:Playable)
 	{
-		super();
-		this.hudName = hudName;
-		this.play = play;
-		numberGrp = new FlxGroup();
-		ratingGrp = new FlxGroup();
+		super("doido", play);
+		add(numberGrp);
+		add(ratingGrp);
+
+		healthBar = new DoidoBar("ui/hud/base/healthBar", "ui/hud/base/healthBar-border");
+		add(healthBar);
+
+		iconP1 = new HealthIcon();
+		changeIcon(play.player1, PLAYER);
+		add(iconP1);
+
+		iconP2 = new HealthIcon();
+		changeIcon(play.player2, ENEMY);
+		add(iconP2);
+
+		scoreTxt = new FlxBitmapText(0, 0, Assets.bitmapFont("vcr"));
+		scoreTxt.setOutline(0xFF000000, 2);
+		scoreTxt.alignment = CENTER;
+		add(scoreTxt);
+
+		timeTxt = new FlxBitmapText(0, 0, Assets.bitmapFont("vcr"));
+		timeTxt.setOutline(0xFF000000, 2);
+		timeTxt.alignment = CENTER;
+		timeTxt.scale.set(1.4, 1.4);
+		timeTxt.updateHitbox();
+		add(timeTxt);
+
+		botplayTxt = new Alphabet(FlxG.width / 2, FlxG.height / 2, "[<wave intensity=10 speed=4 delay=0.5>BOTPLAY</wave>]", true, CENTER);
+		botplayTxt.scale.set(0.7, 0.7);
+		botplayTxt.updateHitbox();
+		botplayTxt.y -= (botplayTxt.height / 2);
+		add(botplayTxt);
+
+		updatePositions();
 	}
 
-	public function init()
+	override function popUpRating(ratingName:String = ""):RatingSprite
 	{
-		updateScoreTxt();
-	}
-
-	public function updateScoreTxt() {}
-
-	public function updatePositions()
-	{
-		updateScoreTxt();
-	}
-
-	public function changeIcon(newIcon:String = "face", type:IconChange = ENEMY) {}
-
-	public function stepHit(curStep:Int = 0) {}
-
-	public function beatHit(curBeat:Int = 0) {}
-
-	var ratingCount:Int = 0;
-
-	public function popUpRating(ratingName:String = ""):RatingSprite
-	{
-		var rating:RatingSprite = cast ratingGrp.recycle(RatingSprite);
-		rating.setUp(ratingName);
-
-		if (!ratingGrp.members.contains(rating))
-			ratingGrp.add(rating);
-
-		rating.setZ(ratingCount);
-		ratingCount++;
-		ratingGrp.members.sort(ZIndex.sortAscending);
+		var rating = super.popUpRating(ratingName);
+		rating.ratingScale = 0.7;
+		rating.screenCenter(X);
+		if (play.middlescroll #if TOUCH_CONTROLS && !Save.data.modernControls #end)
+			rating.x -= FlxG.width / 4;
+		rating.y = ratingPos;
+		rating.defaultAnim();
 		return rating;
 	}
 
-	var comboCount:Int = 0;
-
-	public function popUpCombo(comboNum:Int):Array<ComboSprite>
+	override function popUpCombo(comboNum:Int):Array<ComboSprite>
 	{
-		var comboStr:String = '${Math.abs(comboNum)}'.lpad("0", 3);
-		if (comboNum < 0)
-			comboStr = '-$comboStr';
-		var stringArr = comboStr.split("");
+		var numberArray = super.popUpCombo(comboNum);
 
-		var numberArray:Array<ComboSprite> = [];
-		for (i in 0...stringArr.length)
+		for (number in numberArray)
 		{
-			var number:ComboSprite = cast numberGrp.recycle(ComboSprite);
-			number.setUp(stringArr[i]);
-
-			if (comboNum <= 0)
-				number.color = number.badColor;
-
-			if (!numberGrp.members.contains(number))
-				numberGrp.add(number);
-
-			number.setZ(comboCount);
-			numberArray.push(number);
+			if (play.middlescroll #if TOUCH_CONTROLS && !Save.data.modernControls #end)
+				number.x -= FlxG.width / 4;
+			number.y = ratingPos + 75;
+			number.defaultAnim();
 		}
-		positionCombo(numberArray);
-		comboCount++;
-		numberGrp.members.sort(ZIndex.sortAscending);
+
 		return numberArray;
 	}
 
-	function positionCombo(numberArray:Array<ComboSprite>)
-	{
-		var numWidth:Float = -1;
-		for (i in 0...numberArray.length)
-		{
-			var number = numberArray[i];
-			if (numWidth == -1)
-				numWidth = number.width - 8;
+	var ratingPos(get, never):Int;
 
-			number.screenCenter(X);
-			number.x += numWidth * i;
-			number.x -= (numWidth * (numberArray.length - 1)) / 2;
-		}
+	function get_ratingPos():Int
+		return play.downscroll ? FlxG.height - 150 : 65;
+
+	override function positionCombo(numberArray:Array<ComboSprite>)
+	{
+		for (number in numberArray)
+			number.numberScale = 0.7;
+		super.positionCombo(numberArray);
+	}
+
+	override function updatePositions()
+	{
+		super.updatePositions();
+
+		healthBar.x = (FlxG.width / 2) - (healthBar.border.width / 2);
+		healthBar.y = (play.downscroll ? 70 : FlxG.height - healthBar.border.height - 50);
+
+		scoreTxt.y = healthBar.y + healthBar.border.height + 8;
+
+		updateTimeTxt();
+		timeTxt.y = play.downscroll ? (FlxG.height - timeTxt.height - 14) : (14);
+
+		updateIconPos();
+	}
+
+	override function updateScoreTxt()
+	{
+		if (!validScore)
+			return;
+
+		var scoreText:String = "";
+		scoreText += 'Misses: ' + Timings.misses + separator;
+		scoreText += 'Accuracy: ' + Timings.accuracy + "%" + ' [${Timings.getRank()}]' + separator;
+		scoreText += 'Score: ' + FlxStringUtil.formatMoney(Timings.score, false, true);
+
+		scoreTxt.text = scoreText;
+		scoreTxt.screenCenter(X);
+	}
+
+	public var songTime:Float = 0.0;
+
+	function updateTimeTxt()
+	{
+		if (!timeTxt.visible)
+			return;
+		songTime = FlxMath.bound(Conductor.songPos, 0, play.songLength);
+		timeTxt.text = TextUtil.posToTimer(songTime) + " / " + TextUtil.posToTimer(play.songLength);
+		timeTxt.screenCenter(X);
 	}
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		health = FlxMath.lerp(health, play.health, elapsed * 8);
-		if (Math.abs(health - play.health) <= 0.00001)
-			health = play.health;
-		// updateTimeTxt();
+		healthBar.percent = (health * 50);
+
+		botplayTxt.visible = play.botplay;
+		if (validScore && !play.validScore)
+		{
+			validScore = false;
+			scoreTxt.text = badScoreText;
+			scoreTxt.color = FlxColor.RED;
+			scoreTxt.screenCenter(X);
+		}
+		/*if(botplayTxt.visible)
+			{
+				botplaySin += elapsed * Math.PI;
+				botplayTxt.alpha = 0.5 + Math.sin(botplaySin) * 0.8;
+		}*/
+
+		for (icon in [iconP1, iconP2])
+		{
+			icon.scale.set(FlxMath.lerp(icon.scale.x, 1, FlxG.elapsed * 6), FlxMath.lerp(icon.scale.y, 1, FlxG.elapsed * 6));
+			if (!icon.isPlayer)
+				icon.setAnim(2 - play.health);
+			else
+				icon.setAnim(play.health);
+
+			icon.updateHitbox();
+		}
+		updateIconPos();
+		updateTimeTxt();
+	}
+
+	public function updateIconPos()
+	{
+		var healthBarPos:DoidoPoint = {
+			x: healthBar.x + FlxMath.lerp(healthBar.border.width, 0, healthBar.percent / 100),
+			y: healthBar.y - (healthBar.border.height / 2)
+		};
+
+		iconP1.y = healthBarPos.y - (iconP1.height / 2);
+		iconP2.y = healthBarPos.y - (iconP2.height / 2);
+
+		iconP1.x = healthBarPos.x - 20;
+		iconP2.x = healthBarPos.x - iconP2.width + 32;
+	}
+
+	override function changeIcon(newIcon:String = "face", type:IconChange = ENEMY)
+	{
+		super.changeIcon(newIcon, type);
+		var isPlayer:Bool = (type == PLAYER);
+		var icon = (isPlayer ? iconP1 : iconP2);
+		icon.setIcon(newIcon, isPlayer);
+
+		(isPlayer ? healthBar.sideR : healthBar.sideL).color = icon.barColor;
+	}
+
+	override function beatHit(curBeat:Int = 0)
+	{
+		super.beatHit(curBeat);
+		if (curBeat % 2 == 0)
+		{
+			for (icon in [iconP1, iconP2])
+			{
+				icon.scale.set(1.3, 1.3);
+				icon.updateHitbox();
+				updateIconPos();
+			}
+		}
 	}
 }

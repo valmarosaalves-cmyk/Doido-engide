@@ -184,21 +184,26 @@ class DoidoSprite extends FlxAnimate
 		}
 	}
 
-	public function spriteTypeFromString(type:Null<String>)
+	public static function stringToSpriteType(type:Null<String>)
 	{
-		spriteType = switch ((type ?? "").toUpperCase())
+		return switch ((type ?? "").toUpperCase())
 		{
-			case "ATLAS" | "SPRITEMAP" | "ANIMATE": ATLAS;
-			case "PACKER": PACKER;
-			case "ASEPRITE": ASEPRITE;
-			case "MULTISPARROW": MULTISPARROW;
-			default: SPARROW;
+			case "ATLAS" | "SPRITEMAP" | "ANIMATE":
+				ATLAS;
+			case "PACKER":
+				PACKER;
+			case "ASEPRITE":
+				ASEPRITE;
+			case "MULTISPARROW":
+				MULTISPARROW;
+			default:
+				SPARROW;
 		}
 	}
 
-	public function atlasTypeFromString(type:Null<String>)
+	public static function stringToAtlasType(type:Null<String>)
 	{
-		atlasType = switch ((type ?? "").toUpperCase())
+		return switch ((type ?? "").toUpperCase())
 		{
 			case "FRAMELABEL": FRAMELABEL;
 			case "TIMELINE": TIMELINE;
