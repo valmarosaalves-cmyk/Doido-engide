@@ -174,7 +174,7 @@ class LoadingState extends MusicBeatState
 
 	function loadSounds()
 	{
-		var audio = new AudioHandler(CHART.song);
+		var audio = new AudioHandler(CHART.song, PlayState.songDiff);
 		NoteUtil.loadMissSounds();
 		NoteUtil.playHitsound(0.0);
 

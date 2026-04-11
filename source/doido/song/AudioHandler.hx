@@ -2,6 +2,12 @@ package doido.song;
 
 import flixel.sound.FlxSound;
 
+typedef AudioData =
+{
+	var stem:FlxSound;
+	var variants:Array<String>;
+}
+
 // class for handling song files (Inst, Voices)
 class AudioHandler
 {
@@ -10,21 +16,29 @@ class AudioHandler
 	public var voicesGlobal:FlxSound; // default
 	public var voicesOpp:FlxSound; // if the opponent has a voices file, play them too
 
-	public function new(song:String)
+	public function new(song:String, diff:String = "normal")
 	{
-		reload(song);
+		reload(song, diff);
 	}
 
-	public function reload(song:String)
+	public function reload(song:String, diff:String = "normal")
 	{
-		inst = FlxG.sound.load(Assets.inst(song));
+		if (diff == "nightmare")
+			diff = "erect";
+
+		if (!Assets.fileExists('songs/${song}/audio/Inst-$diff', SOUND))
+			diff = "";
+		else
+			diff = '-$diff';
+
+		inst = FlxG.sound.load(Assets.inst(song, diff));
 		length = inst?.length;
 
 		// global voices
-		if (Assets.fileExists('songs/${song}/audio/Voices-player', SOUND))
-			voicesGlobal = FlxG.sound.load(Assets.voices(song, '-player'));
-		else if (Assets.fileExists('songs/${song}/audio/Voices', SOUND))
-			voicesGlobal = FlxG.sound.load(Assets.voices(song));
+		if (Assets.fileExists('songs/${song}/audio/Voices$diff-player', SOUND))
+			voicesGlobal = FlxG.sound.load(Assets.voices(song, '$diff-player'));
+		else if (Assets.fileExists('songs/${song}/audio/Voices$diff-$diff', SOUND))
+			voicesGlobal = FlxG.sound.load(Assets.voices(song, diff));
 		else
 			voicesGlobal = null;
 
@@ -32,10 +46,10 @@ class AudioHandler
 			length = voicesGlobal.length;
 
 		// opponent voices
-		if (Assets.fileExists('songs/${song}/audio/Voices-opp', SOUND))
-			voicesOpp = FlxG.sound.load(Assets.voices(song, "-opp"));
-		else if (Assets.fileExists('songs/${song}/audio/Voices-opponent', SOUND))
-			voicesOpp = FlxG.sound.load(Assets.voices(song, "-opponent"));
+		if (Assets.fileExists('songs/${song}/audio/Voices$diff-opp', SOUND))
+			voicesOpp = FlxG.sound.load(Assets.voices(song, '$diff-opp'));
+		else if (Assets.fileExists('songs/${song}/audio/Voices$diff-opponent', SOUND))
+			voicesOpp = FlxG.sound.load(Assets.voices(song, '$diff-opponent'));
 		else
 			voicesOpp = null;
 

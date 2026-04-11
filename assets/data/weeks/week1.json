@@ -6,5 +6,6 @@
     ],
     "weekFile": "week1",
     "weekName": "daddy dearest",
-    "chars": ["dad", "bf", "gf"]
+    "chars": ["dad", "bf", "gf"],
+    "diffs": ["easy", "normal", "hard", "erect", "nightmare"]
 }

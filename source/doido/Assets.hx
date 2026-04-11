@@ -240,8 +240,8 @@ class Assets
 	public static inline function music(key:String, ?library:String = ""):Sound
 		return getAsset('music/$key', library, SOUND);
 
-	public static inline function inst(song:String):Sound
-		return getAsset('songs/$song/audio/Inst', SOUND);
+	public static inline function inst(song:String, postfix:String = ""):Sound
+		return getAsset('songs/$song/audio/Inst$postfix', SOUND);
 
 	public static inline function voices(song:String, postfix:String = ""):Sound
 		return getAsset('songs/$song/audio/Voices$postfix', SOUND);

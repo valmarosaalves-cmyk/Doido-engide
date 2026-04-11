@@ -337,35 +337,29 @@ class Freeplay extends MusicBeatState
 
 		if (Controls.justPressed(ACCEPT) || FlxG.keys.justPressed.SHIFT || FlxG.keys.justPressed.SEVEN)
 		{
-			if (options[curSong].name == "Load Other")
+			try
 			{
-				// MusicBeat.switchState(new states.LoadOther());
-			}
-			else
-			{
-				try
-				{
-					PlayState.loadSong(options[curSong].name, options[curSong].diffs[curDiff]);
+				PlayState.loadSong(options[curSong].name, options[curSong].diffs[curDiff]);
+				PlayState.songDiff = options[curSong].diffs[curDiff];
 
-					if (FlxG.keys.justPressed.SEVEN)
-					{
-						MusicBeat.switchState(new ChartingState(PlayState.SONG));
-					}
+				if (FlxG.keys.justPressed.SEVEN)
+				{
+					MusicBeat.switchState(new ChartingState(PlayState.SONG));
+				}
+				else
+				{
+					if (FlxG.keys.justPressed.SHIFT)
+						PlayState.skip = true;
 					else
-					{
-						if (FlxG.keys.justPressed.SHIFT)
-							PlayState.skip = true;
-						else
-							PlayState.skip = false;
+						PlayState.skip = false;
 
-						MusicBeat.switchState(new states.LoadingState());
-					}
+					MusicBeat.switchState(new states.LoadingState());
 				}
-				catch (e)
-				{
-					FlxG.sound.play(Assets.sound('beep'));
-					Logs.print(e);
-				}
+			}
+			catch (e)
+			{
+				FlxG.sound.play(Assets.sound('beep'));
+				Logs.print(e);
 			}
 		}
 	}

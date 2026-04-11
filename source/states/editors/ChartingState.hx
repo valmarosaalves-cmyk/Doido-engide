@@ -38,6 +38,7 @@ import haxe.Json;
 import flixel.util.FlxColor;
 import doido.objects.ui.QuickButton.TextButton;
 import flixel.graphics.frames.FlxFrame;
+import doido.song.SongHandler;
 
 class ChartingNote extends Note
 {
@@ -110,7 +111,7 @@ class ChartingState extends MusicBeatState
 
 		characters = Assets.list("data/characters/", true, JSON).concat(["face"]);
 
-		audio = new AudioHandler(CHART.song);
+		audio = new AudioHandler(CHART.song, PlayState.songDiff);
 
 		if (NoteUtil.directions.length == 0)
 			NoteUtil.setUpDirections(4);
@@ -183,15 +184,58 @@ class ChartingState extends MusicBeatState
 
 		// fileWindow.addButton("Open Events", "Ctrl + Alt + O");
 		// fileWindow.addSeparator();
-		// fileWindow.addButton("Open Song", "Ctrl + O");
+		fileWindow.addButton("Open Song", (btn) ->
+		{
+			var newSong:String = CHART.song;
+			var newDiff:String = PlayState.songDiff;
+
+			var openStuff:Array<FlxSprite> = [];
+			openStuff.push(createText((FlxG.width / 2) - (145) - 5, (FlxG.height / 2) - 22, "Song:", 0xFFD8DAF6));
+			openStuff.push(createText((FlxG.width / 2) + 5, (FlxG.height / 2) - 22, "Diff:", 0xFFD8DAF6));
+
+			var songField:PsychUIInputText;
+			songField = new PsychUIInputText((FlxG.width / 2) - (145) - 5, (FlxG.height / 2), 145, newSong, 14);
+			songField.onChange.add((old, cur, input) -> newSong = cur);
+			openStuff.push(songField);
+
+			var diffField:PsychUIInputText;
+			diffField = new PsychUIInputText((FlxG.width / 2) + 5, (FlxG.height / 2), 145, newDiff, 14);
+			diffField.onChange.add((old, cur, input) -> newDiff = cur);
+			openStuff.push(diffField);
+
+			var ok = new TextButton("Ok", "small");
+			ok.screenCenter();
+			ok.y += 50;
+			openStuff.push(ok);
+
+			var popup = new PopupSubState("Open Song:", 320, 150, openStuff);
+			openSubState(popup);
+
+			ok.button.onUp.add((btn) ->
+			{
+				try
+				{
+					PlayState.loadSong(newSong, newDiff);
+					PlayState.songDiff = newDiff;
+					MusicBeat.switchState(new ChartingState(PlayState.SONG));
+				}
+				catch (e)
+				{
+					FlxG.sound.play(Assets.sound('beep'));
+					Logs.print(e);
+				}
+
+				// popup.close();
+			});
+		});
 		fileWindow.addButton("Save Song", "Ctrl + S", (btn) ->
 		{
-			save(CHART, "normal");
+			save(CHART, PlayState.songDiff);
 			save(EVENTS, "events");
 			save(META, "meta");
 		});
 		fileWindow.addSeparator();
-		fileWindow.addButton("Save Chart", "Ctrl + Shift + S", (btn) -> save(CHART, "normal"));
+		fileWindow.addButton("Save Chart", "Ctrl + Shift + S", (btn) -> save(CHART, PlayState.songDiff));
 		fileWindow.addButton("Save Events", "Ctrl + Alt + S", (btn) -> save(EVENTS, "events"));
 		fileWindow.addButton("Save Meta", "Ctrl + Tab + S", (btn) -> save(META, "meta"));
 		fileWindow.addSeparator();
@@ -207,6 +251,59 @@ class ChartingState extends MusicBeatState
 		// editWindow.addButton("Redo", "Ctrl + Y");
 		// editWindow.addSeparator();
 		editWindow.addButton("Select All", "Ctrl + A", (btn) -> selectAll());
+		editWindow.addSeparator();
+		editWindow.addButton("Chart Converter", (btn) ->
+		{
+			var newSong:String = CHART.song;
+			var newDiff:String = PlayState.songDiff;
+
+			var openStuff:Array<FlxSprite> = [];
+			openStuff.push(createText((FlxG.width / 2) - (245) - 5, (FlxG.height / 2) - 22, "Songs:", 0xFFD8DAF6));
+			openStuff.push(createText((FlxG.width / 2) + 5, (FlxG.height / 2) - 22, "Diffs:", 0xFFD8DAF6));
+
+			var songField:PsychUIInputText;
+			songField = new PsychUIInputText((FlxG.width / 2) - (245) - 5, (FlxG.height / 2), 245, newSong, 14);
+			songField.onChange.add((old, cur, input) -> newSong = cur);
+			openStuff.push(songField);
+
+			var diffField:PsychUIInputText;
+			diffField = new PsychUIInputText((FlxG.width / 2) + 5, (FlxG.height / 2), 245, newDiff, 14);
+			diffField.onChange.add((old, cur, input) -> newDiff = cur);
+			openStuff.push(diffField);
+
+			var ok = new TextButton("Convert", "small");
+			ok.screenCenter();
+			ok.y += 50;
+			openStuff.push(ok);
+
+			var popup = new PopupSubState("Chart Converter", 520, 150, openStuff);
+			openSubState(popup);
+
+			ok.button.onUp.add((btn) ->
+			{
+				var songs:Array<String> = newSong.split(",").map(s -> s.trim());
+				var diffs:Array<String> = newDiff.split(",").map(s -> s.trim());
+
+				for (input in songs)
+				{
+					for (diff in diffs)
+					{
+						trace(diff);
+						var song = SongHandler.loadSong(input, diff);
+						var export:Array<Dynamic> = [song.CHART, song.EVENTS, song.META];
+						var names = ["", "events-", "meta-"];
+						for (i in 0...export.length)
+						{
+							var data:String = Json.stringify(export[i], "\t");
+							if (data != null && data.length > 0)
+							{
+								Assets.fileSave(data.trim(), '$input-${names[i]}$diff.json');
+							}
+						}
+					}
+				}
+			});
+		});
 		editWindow.updateBg();
 
 		var viewWindow = new MenuWindow(x, y + 30, width, this);
@@ -452,7 +549,7 @@ class ChartingState extends MusicBeatState
 		{
 			playingSong = false;
 			audio.pause();
-			audio.reload(CHART.song);
+			audio.reload(CHART.song, PlayState.songDiff);
 			grid.length = audio.length;
 		});
 		reloadButton.x = getX("margin_right", reloadButton.width);
@@ -1167,7 +1264,7 @@ class ChartingState extends MusicBeatState
 				var pressedNone = !FlxG.keys.pressed.SHIFT && !FlxG.keys.pressed.ALT && !FlxG.keys.pressed.TAB;
 
 				if (FlxG.keys.pressed.SHIFT || pressedNone)
-					save(CHART, "normal");
+					save(CHART, PlayState.songDiff);
 				if (FlxG.keys.pressed.ALT || pressedNone)
 					save(EVENTS, "events");
 				if (FlxG.keys.pressed.TAB || pressedNone)
@@ -1232,7 +1329,7 @@ class ChartingState extends MusicBeatState
 		var data:String = Json.stringify(_data, "\t");
 		if (data != null && data.length > 0)
 		{
-			Assets.fileSave(data.trim(), '${CHART.song}-${name}.json');
+			Assets.fileSave(data.trim(), '${name}.json');
 		}
 	}
 

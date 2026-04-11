@@ -28,6 +28,7 @@ class PlayState extends MusicBeatState implements Playable
 {
 	public static var SONG:DoidoSong;
 	public static var skip:Bool = false;
+	public static var songDiff:String = "normal";
 
 	public var playField:PlayField;
 	public var hudClass:ClassHud;
@@ -117,7 +118,7 @@ class PlayState extends MusicBeatState implements Playable
 
 		spawnEvents = EVENTS.events;
 
-		audio = new AudioHandler(CHART.song);
+		audio = new AudioHandler(CHART.song, songDiff);
 
 		camGame = new DoidoCamera(false, true);
 		camHUD = new DoidoCamera(true, false);
