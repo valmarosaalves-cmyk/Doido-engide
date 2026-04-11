@@ -30,6 +30,7 @@ import hxdiscord_rpc.Types;
  */
 class DiscordIO
 {
+	public static var nickname:String = "Player";
 	public static var lastDetails:String = "In the Menus";
 
 	public static function initialize()
@@ -70,10 +71,10 @@ class DiscordIO
 	public static function check()
 	{
 		#if DISCORD_RPC
-		// if(SaveData.data.get("Discord RPC"))
-		DiscordAPI.initialize();
-		// else
-		//	shutdown();
+		if(Save.data.discordRPC)
+			DiscordAPI.initialize();
+		else
+			shutdown();
 		#end
 	}
 }
@@ -89,8 +90,11 @@ class DiscordAPI
 	public dynamic static function shutdown()
 	{
 		if (isInitialized)
+		{
+			isInitialized = false;
+			DiscordIO.nickname = "Player";
 			Discord.Shutdown();
-		isInitialized = false;
+		}
 	}
 
 	private static function onReady(request:cpp.RawConstPointer<DiscordUser>):Void
@@ -102,6 +106,7 @@ class DiscordAPI
 		else // Old discriminators
 			Logs.print('(Discord) Connected to User (${cast (requestPtr.username, String)})');
 
+		DiscordIO.nickname = requestPtr.globalName;
 		changePresence(DiscordIO.lastDetails);
 	}
 

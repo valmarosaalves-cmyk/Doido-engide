@@ -50,7 +50,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 		if (text != v)
 		{
 			text = v;
-			reloadText();
+			writeTxt();
 		}
 		return text;
 	}
@@ -60,7 +60,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 		if (bold != v)
 		{
 			bold = v;
-			reloadText();
+			writeTxt();
 		}
 		return bold;
 	}
@@ -79,7 +79,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 	{
 		font = v;
 		calculateSize();
-		reloadText();
+		writeTxt();
 		return font;
 	}
 
@@ -119,7 +119,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 	override function revive()
 	{
 		super.revive();
-		reloadText();
+		writeTxt();
 	}
 
 	/*public var outline(default, null):OutlineData = null;
@@ -130,12 +130,12 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 				color: color,
 				thickness: thickness,
 			}
-			reloadText();
+			writeTxt();
 		}
 		public function removeOutline()
 		{
 			outline = null;
-			reloadText();
+			writeTxt();
 		}
 
 		public var dropShadow(default, null):DropShadowData = null;
@@ -146,11 +146,11 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 				color: color,
 				offset: {x: offsetX, y: offsetY}
 			};
-			reloadText();
+			writeTxt();
 		}
 		public function removeDropShadow() {
 			dropShadow = null;
-			reloadText();
+			writeTxt();
 	}*/
 
 	// in any other engine we could cache the framescollection so it doesnt have to keep being loaded
@@ -168,7 +168,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 	public var charWidth:Float = 35;
 	public var lineWidth:Array<Float> = [];
 
-	public function reloadText()
+	public function writeTxt()
 	{
 		for (char in members) {
 			char.setPosition(x, y);
@@ -232,8 +232,10 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 							// case OutlineTag(color, thickness): charOutline = {color: color, thickness: thickness};
 							case ColorTag(value):
 								char.setColor(value, charBold);
-							case RainbowTag(speed, offset):
+							case RainbowTag(speed, offset, saturation, brightness):
 								char.rainbowSpeed = speed;
+								char.rainbowSaturation = saturation;
+								char.rainbowBrightness = brightness;
 								if (offset != 0)
 									char.rainbowHue = FlxMath.mod(offset * -charID, 360);
 							case ShakeTag(speed, intensity):
@@ -352,7 +354,7 @@ class Alphabet extends FlxTypedSpriteGroup<AlphaCharacter>
 				char.rainbowHue += elapsed * 60 * char.rainbowSpeed;
 				char.rainbowHue %= 360;
 
-				char.setColor(FlxColor.fromHSB(char.rainbowHue, 1, 1));
+				char.setColor(FlxColor.fromHSB(char.rainbowHue, char.rainbowSaturation, char.rainbowBrightness));
 			}
 		});
 	}
@@ -377,6 +379,8 @@ class AlphaCharacter extends FlxSprite
 
 	public var rainbowSpeed:Float = 0.0;
 	public var rainbowHue:Float = 0.0;
+	public var rainbowSaturation:Float = 1.0;
+	public var rainbowBrightness:Float = 1.0;
 
 	public var alphabet:Bool = true;
 	public var bold:Bool = false;

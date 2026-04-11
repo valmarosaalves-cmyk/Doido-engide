@@ -11,7 +11,9 @@
 <!-- makes the text all colorful! -->
 <!-- speed: how quickly the colors change -->
 <!-- offset: the offset of each letter's color (0-360) -->
-<rainbow speed=3 offset=30> rainbow text </rainbow>
+<!-- saturation: the saturation of the colors (0.0-1.0) -->
+<!-- brightness: the brightness of the colors (0.0-1.0) -->
+<rainbow speed=3 offset=30 saturation=1.0 brightness=1.0> rainbow text </rainbow>
 
 <!-- shakes the text -->
 <!-- speed: how often each character shakes -->

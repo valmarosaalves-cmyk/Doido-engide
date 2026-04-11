@@ -151,11 +151,10 @@ class PlayState extends MusicBeatState implements Playable
 		}
 
 		// temporary caching
-		Assets.sparrow("ui/notes/base/splashes");
-		Assets.sparrow("ui/notes/base/covers");
-		for (i in 0...4)
-		{
-			countdownSfx.push(FlxG.sound.load(Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i])));
+		for (i in 0...4) {
+			countdownSfx.push(
+				FlxG.sound.load(Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i]))
+			);
 		}
 
 		hudClass = switch (META.assets.hudType)

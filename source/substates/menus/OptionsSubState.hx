@@ -137,7 +137,7 @@ class OptionsSubState extends MusicBeatSubState
             "Preferences" => [
                 #if windows
                 {
-                    name: "Dark Window Border",
+                    name: "Dark Mode",
                     get: () -> Save.data.darkMode,
                     set: (b:Bool) -> Save.data.darkMode = b,
                     onChange: () -> {
@@ -150,6 +150,13 @@ class OptionsSubState extends MusicBeatSubState
                     name: "View FPS Counter",
                     get: () -> Save.data.fpsCounter,
                     set: (b:Bool) -> Save.data.fpsCounter = b
+                },
+                #end
+                #if DISCORD_RPC
+                {
+                    name: "Discord Rich Presence",
+                    get: () -> Save.data.discordRPC,
+                    set: (b:Bool) -> Save.data.discordRPC = b
                 },
                 #end
                 {

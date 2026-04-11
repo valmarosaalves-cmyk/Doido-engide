@@ -49,8 +49,16 @@ class DebugMenu extends MusicBeatState
 		var alphabet = new Alphabet(FlxG.width / 2, 50, doidoText, true, CENTER);
 		add(alphabet);
 
-		var doidoText = "Here's a test for bitmap fonts in the alphabet...\n";
-		doidoText += "It can even have the same <rainbow speed=3><wave intensity=5 speed=3>WACKY</wave></rainbow> <shake intensity=2 speed=10>effects</shake>!\n";
+		var titleTexts = Assets.txtToArray("data/title-texts");
+		var chosenText = FlxG.random.getObject(titleTexts).toUpperCase().split("--");
+
+		for(i in 0...chosenText.length)
+			if (chosenText[i].contains("<DISCORD>"))
+				chosenText[i] = chosenText[i].replace("<DISCORD>", DiscordIO.nickname);
+
+		/*var doidoText = "Here's a test for bitmap fonts in the alphabet...\n";
+		doidoText += "It can even have the same <rainbow speed=3><wave intensity=5 speed=3>WACKY</wave></rainbow> <shake intensity=2 speed=10>effects</shake>!\n";*/
+		var doidoText = '<shake intensity=2 speed=10>${chosenText[0]}</shake>\n<rainbow speed=3><wave intensity=5 speed=3>${chosenText[1]}</wave></rainbow>';
 		var alphabet = new Alphabet(FlxG.width / 2, alphabet.y + alphabet.height + 20, doidoText, false, CENTER, "vcr");
 		alphabet.scale.set(2, 2);
 		alphabet.updateHitbox();

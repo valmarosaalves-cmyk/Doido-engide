@@ -1,5 +1,6 @@
 package doido;
 
+import doido.system.Discord.DiscordIO;
 import flixel.util.FlxSave;
 
 @:keep
@@ -16,8 +17,9 @@ class SaveVariables
 
 	// preferences
 	public var darkMode:Bool = true;
-	public var quantNotes:Bool = false;
+	public var discordRPC:Bool = #if DISCORD_RPC true #else false #end;
 	public var fpsCounter:Bool = #if desktop true #else false #end;
+	public var quantNotes:Bool = false;
 	public var hitsound:String = "OFF";
 	public var hitsoundVolume:Float = 0.4;
 	public var flashingLights:String = "ON";
@@ -95,6 +97,8 @@ class Save
 
 		if (Main.fpsCounter != null)
 			Main.fpsCounter.visible = data.fpsCounter;
+		
+		DiscordIO.check();
 	}
 }
 

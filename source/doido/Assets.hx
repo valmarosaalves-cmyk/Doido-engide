@@ -263,11 +263,16 @@ class Assets
 
 	public static inline function txtToArray(key:String, ?library:String = ""):Array<String>
 	{
-		var daList:Array<String> = text(key, library).split('\n');
+		var rawList:Array<String> = text(key, library).split('\n');
+		var daList:Array<String> = [];
 
-		for(i in 0...daList.length)
-			daList[i] = daList[i].trim();
+		for(text in rawList)
+		{
+			if (text == "") continue;
 
+			daList.push(text.trim());
+		}
+		
 		return daList;
 	}
 

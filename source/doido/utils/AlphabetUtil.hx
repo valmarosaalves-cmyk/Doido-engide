@@ -22,7 +22,7 @@ enum TagType
 	// OutlineTag(color:FlxColor, thickness:Float);
 	// DropShadowTag(color:FlxColor, offsetX:Float, offsetY:Float);
 	ColorTag(value:FlxColor);
-	RainbowTag(speed:Float, offset:Float);
+	RainbowTag(speed:Float, offset:Float, saturation:Float, brightness:Float);
 	ShakeTag(speed:Float, intensity:Float);
 	WaveTag(speed:Float, intensity:Float, delay:Float);
 }
@@ -127,11 +127,13 @@ class AlphabetUtil
 		{
 			var speed = parseFloatTag(content, "speed", 1);
 			var offset = parseFloatTag(content, "offset", 30);
+			var saturation = parseFloatTag(content, "saturation", 1);
+			var brightness = parseFloatTag(content, "brightness", 1);
 
 			return {
 				startIndex: index,
 				endIndex: -1,
-				type: RainbowTag(speed, offset)
+				type: RainbowTag(speed, offset, saturation, brightness)
 			};
 		}
 
