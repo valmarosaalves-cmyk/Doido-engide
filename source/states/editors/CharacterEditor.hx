@@ -190,38 +190,27 @@ class CharacterEditor extends MusicBeatState
 		});
 		tab.add(reload);
 
+		var pixel:Checkmark = new Checkmark(char.data.pixel);
+		pixel.x = getX("margin_right", pixel.width);
+		pixel.y = getY(3) - 2;
+		pixel.onUp.add((btn) ->
+		{
+			char.data.pixel = pixel.value;
+			char.antialiasing = ((char.data.pixel) ? false : flixel.FlxSprite.defaultAntialiasing);
+			flipCheck(char);
+		});
+		tab.add(pixel);
+		tab.add(createText(pixel.x - 45, getY(3) + 2, "Pixel:", 0xFFD8DAF6));
+
+		// getX() + 120
 		var spriteType:PsychUIDropDownMenu;
-		spriteType = new PsychUIDropDownMenu(getX() + 120, getY(1), ["SPARROW", "ATLAS", "PACKER", "ASEPRITE"], (i, s) ->
+		spriteType = new PsychUIDropDownMenu(getX("margin_right", 130), getY(2), ["SPARROW", "ATLAS", "PACKER", "ASEPRITE"], (i, s) ->
 		{
 			char.data.spriteType = s;
 		}, 130, false);
 		spriteType.selectedLabel = char.data.spriteType;
 		spriteType.cameras = [camHUD];
 		tab.add(spriteType);
-
-		var characters:PsychUIDropDownMenu;
-		var characterList = Assets.list("data/characters/", true, JSON).concat(["face"]);
-		characters = new PsychUIDropDownMenu(getX(), getY(1), characterList, (i, s) ->
-		{
-			if (ghost.curChar == char.curChar)
-				ghost.curChar = s;
-
-			char.curChar = s;
-			char.clearAnims();
-			char.loadCharacter(false);
-			updatePos(char);
-			ghost.syncGhost();
-			updatePos(ghost);
-
-			sprite.text = char.data.spritesheet;
-			spriteType.selectedLabel = char.data.spriteType ?? "SPARROW";
-			anims.options = char.animList.concat(["Add New"]);
-			setDescs();
-			updateAnim(false);
-		}, 100, false);
-		characters.selectedLabel = char.curChar;
-		characters.cameras = [camHUD];
-		tab.add(characters);
 
 		tab.add(createText(getX(), getY(2) + 3, "Idles:", 0xFFD8DAF6));
 		var idles:PsychUIInputText;
@@ -234,6 +223,72 @@ class CharacterEditor extends MusicBeatState
 		});
 		idles.cameras = [camHUD];
 		tab.add(idles);
+
+		tab.add(createText(getX(), getY(3) + 3, "Scale:", 0xFFD8DAF6));
+		var scaleX = new PsychUINumericStepper(getX("margin_first"), getY(3), 0.1, char.data.scale.x, 0.1, 10, 2);
+		scaleX.onValueChange = () ->
+		{
+			char.data.scale.x = scaleX.value;
+			char.scale.set(char.data.scale.x, char.data.scale.y);
+			updatePos(char);
+			ghost.syncGhost();
+			updatePos(ghost);
+		}
+		scaleX.cameras = [camHUD];
+		tab.add(scaleX);
+
+		var scaleY = new PsychUINumericStepper(getX("margin_first") + 105, getY(3), 0.1, char.data.scale.y, 0.1, 10, 2);
+		scaleY.onValueChange = () ->
+		{
+			char.data.scale.y = scaleY.value;
+			char.scale.set(char.data.scale.x, char.data.scale.y);
+			updatePos(char);
+			ghost.syncGhost();
+			updatePos(ghost);
+		}
+		scaleY.cameras = [camHUD];
+		tab.add(scaleY);
+
+		var characterList = Assets.list("data/characters/", true, JSON).concat(["face"]);
+
+		var ghosts:PsychUIDropDownMenu;
+		ghosts = new PsychUIDropDownMenu(getX() + 120, getY(1), characterList, (i, s) ->
+		{
+			ghost.curChar = s;
+			ghost.syncGhost();
+			updatePos(ghost);
+
+			setDescs();
+			updateAnim(false);
+		}, 100, false);
+		ghosts.selectedLabel = char.curChar;
+		ghosts.cameras = [camHUD];
+		tab.add(ghosts);
+
+		var characters:PsychUIDropDownMenu;
+		characters = new PsychUIDropDownMenu(getX(), getY(1), characterList, (i, s) ->
+		{
+			if (ghost.curChar == char.curChar)
+			{
+				ghost.curChar = s;
+				ghosts.selectedLabel = s;
+			}
+
+			char.curChar = s;
+			char.clearAnims();
+			char.loadCharacter(false);
+			updatePos(char);
+			ghost.syncGhost();
+			updatePos(ghost);
+
+			sprite.text = char.data.spritesheet;
+			spriteType.selectedLabel = char.data.spriteType ?? "SPARROW";
+			anims.options = char.animList.concat(["Add New"]);
+			updateAnim(false);
+		}, 100, false);
+		characters.selectedLabel = char.curChar;
+		characters.cameras = [camHUD];
+		tab.add(characters);
 
 		/*
 			var atlasType:PsychUIDropDownMenu;
@@ -716,7 +771,9 @@ class CharacterEditor extends MusicBeatState
 	public function updatePos(char:Character)
 	{
 		char.updateHitbox();
+		char.scaleOffset = {x: char.offset.x, y: char.offset.y};
 		char.setPosition(middlePoint.x - (char.width - middlePoint.width) / 2, middlePoint.y + (middlePoint.height / 2) - char.height);
+		char.updateOffset();
 	}
 
 	public function updateAnim(updateData:Bool = false)
@@ -794,7 +851,7 @@ class AnimWindow extends BaseWindow
 	public var ghostTxt:FlxBitmapText;
 
 	var charSlider:DoidoSlider;
-	var ghostSlider:DoidoSlider;
+	//var ghostSlider:DoidoSlider;
 
 	public function new(characterEditor:CharacterEditor)
 	{
@@ -846,7 +903,7 @@ class AnimWindow extends BaseWindow
 		ghostTxt.updateHitbox();
 		add(ghostTxt);
 
-		ghostSlider = new DoidoSlider(charSlider.x, ghostTxt.y + 7, 320, 6, -1, -1, 3, 3, /*Math.POSITIVE_INFINITY*/);
+		/*ghostSlider = new DoidoSlider(charSlider.x, ghostTxt.y + 7, 320, 6, -1, -1, 3, 3);
 		ghostSlider.onScrub.add((sld) ->
 		{
 			var isOff:Bool = (ghostSlider.value < 0.0);
@@ -858,7 +915,7 @@ class AnimWindow extends BaseWindow
 				characterEditor.ghost.anim.pause();
 			}
 		});
-		add(ghostSlider);
+		add(ghostSlider);*/
 
 		updateAnim();
 	}
@@ -883,9 +940,11 @@ class AnimWindow extends BaseWindow
 			charSlider.snappingStrength = Math.POSITIVE_INFINITY;
 		}
 
+		/*
 		ghostSlider.rangeMax = ghost.animation.curAnim.frames.length - 1;
 		ghostSlider.steps = ghost.animation.curAnim.frames.length - 1;
 		ghostSlider.snappingStrength = Math.POSITIVE_INFINITY;
+		*/
 	}
 }
 
