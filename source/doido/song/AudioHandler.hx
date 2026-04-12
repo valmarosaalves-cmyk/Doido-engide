@@ -37,7 +37,7 @@ class AudioHandler
 		// global voices
 		if (Assets.fileExists('songs/${song}/audio/Voices$diff-player', SOUND))
 			voicesGlobal = FlxG.sound.load(Assets.voices(song, '$diff-player'));
-		else if (Assets.fileExists('songs/${song}/audio/Voices$diff-$diff', SOUND))
+		else if (Assets.fileExists('songs/${song}/audio/Voices$diff', SOUND))
 			voicesGlobal = FlxG.sound.load(Assets.voices(song, diff));
 		else
 			voicesGlobal = null;
