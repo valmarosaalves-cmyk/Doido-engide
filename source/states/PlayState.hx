@@ -432,9 +432,9 @@ class PlayState extends MusicBeatState implements Playable
 			{x: -FlxG.width / 2, y: -FlxG.height / 2}
 		]);
 
-		camGame.zoom = FlxMath.lerp(camGame.zoom, camZoom, elapsed * 12);
+		camGame.zoom = FlxMath.lerp(camGame.zoom, camZoom, elapsed * 6);
 		for (cam in [camHUD, camStrum])
-			cam.zoom = FlxMath.lerp(cam.zoom, defaultHudZoom, elapsed * 12);
+			cam.zoom = FlxMath.lerp(cam.zoom, defaultHudZoom, elapsed * 6);
 
 		health = FlxMath.bound(health, 0, 2);
 		if (Controls.justPressed(RESET) || health <= 0)
