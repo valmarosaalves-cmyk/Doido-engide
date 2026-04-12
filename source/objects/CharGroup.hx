@@ -64,8 +64,9 @@ class CharGroup extends FlxTypedGroup<Character>
 
 	public function updateChar()
 	{
-		char.x = x - char.width / 2 + char.globalOffset.x;
-		char.y = y - char.height + char.globalOffset.y;
+		char.updateHitbox();
+		char.x = x - (char.width / 2) + char.globalOffset.x;
+		char.y = y - (char.height) + char.globalOffset.y;
 		char.scrollFactor.set(scrollFactorX, scrollFactorY);
 		char.alpha = alpha * (char.data.alpha ?? 1.0);
 		char.angle = angle;
