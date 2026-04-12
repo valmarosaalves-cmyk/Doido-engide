@@ -218,10 +218,14 @@ class Cache
 	{
 		for (key => sound in current.sounds)
 		{
-			// ?!
-			// LimeAssets.cache.clear(key);
-			current.sounds.remove(key);
+			clearSound(key, sound);
 		}
+	}
+
+	public static function clearSound(key:String, sound:Sound) {
+		// ?!
+		// LimeAssets.cache.clear(key);
+		current.sounds.remove(key);
 	}
 
 	public static function isSoundCached(key:String)

@@ -57,7 +57,7 @@ class Character extends DoidoSprite
 
 	public var quickDancer:Bool = false;
 
-	var deathChar:String = "bf-dead";
+	public var deathChar:String = "bf-dead";
 
 	public var singType:SingType = LAST;
 	public var singLength:Float = 0.7;

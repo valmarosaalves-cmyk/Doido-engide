@@ -24,6 +24,21 @@ class CharGroup extends FlxTypedGroup<Character>
 		var newChar = new Character(charName, isPlayer);
 		add(newChar);
 
+		if (isPlayer)
+		{
+			var deadCharExists:Bool = false;
+			for(char in members)
+			{
+				if (char.curChar == newChar.deathChar)
+					deadCharExists = true;
+			}
+			if (!deadCharExists) {
+				trace("DEATH CHAR DOESN'T EXIST, CREATING: " + newChar.deathChar);
+				var deadChar = new Character(newChar.deathChar, true);
+				add(deadChar);
+			}
+		}
+
 		if (isActive)
 			setActive(charName);
 	}

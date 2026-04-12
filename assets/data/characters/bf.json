@@ -1,9 +1,14 @@
 {
-    "spritesheet": "bf/BOYFRIEND",
-    "flipX": true,
-    "angleOrigin": {"x": 0.5, "y": 0.5},
-    "anims": [
-        {
+	"angleOrigin": {
+		"x": 0.5,
+		"y": 0.5
+	},
+	"scale": {
+		"x": 1,
+		"y": 1
+	},
+	"anims": [
+		{
             "name": "idle",
             "prefix": "BF idle dance",
             "offset": {"x": 0, "y": 0}
@@ -47,6 +52,33 @@
             "name": "singRIGHTmiss",
             "prefix": "BF NOTE RIGHT MISS",
             "offset": {"x": -45, "y": 21}
-        }
-    ]
+        },
+		{
+			"prefix": "BF idle shaking",
+			"offset": {
+				"x": 0,
+				"y": 0
+			},
+			"name": "scared",
+			"loop": true
+		},
+		{
+			"prefix": "BF HEY!!",
+			"offset": {
+				"x": 0,
+				"y": 0
+			},
+			"name": "hey"
+		},
+		{
+			"prefix": "Boyfriend YEAH cheer",
+			"offset": {
+				"x": 0,
+				"y": 0
+			},
+			"name": "cheer"
+		}
+	],
+	"spritesheet": "bf/BOYFRIEND",
+	"flipX": true
 }

@@ -114,7 +114,7 @@ class PopupSubState extends MusicBeatSubState
 	{
 		super.update(elapsed);
 
-		if (Controls.justPressed(BACK) && PsychUIInputText.focusOn == null)
+		if (FlxG.keys.justPressed.ESCAPE && PsychUIInputText.focusOn == null)
 		{
 			FlxG.sound.play(Assets.sound("options/options-close"));
 			close();

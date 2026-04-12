@@ -106,7 +106,7 @@ function onNoteHit(note, strumline)
 }
 
 // make bandu flip, why not
-function onGhostTap(lane, punchDirection)
+function onGhostTap(lane, strumline, punished)
 {
     bandu.flipX = !bandu.flipX;
 }

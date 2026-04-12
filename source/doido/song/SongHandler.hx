@@ -40,6 +40,7 @@ typedef AssetModifiers =
 	var ?playerNotes:String;
 	var ?opponentNotes:String;
 	var ?hudType:String;
+	var ?gameOverPath:String;
 }
 
 typedef NoteData =
@@ -178,7 +179,8 @@ class SongHandler
 			assets: {
 				playerNotes: "base",
 				opponentNotes: "base",
-				hudType: "base"
+				hudType: "base",
+				gameOverPath: "base",
 			},
 			// difficulties: ["normal"]
 		};

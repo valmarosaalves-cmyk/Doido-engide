@@ -130,7 +130,7 @@ class PauseSubState extends MusicBeatSubState
 				case 'options':
 					openSubState(new OptionsSubState(PlayState.instance));
 				case 'exit to menu':
-					MusicBeat.switchState(new states.DebugMenu());
+					PlayState.instance.goToMenu();
 				default:
 					FlxG.sound.play(Assets.sound("cancel"));
 			}

@@ -19,7 +19,9 @@ import objects.ui.*;
 import objects.ui.hud.*;
 import objects.ui.notes.*;
 import states.editors.ChartingState;
+import substates.GameOverSubState;
 import substates.PauseSubState;
+
 #if TOUCH_CONTROLS
 import doido.objects.DoidoHitbox;
 #end
@@ -161,7 +163,8 @@ class PlayState extends MusicBeatState implements Playable
 		hudClass = switch (META.assets.hudType)
 		{
 			case "vslice": new VSliceHud(this);
-			default: new BaseHud(this);
+			default: new VSliceHud(this);
+			//default: new BaseHud(this);
 		}
 		add(hudClass);
 
@@ -351,8 +354,10 @@ class PlayState extends MusicBeatState implements Playable
 			if (!startedCountdown)
 				return;
 
+			var punished:Bool = false;
 			if (ghostTapping == "off" || (ghostTapping == "idle" && !strumline.ghostTappingIdle))
 			{
+				punished = true;
 				health -= 0.08;
 
 				Timings.score -= 100;
@@ -369,7 +374,7 @@ class PlayState extends MusicBeatState implements Playable
 				}
 				hudClass.updateScoreTxt();
 			}
-			callScript("onGhostTap", [lane, strumline]);
+			callScript("onGhostTap", [lane, strumline, punished]);
 
 			// Logs.print("GHOST TAPPED " + lane, WARNING);
 		};
@@ -435,8 +440,16 @@ class PlayState extends MusicBeatState implements Playable
 		health = FlxMath.bound(health, 0, 2);
 		if (Controls.justPressed(RESET) || health <= 0)
 		{
-			MusicBeat.skip = true;
-			MusicBeat.switchState(new states.PlayState());
+			//MusicBeat.skip = true;
+			//MusicBeat.switchState(new PlayState());
+			paused = true;
+			for (snd in FlxG.sound.list) {
+				snd.stop();
+			}
+
+			followCamera("boyfriend");
+			persistentDraw = persistentUpdate = false;
+			openSubState(new GameOverSubState(SONG.META.assets.gameOverPath, bf));
 		}
 
 		if (FlxG.keys.justPressed.SEVEN)
@@ -515,7 +528,7 @@ class PlayState extends MusicBeatState implements Playable
 		}
 	}
 
-	public function followCamera(charStr:String = "", ?offset:DoidoPoint)
+	public function followCamera(charStr:String = "", ?offset:DoidoPoint):LerpPoint
 	{
 		offset = MathUtil.addPoint(offset ?? {x: 0, y: 0}, switch (charStr)
 		{
@@ -540,6 +553,7 @@ class PlayState extends MusicBeatState implements Playable
 		}
 
 		camFollow.point = MathUtil.addPoint(camFollow.point, offset);
+		return camFollow;
 	}
 
 	function updateDisplace()
@@ -581,8 +595,7 @@ class PlayState extends MusicBeatState implements Playable
 	public function pauseSong()
 	{
 		paused = true;
-		for (snd in FlxG.sound.list)
-		{
+		for (snd in FlxG.sound.list) {
 			snd.pause();
 		}
 		audio.pause();
@@ -636,6 +649,11 @@ class PlayState extends MusicBeatState implements Playable
 			});
 		}
 
+		goToMenu();
+	}
+
+	public function goToMenu()
+	{
 		MusicBeat.switchState(new states.DebugMenu());
 	}
 

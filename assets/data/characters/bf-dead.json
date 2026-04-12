@@ -1,0 +1,25 @@
+{
+    "spritesheet": "bf/dead",
+    "spriteType": "ATLAS",
+    "flipX": true,
+    "angleOrigin": {"x": 0.5, "y": 0.5},
+    "cameraOffset": {"x": -220, "y": 0.0},
+    "idleAnims": ["firstDeath"],
+    "anims": [
+        {
+            "name": "firstDeath",
+            "prefix": "BF dies",
+            "offset": {"x": 0, "y": 0}
+        },
+        {
+            "name": "deathLoop",
+            "prefix": "BF Dead Loop",
+            "offset": {"x": 0, "y": 0}
+        },
+        {
+            "name": "deathConfirm",
+            "prefix": "BF Dead confirm",
+            "offset": {"x": 0, "y": 0}
+        }
+    ]
+}

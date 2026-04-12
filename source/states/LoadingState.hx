@@ -58,7 +58,7 @@ class LoadingState extends MusicBeatState
 
 		loadingPercent = 0.0;
 
-		loadingBar = new FlxSprite(0, FlxG.height - 8).makeGraphic(FlxG.width, 8, 0xFFFFFFFF);
+		loadingBar = new FlxSprite(-2, FlxG.height - 12).makeGraphic(FlxG.width+4, 16, 0xFFFFFFFF);
 		loadingBar.scale.x = 0;
 		loadingBar.updateHitbox();
 		add(loadingBar);
@@ -178,6 +178,7 @@ class LoadingState extends MusicBeatState
 		NoteUtil.loadMissSounds();
 		NoteUtil.playHitsound(0.0);
 
+		Assets.music('gameover/${META.assets.gameOverPath}/deathSfx');
 		// temporary caching
 		for (i in 0...4) {
 			Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i]);

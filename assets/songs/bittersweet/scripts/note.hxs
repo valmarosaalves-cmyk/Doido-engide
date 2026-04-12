@@ -28,6 +28,20 @@ function update(elapsed:Float)
     playState.gf.angle += 10 * elapsed;
 }
 
+function gameOverCreate()
+{
+    playState.bf.angle %= 360;
+}
+
+function gameOverUpdate(elapsed:Float)
+{
+    playState.bf.angle = FlxMath.lerp(
+        playState.bf.angle,
+        0,
+        elapsed * 6
+    );
+}
+
 function onNoteHit(note, strumline)
 {
     if (!note.isHold)
