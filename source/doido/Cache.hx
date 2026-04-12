@@ -225,6 +225,8 @@ class Cache
 	public static function clearSound(key:String, sound:Sound) {
 		// ?!
 		// LimeAssets.cache.clear(key);
+		sound.close();
+		sound = null;
 		current.sounds.remove(key);
 	}
 
