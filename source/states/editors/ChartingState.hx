@@ -1336,7 +1336,7 @@ class ChartingState extends MusicBeatState
 	public function play()
 	{
 		PlayState.SONG = SONG;
-		MusicBeat.switchState(new PlayState());
+		MusicBeat.switchState(new LoadingState());
 		FlxG.mouse.visible = false;
 	}
 
