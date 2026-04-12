@@ -559,7 +559,7 @@ class PlayState extends MusicBeatState implements Playable
 	{
 		if (maxDisplace == {x: 0, y: 0})
 			return;
-		switch (strToChar(curFocus).curAnimName)
+		switch (strToChar(curFocus).curAnimName.split('-')[0])
 		{
 			case 'singLEFT':
 				camDisplace.point = {x: -maxDisplace.x, y: 0};
