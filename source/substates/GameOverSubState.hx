@@ -60,9 +60,12 @@ class GameOverSubState extends MusicBeatSubState
         bf.playAnim('firstDeath');
         bf.char.animation.onFinish.addOnce((animName) -> {
             
-            stopThread = true;
-            FlxG.sound.playMusic(Assets.music('gameover/$folderPath/deathMusic'), 0.7);
-            bf.playAnim('deathLoop', true);
+            if (animName == "firstDeath")
+            {
+                stopThread = true;
+                FlxG.sound.playMusic(Assets.music('gameover/$folderPath/deathMusic'), 0.7);
+                bf.playAnim('deathLoop', true);
+            }
             
         });
         add(bf);
@@ -96,12 +99,14 @@ class GameOverSubState extends MusicBeatSubState
             {
                 callScript("gameOverLeave");
                 pressedSomething = true;
+                stopThread = true;
                 PlayState.instance.goToMenu();
             }
             if (Controls.justPressed(ACCEPT))
             {
                 callScript("gameOverConfirm");
                 pressedSomething = true;
+                stopThread = true;
 
                 stopMusic();
                 FlxG.sound.play(Assets.music('gameover/$folderPath/deathMusicEnd'));
