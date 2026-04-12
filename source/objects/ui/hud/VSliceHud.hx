@@ -111,13 +111,11 @@ class VSliceHud extends ClassHud
 
 		for (icon in [iconP1, iconP2])
 		{
-			icon.scale.set(FlxMath.lerp(icon.scale.x, 1, FlxG.elapsed * 6), FlxMath.lerp(icon.scale.y, 1, FlxG.elapsed * 6));
+			icon.globalScale = FlxMath.lerp(icon.globalScale, 1, elapsed * 6);
 			if (!icon.isPlayer)
 				icon.setAnim(2 - play.health);
 			else
 				icon.setAnim(play.health);
-
-			icon.updateHitbox();
 		}
 		updateIconPos();
 	}
@@ -151,8 +149,7 @@ class VSliceHud extends ClassHud
 		{
 			for (icon in [iconP1, iconP2])
 			{
-				icon.scale.set(1.3, 1.3);
-				icon.updateHitbox();
+				icon.globalScale = 1.3;
 				updateIconPos();
 			}
 		}

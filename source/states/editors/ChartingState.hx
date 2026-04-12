@@ -590,8 +590,8 @@ class ChartingState extends MusicBeatState
 		tab.add(createText(getX("margin_right", 145), getY(11), "Girlfriend:", 0xFFD8DAF6));
 
 		var bfIcon = new HealthIcon();
-		bfIcon.globalScale = 0.33;
 		bfIcon.setIcon(META.player1, false);
+		bfIcon.globalScale = 0.33;
 		bfIcon.setPosition(getX() + 145 - bfIcon.width, getY(11) - 10);
 		tab.add(bfIcon);
 
@@ -629,8 +629,8 @@ class ChartingState extends MusicBeatState
 		tab.add(bfButton);
 
 		var oppIcon = new HealthIcon();
-		oppIcon.globalScale = 0.33;
 		oppIcon.setIcon(META.player2, false);
+		oppIcon.globalScale = 0.33;
 		oppIcon.setPosition(getX("center", 145) + 145 - oppIcon.width, getY(11) - 10);
 		tab.add(oppIcon);
 
@@ -668,8 +668,8 @@ class ChartingState extends MusicBeatState
 		tab.add(oppButton);
 
 		var gfIcon = new HealthIcon();
-		gfIcon.globalScale = 0.33;
 		gfIcon.setIcon(META.gf, false);
+		gfIcon.globalScale = 0.33;
 		gfIcon.setPosition(getX("margin_right", 145) + 145 - gfIcon.width, getY(11) - 10);
 		tab.add(gfIcon);
 
