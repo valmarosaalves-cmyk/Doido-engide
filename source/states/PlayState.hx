@@ -21,7 +21,6 @@ import objects.ui.notes.*;
 import states.editors.ChartingState;
 import substates.GameOverSubState;
 import substates.PauseSubState;
-
 #if TOUCH_CONTROLS
 import doido.objects.DoidoHitbox;
 #end
@@ -154,10 +153,9 @@ class PlayState extends MusicBeatState implements Playable
 		}
 
 		// temporary caching
-		for (i in 0...4) {
-			countdownSfx.push(
-				FlxG.sound.load(Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i]))
-			);
+		for (i in 0...4)
+		{
+			countdownSfx.push(FlxG.sound.load(Assets.sound("countdown/base/intro" + ["3", "2", "1", "Go"][i])));
 		}
 
 		hudClass = switch (META.assets.hudType)
@@ -439,10 +437,11 @@ class PlayState extends MusicBeatState implements Playable
 		health = FlxMath.bound(health, 0, 2);
 		if (Controls.justPressed(RESET) || health <= 0)
 		{
-			//MusicBeat.skip = true;
-			//MusicBeat.switchState(new PlayState());
+			// MusicBeat.skip = true;
+			// MusicBeat.switchState(new PlayState());
 			paused = true;
-			for (snd in FlxG.sound.list) {
+			for (snd in FlxG.sound.list)
+			{
 				snd.stop();
 			}
 
@@ -456,6 +455,9 @@ class PlayState extends MusicBeatState implements Playable
 
 		if (FlxG.keys.justPressed.ONE)
 			changeStage(stageBuild.curStage == "stage" ? "school" : "stage");
+
+		if (FlxG.keys.justPressed.NINE)
+			camZoom = 0.2;
 
 		if (FlxG.keys.justPressed.F9)
 			audio.speed = 10;
@@ -594,7 +596,8 @@ class PlayState extends MusicBeatState implements Playable
 	public function pauseSong()
 	{
 		paused = true;
-		for (snd in FlxG.sound.list) {
+		for (snd in FlxG.sound.list)
+		{
 			snd.pause();
 		}
 		audio.pause();

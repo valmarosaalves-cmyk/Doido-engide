@@ -1,0 +1,62 @@
+{
+	"pixel": true,
+	"scale": {
+		"x": 6,
+		"y": 6
+	},
+	"angleOrigin": {
+		"x": 0.5,
+		"y": 1
+	},
+	"idleAnims": [],
+	"spriteType": "SPARROW",
+	"spritesheet": "senpai/senpai",
+	"anims": [
+		{
+			"prefix": "Senpai Idle instance 1",
+			"indices": [],
+			"name": "idle",
+			"offset": {
+				"x": 0,
+				"y": 0
+			}
+		},
+		{
+			"prefix": "SENPAI LEFT NOTE instance 1",
+			"indices": [],
+			"name": "singLEFT",
+			"offset": {
+				"x": 5,
+				"y": 0
+			}
+		},
+		{
+			"prefix": "SENPAI DOWN NOTE instance 1",
+			"indices": [],
+			"name": "singDOWN",
+			"offset": {
+				"x": 2,
+				"y": 0
+			}
+		},
+		{
+			"prefix": "SENPAI UP NOTE instance 1",
+			"indices": [],
+			"name": "singUP",
+			"offset": {
+				"x": 2,
+				"y": 6
+			}
+		},
+		{
+			"prefix": "SENPAI RIGHT NOTE instance 1",
+			"indices": [],
+			"name": "singRIGHT",
+			"offset": {
+				"x": 1,
+				"y": 0
+			}
+		}
+	],
+	"singType": "LOOP"
+}
