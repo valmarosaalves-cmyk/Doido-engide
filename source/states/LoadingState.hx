@@ -104,7 +104,8 @@ class LoadingState extends MusicBeatState
 
 	function loadGame()
 	{
-		var charList:Array<String> = [META.player1, META.player2];
+		var dadList:Array<String> = [META.player2];
+		var bfList:Array<String> = [META.player1];
 		var gfList:Array<String> = [META.gf];
 
 		var stageBuild = new Stage(null);
@@ -132,43 +133,65 @@ class LoadingState extends MusicBeatState
 			}
 		}
 
-		for (char in charList.concat(gfList))
+		var charList = dadList.concat(bfList).concat(gfList);
+		for (char in charList)
 		{
-			var data:DoidoCharacter;
+			if (gfList.contains(char))
+				loadChar(char, "gf");
+			else if (bfList.contains(char))
+				loadChar(char, "player");
+			else
+				loadChar(char);
+		}
+	}
+
+	var loadedChars:Array<String> = [];
+	function loadChar(char:String, type:String = "")
+	{
+		if (loadedChars.contains(char))
+			return;
+		else
+			loadedChars.push(char);
+		
+		var data:DoidoCharacter;
+		try
+		{
+			data = cast(Assets.json('data/characters/$char'));
+		}
+		catch (e)
+		{
+			Logs.print('CHAR $char LOAD ERROR: $e', ERROR);
+			data = Character.defaultCharacter();
+		}
+
+		if (type == "player") {
+			//trace("PRELOADING DEATH CHAR");
+			loadChar(data.deathChar ?? "bf-dead");
+		}
+
+		var extrasheets:Array<String> = [];
+		if ((data.extrasheets ?? []).length > 0)
+		{
+			for (sheet in (data.extrasheets ?? []))
+				extrasheets.push('images/characters/$sheet');
+		}
+
+		Assets.framesCollection('characters/${data.spritesheet}', extrasheets, DoidoSprite.stringToSpriteType(data.spriteType));
+
+		if (type != "gf")
+		{
+			var icon:IconData;
 			try
 			{
-				data = cast(Assets.json('data/characters/$char'));
+				icon = cast(Assets.json('data/icons/$char'));
 			}
 			catch (e)
 			{
-				Logs.print('CHAR $char LOAD ERROR: $e', ERROR);
-				data = Character.defaultCharacter();
+				Logs.print('ICON $char LOAD ERROR: $e', ERROR);
+				icon = HealthIcon.defaultIcon();
 			}
 
-			var extrasheets:Array<String> = [];
-			if ((data.extrasheets ?? []).length > 0)
-			{
-				for (sheet in (data.extrasheets ?? []))
-					extrasheets.push('images/characters/$sheet');
-			}
-
-			Assets.framesCollection('characters/${data.spritesheet}', extrasheets, DoidoSprite.stringToSpriteType(data.spriteType));
-
-			if (!gfList.contains(char))
-			{
-				var icon:IconData;
-				try
-				{
-					icon = cast(Assets.json('data/icons/$char'));
-				}
-				catch (e)
-				{
-					Logs.print('ICON $char LOAD ERROR: $e', ERROR);
-					icon = HealthIcon.defaultIcon();
-				}
-
-				Assets.image('icons/${icon.image ?? char}');
-			}
+			Assets.image('icons/${icon.image ?? char}');
 		}
 	}
 

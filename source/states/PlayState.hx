@@ -163,8 +163,7 @@ class PlayState extends MusicBeatState implements Playable
 		hudClass = switch (META.assets.hudType)
 		{
 			case "vslice": new VSliceHud(this);
-			default: new VSliceHud(this);
-			//default: new BaseHud(this);
+			default: new BaseHud(this);
 		}
 		add(hudClass);
 
