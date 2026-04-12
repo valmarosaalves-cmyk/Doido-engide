@@ -96,12 +96,14 @@ class GameOverSubState extends MusicBeatSubState
             {
                 callScript("gameOverLeave");
                 pressedSomething = true;
+                stopThread = true;
                 PlayState.instance.goToMenu();
             }
             if (Controls.justPressed(ACCEPT))
             {
                 callScript("gameOverConfirm");
                 pressedSomething = true;
+                stopThread = true;
 
                 stopMusic();
                 FlxG.sound.play(Assets.music('gameover/$folderPath/deathMusicEnd'));
