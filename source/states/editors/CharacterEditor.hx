@@ -121,12 +121,6 @@ class CharacterEditor extends MusicBeatState
 		return newWindow;
 	}
 
-	function createGhost():BaseWindow
-	{
-		var tab = createBasic("Ghost");
-		return tab;
-	}
-
 	function createCharacter():BaseWindow
 	{
 		var tab = createBasic("Character");
@@ -209,15 +203,15 @@ class CharacterEditor extends MusicBeatState
 		var characterList = Assets.list("data/characters/", true, JSON).concat(["face"]);
 		characters = new PsychUIDropDownMenu(getX(), getY(1), characterList, (i, s) ->
 		{
-			for (char in [char, ghost])
-			{
-				char.curChar = s;
+			if (ghost.curChar == char.curChar)
+				ghost.curChar = s;
 
-				char.clearAnims();
-				char.loadCharacter(false);
-				updatePos(char);
-			}
-			ghost.ghostAlpha = 0.4;
+			char.curChar = s;
+			char.clearAnims();
+			char.loadCharacter(false);
+			updatePos(char);
+			ghost.syncGhost();
+			updatePos(ghost);
 
 			sprite.text = char.data.spritesheet;
 			spriteType.selectedLabel = char.data.spriteType ?? "SPARROW";
@@ -731,6 +725,7 @@ class CharacterEditor extends MusicBeatState
 
 		if (updateData)
 		{
+			ghost.syncGhost();
 			for (anim in char.data.anims)
 			{
 				if (anim.name == char.curAnimName)
@@ -903,23 +898,25 @@ class Ghost extends Character
 		super(char.curChar, char.isPlayer);
 		this.char = char;
 		ghostAlpha = 0.4;
+		syncGhost();
 	}
 
 	public function syncGhost()
 	{
-		if (curChar != char.curChar)
-			return;
+		clearAnims();
+		if (curChar == char.curChar)
+			data = char.data;
 
-		data = char.data;
-		loadCharacter(true);
-		alpha = data.alpha * ghostAlpha;
+		loadCharacter(curChar == char.curChar);
+		alpha = (data.alpha ?? 1.0) * ghostAlpha;
 	}
 
 	public var ghostAlpha(default, set):Float;
+
 	public function set_ghostAlpha(f:Float)
 	{
 		ghostAlpha = f;
-		alpha = data.alpha * ghostAlpha;
+		alpha = (data.alpha ?? 1.0) * ghostAlpha;
 		return ghostAlpha;
 	}
 }
