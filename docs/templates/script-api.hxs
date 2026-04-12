@@ -15,7 +15,7 @@ function updatePost(elapsed:Float) {}
 function gameOverCreate() {}
 function gameOverCreatePost() {}
 function gameOverUpdate(elapsed:Float) {}
-function gameOverReset() {}
+function gameOverConfirm() {}
 function gameOverLeave() {}
 
 function onNoteHit(note:Note, strumline:Strumline) {}

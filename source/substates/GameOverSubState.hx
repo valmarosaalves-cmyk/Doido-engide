@@ -100,7 +100,7 @@ class GameOverSubState extends MusicBeatSubState
             }
             if (Controls.justPressed(ACCEPT))
             {
-                callScript("gameOverReset");
+                callScript("gameOverConfirm");
                 pressedSomething = true;
 
                 stopMusic();
