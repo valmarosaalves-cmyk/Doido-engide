@@ -53,12 +53,12 @@ class CreditsState extends MusicBeatState
 		addCredit('teles', 'teles',     0xFFFF95AC, "Doido Engine's Co-Owner and Additional Coder", 'https://youtube.com/@telesfnf');
         addCredit('yoisabo', 'yoisabo', 0xFF56EF19, "Main artist and designer of Doido Engine's chart editor", 'https://bsky.app/profile/yoisabo.bsky.social');
 		addCredit('GoldenFoxy', 'anna', 0xFFFFE100, "Main designer of Doido Engine's chart editor", 'https://bsky.app/profile/goldenfoxy.bsky.social');
-		addCredit('doubleonikoo', 'nikoo', 0xFF60458A, "Credits sprite Artist", 'https://bsky.app/profile/doubleonikoo.bsky.social');
+		addCredit('doubleonikoo', 'nikoo', 0xFF60458A, "Doido Engine's credits sprite artist", 'https://bsky.app/profile/doubleonikoo.bsky.social');
         addCredit('UTAstra', 'astra', 0xFFFFFFFF, "Coding help on Doido Engine", "https://x.com/utastra");
         addCredit('JulianoBeta', 'juyko', 0xFF0BA5FF, "Composed Doido Engine's offset menu music", 'https://www.youtube.com/@prodjuyko');
 		addCredit('crowplexus', 'crowplexus', 0xFF313538, "Creator of HScript Iris", 'https://github.com/crowplexus/hscript-iris');
-		addCredit('mochoco', 'coco', 0xFF56EF19, "Mobile Button Artist", 'https://x.com/mochocofrappe');
-        addCredit('Github Contributors', 'github', 0xFFFFFFFF, 'THANKS TO:\n${specialCoders}\nfor helping out the engine!!', 'https://github.com/DoidoTeam/FNF-Doido-Engine/graphs/contributors');
+		addCredit('mochoco', 'coco', 0xFF56EF19, "Doido Engine's Mobile Button Artist", 'https://x.com/mochocofrappe');
+        addCredit('Github Contributors', 'github', 0xFFFFFFFF, 'THANKS TO:\n${specialCoders}\nfor helping out doido engine!!', 'https://github.com/DoidoTeam/FNF-Doido-Engine/graphs/contributors');
 		addCredit('Special Thanks', 'heart', 0xFFC01B42, 'THANK YOU:\n${specialPeople}!!\nfor being cool friends <33', "https://youtu.be/N0IkgKHdgIc");
 
         /*
@@ -123,12 +123,6 @@ class CreditsState extends MusicBeatState
             switch(char.curChar)
             {
                 case "nikoo": // nothing
-
-                case "yoisabo":
-                    /*if (selected)
-                        char.angle = ((char.angle + elapsed * 180) % 360);
-                    else
-                        char.angle = FlxMath.lerp(char.angle, 0, elapsed * 8);*/
                 
                 default:
                     if (selected)
