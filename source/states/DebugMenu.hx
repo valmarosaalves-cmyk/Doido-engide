@@ -122,7 +122,7 @@ class DebugMenu extends MusicBeatState
 				case "crash handler":
 					null.draw();
 				case "credits":
-					MusicBeat.switchState(new Credits());
+					MusicBeat.switchState(new states.menus.CreditsState());
 				case "character editor":
 					MusicBeat.switchState(new CharacterEditor("face", FlxG.keys.pressed.SHIFT));
 				default:
