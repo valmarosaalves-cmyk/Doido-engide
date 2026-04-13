@@ -133,7 +133,7 @@ class TitleState extends MusicBeatState
 					addText([]);
 					
 				case 5:
-					addText(['Not associated', 'with']);
+					addText(['não associado a']);
 				case 7:
 					addText(['newgrounds'], false);
 					ngSpr.visible = true;
@@ -153,7 +153,7 @@ class TitleState extends MusicBeatState
 				case 14:
 					addText(['Funkin'], false);
 				case 15:
-					addText(['Doido Engine'], false);
+					addText(['noob Engine'], false);
 				case 16:
 					skipIntro();
 			}
