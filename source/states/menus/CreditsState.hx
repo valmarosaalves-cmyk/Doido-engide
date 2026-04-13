@@ -143,7 +143,7 @@ class CreditsState extends MusicBeatState
                     if (char.curChar == "diogotv")
                     {
                         if (selected)
-                            char.angle = Math.cos(elapsedTime * 2) * 8;
+                            char.angle = Math.cos(char.selectedScaleElapsed * 2) * 8;
                         else
                             char.angle = FlxMath.lerp(char.angle, 0, elapsed * 6);
                     }
