@@ -30,6 +30,10 @@ class CreditsState extends MusicBeatState
     public var nameTxt:Alphabet;
     public var descTxt:Alphabet;
 
+    public var leaving:Bool = false;
+    public var holdTimer:Float = 0.0;
+    public var holdMax:Float = 0.55;
+
     function addCredit(name:String, icon:String = "", color:FlxColor, info:String = "", ?link:String)
 	{
 		creditList.push({
@@ -60,7 +64,6 @@ class CreditsState extends MusicBeatState
 		addCredit('mochoco', 'coco', 0xFF56EF19, "Doido Engine's Mobile Button Artist", 'https://x.com/mochocofrappe');
         addCredit('Github Contributors', 'github', 0xFFFFFFFF, 'THANKS TO:\n${specialCoders}\nfor helping out doido engine!!', 'https://github.com/DoidoTeam/FNF-Doido-Engine/graphs/contributors');
 		addCredit('Special Thanks', 'heart', 0xFFC01B42, 'THANK YOU:\n${specialPeople}!!\nfor being cool friends <33', "https://youtu.be/N0IkgKHdgIc");
-
         /*
 		*	Don't modify the rest of the code unless you know what you're doing!!
 		*/
@@ -92,15 +95,24 @@ class CreditsState extends MusicBeatState
         changeSelection();
     }
     
-    var leaving:Bool = false;
     var elapsedTime:Float = 0.0;
     override function update(elapsed:Float)
     {
         super.update(elapsed);
         if (!leaving)
         {
-            if (Controls.justPressed(UI_LEFT)) changeSelection(-1);
-            if (Controls.justPressed(UI_RIGHT)) changeSelection(1);
+            var change:Int = (Controls.pressed(UI_RIGHT) ? 1 : 0) - (Controls.pressed(UI_LEFT) ? 1 : 0);
+            if (change != 0)
+                holdTimer += elapsed;
+            else
+                holdTimer = 0.0;
+
+            if (Controls.justPressed(UI_LEFT) || Controls.justPressed(UI_RIGHT) || holdTimer >= holdMax)
+            {
+                changeSelection(change);
+                if (holdTimer >= holdMax)
+				    holdTimer = holdMax - 0.2;
+            }
             if (Controls.justPressed(BACK))
             {
                 leaving = true;
