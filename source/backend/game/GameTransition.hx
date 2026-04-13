@@ -1,28 +1,24 @@
 package backend.game;
 
+import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.util.FlxGradient;
 import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
 import backend.game.MusicBeatData.MusicBeatSubState;
-
-/*
-	Transition between states.
-
-	Usage: When changing between states, you can choose which transition will play.
-	Main.switchState(new states.menu.MainMenuState(), "base");
-*/
 
 class GameTransition extends MusicBeatSubState
 {	
 	var fadeOut:Bool = false;
 	var transition:String = 'funkin';
 	
-	// Callback at the end of the transition
 	public var finishCallback:Void->Void;
 
-	// Sprites used in transitions
 	var sprBlack:FlxSprite;
 	var sprGrad:FlxSprite;
+	
+	var blocksCompleted:Int = 0;
+	var totalBlocks:Int = 0;
 	
 	public function new(fadeOut:Bool = true, transition:String = "funkin")
 	{
@@ -31,6 +27,41 @@ class GameTransition extends MusicBeatSubState
 		this.transition = transition;
 
 		switch(transition) {
+			case 'blocks':
+				var blockSize:Float = 100;
+				var cols:Int = Math.ceil(FlxG.width / blockSize);
+				var rows:Int = Math.ceil(FlxG.height / blockSize);
+				totalBlocks = cols * rows;
+				blocksCompleted = 0;
+
+				for (y in 0...rows) {
+					for (x in 0...cols) {
+						var block = new FlxSprite(x * blockSize, y * blockSize).makeGraphic(Std.int(blockSize + 2), Std.int(blockSize + 2), 0xFF000000);
+						block.scrollFactor.set(0, 0);
+						
+						if (fadeOut) {
+							block.scale.set(1, 1);
+						} else {
+							block.scale.set(0, 0);
+						}
+						
+						add(block);
+
+						var delay:Float = (x + y) * 0.03; 
+
+						FlxTween.tween(block.scale, {x: fadeOut ? 0 : 1, y: fadeOut ? 0 : 1}, 0.35, {
+							startDelay: delay,
+							ease: FlxEase.cubeOut,
+							onComplete: function(twn:FlxTween) {
+								blocksCompleted++;
+								if (blocksCompleted >= totalBlocks) {
+									endTransition();
+								}
+							}
+						});
+					}
+				}
+
 			case 'funkin':
 				sprBlack = new FlxSprite().makeGraphic(FlxG.width * 2, FlxG.height * 2, 0xFF000000);
 				sprBlack.screenCenter(X);
@@ -42,9 +73,9 @@ class GameTransition extends MusicBeatSubState
 				add(sprGrad);
 				
 				var yPos:Array<Float> = [
-					-sprBlack.height - sprGrad.height - 40,	// upper
-					FlxG.height / 2 - sprBlack.height / 2, 	// middle
-					FlxG.height + sprGrad.height + 40		// bottom
+					-sprBlack.height - sprGrad.height - 40,
+					FlxG.height / 2 - sprBlack.height / 2,
+					FlxG.height + sprGrad.height + 40
 				];
 				var curY:Int = (fadeOut ? 1 : 0);
 				
@@ -81,7 +112,9 @@ class GameTransition extends MusicBeatSubState
 	}
 	
 	function updateGradPos():Void {
-		sprGrad.y = sprBlack.y + (fadeOut ? -sprGrad.height : sprBlack.height);
+		if (sprGrad != null && sprBlack != null) {
+			sprGrad.y = sprBlack.y + (fadeOut ? -sprGrad.height : sprBlack.height);
+		}
 	}
 	
 	override function update(elapsed:Float)
@@ -94,7 +127,6 @@ class GameTransition extends MusicBeatSubState
 			case 'funkin':
 				updateGradPos();
 			default:
-				// do nothing
 		}
 	}
 }
