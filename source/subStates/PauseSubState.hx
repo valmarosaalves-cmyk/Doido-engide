@@ -1,233 +1,267 @@
-package subStates;
+package;
 
-import backend.song.Conductor;
+import Controls.Control;
 import flixel.FlxG;
-import flixel.FlxBasic;
 import flixel.FlxSprite;
-import flixel.group.FlxGroup;
-import flixel.math.FlxMath;
+import flixel.FlxSubState;
+import flixel.addons.transition.FlxTransitionableState;
+import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.input.keyboard.FlxKey;
+import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
-import flixel.util.FlxTimer;
-import flixel.sound.FlxSound;
-import objects.menu.Alphabet;
-import objects.menu.AlphabetMenu;
-import states.*;
-import subStates.options.OptionsSubState;
+import flixel.util.FlxColor;
+import flixel.FlxCamera;
+import flixel.addons.display.FlxBackdrop;
 
-class PauseSubState extends MusicBeatSubState
+class PauseSubState extends MusicBeatSubstate
 {
-	var optionShit:Array<String> = [
-		"voltar",
-		"carregar musica dnv",
-		"botplay",
-		"opções",
-		"saida desse menu",
-	];
-	
+	var grpMenuShit:FlxTypedGroup<Alphabet>;
+
+	var menuItems:Array<String> = [];
+	var menuItemsOG:Array<String> = ['Resume', 'Restart Song', 'Change Difficulty', 'Exit to menu'];
+	var difficultyChoices = [];
 	var curSelected:Int = 0;
 	
-	var optionsGrp:FlxTypedGroup<AlphabetMenu>;
-	var textsGrp:FlxTypedGroup<FlxText>;
-	var bottomTxt:FlxText;
 
-	var pauseSong:FlxSound;
+	var pauseMusic:FlxSound;
+	var practiceText:FlxText;
+	var overlay:FlxSprite;
+	var chess:FlxBackdrop;
+	//var botplayText:FlxText;
 
-	var onCountdown:Bool = false;
-	var delayTween:FlxTween;
+	public static var transCamera:FlxCamera;
 
-	var playstate:PlayState;
-
-	public function new()
+	public function new(x:Float, y:Float)
 	{
 		super();
-		playstate = PlayState.instance;
-		playstate.setScript("this", this);
-		DiscordIO.changePresence("Paused - Restin' a bit");
-		this.cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
-		var banana = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, 0xFF000000);
-		add(banana);
+		menuItems = menuItemsOG;
 
-		banana.alpha = 0;
-		FlxTween.tween(banana, {alpha: 0.4}, 0.1);
-
-		if(!PlayState.startedSong)
-			optionShit.remove("options");
-
-		optionsGrp = new FlxTypedGroup<AlphabetMenu>();
-		add(optionsGrp);
-
-		for(i in 0...optionShit.length)
-		{
-			var newItem = new AlphabetMenu(0, 0, optionShit[i], true);
-			newItem.ID = i;
-			newItem.focusY = i - curSelected;
-
-			// isn't as accurate to base game
-			newItem.spaceX = 25;
-			newItem.spaceY = 150; // 200
-
-			// but it looks better
-			newItem.updatePos();
-			optionsGrp.add(newItem);
-
-			newItem.x = 0;
+		for (i in 0...CoolUtil.difficulties.length) {
+			var diff:String = '' + CoolUtil.difficulties[i];
+			difficultyChoices.push(diff);
 		}
-		
-		textsGrp = new FlxTypedGroup<FlxText>();
-		add(textsGrp);
-		
-		var textArray:Array<String> = [
-			PlayState.SONG.song,
-			PlayState.songDiff,
-			'BLUEBALLED: ' + PlayState.blueballed,
-		];
-		for(i in 0...textArray.length)
-		{
-			if(textArray[i] == "") continue;
-		
-			var text = new FlxText(0,0,0,textArray[i].toUpperCase());
-			text.setFormat(Main.gFont, 36, 0xFFFFFFFF, CENTER);
-			text.setPosition(FlxG.width - text.width - 10, 10 + 40 * i);
-			textsGrp.add(text);
-			
-			text.alpha = 0.00001;
-			text.y -= 20;
-			FlxTween.tween(text, {y: text.y + 20, alpha: 1}, 0.4, {ease: FlxEase.quadOut, startDelay: 0.2 + 0.18 * i});
-		}
-		
-		bottomTxt = new FlxText(0,0,0,"");
-		bottomTxt.setFormat(Main.gFont, 36, 0xFFFFFFFF, CENTER);
-		add(bottomTxt);
+		difficultyChoices.push('BACK');
 
-		pauseSong = new FlxSound();
-		if(Conductor.songPos > 0)
+		pauseMusic = new FlxSound().loadEmbedded(Paths.music('Hot_Lunch'), true, true);
+		pauseMusic.volume = 0;
+		pauseMusic.play(false, FlxG.random.int(0, Std.int(pauseMusic.length / 2)));
+
+		FlxG.sound.list.add(pauseMusic);
+
+		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		bg.alpha = 0;
+		bg.scrollFactor.set();
+		add(bg);
+
+		//chess
+		chess = new FlxBackdrop(Paths.image('mebg'), 0, 0, true, false);
+		chess.y -= 80;
+		add(chess);
+		
+		chess.offset.x -= 0;
+		chess.offset.y += 0;
+		chess.velocity.x = 20;
+		chess.alpha = 0;
+
+		overlay = new FlxSprite().loadGraphic(Paths.image('fpov'));
+		overlay.antialiasing = ClientPrefs.globalAntialiasing;
+		add(overlay);
+
+		var levelInfo:FlxText = new FlxText(20, 15, 0, "", 32);
+		levelInfo.text += PlayState.SONG.song;
+		levelInfo.scrollFactor.set();
+		levelInfo.setFormat(Paths.font("vcr.ttf"), 32);
+		levelInfo.updateHitbox();
+		add(levelInfo);
+
+		var levelDifficulty:FlxText = new FlxText(20, 15 + 32, 0, "", 32);
+		levelDifficulty.text += CoolUtil.difficultyString();
+		levelDifficulty.scrollFactor.set();
+		levelDifficulty.setFormat(Paths.font('vcr.ttf'), 32);
+		levelDifficulty.updateHitbox();
+		add(levelDifficulty);
+
+		var blueballedTxt:FlxText = new FlxText(20, 15 + 64, 0, "", 32);
+		blueballedTxt.text = "Epic Fails: " + PlayState.deathCounter;
+		blueballedTxt.scrollFactor.set();
+		blueballedTxt.setFormat(Paths.font('vcr.ttf'), 32);
+		blueballedTxt.updateHitbox();
+		add(blueballedTxt);
+
+		practiceText = new FlxText(20, 15 + 101, 0, "PRACTICE MODE", 32);
+		practiceText.scrollFactor.set();
+		practiceText.setFormat(Paths.font('vcr.ttf'), 32);
+		practiceText.x = FlxG.width - (practiceText.width + 20);
+		practiceText.updateHitbox();
+		practiceText.visible = PlayState.instance.practiceMode;
+		add(practiceText);
+
+		/*botplayText = new FlxText(20, FlxG.height - 40, 0, "BOTPLAY", 32);
+		botplayText.scrollFactor.set();
+		botplayText.setFormat(Paths.font('vcr.ttf'), 32);
+		botplayText.x = FlxG.width - (botplayText.width + 20);
+		botplayText.updateHitbox();
+		botplayText.visible = PlayState.cpuControlled;
+		add(botplayText);*/
+
+		blueballedTxt.alpha = 0;
+		levelDifficulty.alpha = 0;
+		levelInfo.alpha = 0;
+
+		levelInfo.x = FlxG.width - (levelInfo.width + 20);
+		levelDifficulty.x = FlxG.width - (levelDifficulty.width + 20);
+		blueballedTxt.x = FlxG.width - (blueballedTxt.width + 20);
+		FlxTween.tween(chess, {alpha: 1}, 2.4, {ease: FlxEase.quartOut});
+		FlxTween.tween(bg, {alpha: 0.6}, 2.4, {ease: FlxEase.quartOut});
+		FlxTween.tween(levelInfo, {alpha: 1, y: 20}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.3});
+		FlxTween.tween(levelDifficulty, {alpha: 1, y: levelDifficulty.y + 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.5});
+		FlxTween.tween(blueballedTxt, {alpha: 1, y: blueballedTxt.y + 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.7});
+
+		grpMenuShit = new FlxTypedGroup<Alphabet>();
+		add(grpMenuShit);
+
+		for (i in 0...menuItems.length)
 		{
-			@:privateAccess
-			pauseSong.loadEmbedded(playstate.inst._sound, true, false);
-			
-			pauseSong.play(Conductor.songPos);
-			pauseSong.pitch = 0.9;
-			pauseSong.volume = 0;
-			FlxTween.tween(pauseSong, {volume: 0.6}, 3, {startDelay: 1});
+			var songText:Alphabet = new Alphabet(0, (70 * i) + 30, menuItems[i], true, false);
+			songText.isMenuItem = true;
+			songText.targetY = i;
+			grpMenuShit.add(songText);
 		}
-		FlxG.sound.list.add(pauseSong);
 
 		changeSelection();
-	}
 
-	function closePause()
-	{
-		pauseSong.stop();
-		if(SaveData.data.get('Delay on Unpause') && PlayState.startedSong)
-		{
-			playstate.songSpeed = 0.0;
-			if(delayTween != null) delayTween.cancel();
-			delayTween = FlxTween.tween(playstate, {songSpeed: 1.0}, Conductor.crochet * 1 / 1000, {
-				ease: FlxEase.sineIn
-			});
-		}
-		else
-			playstate.songSpeed = 1.0;
-
-		close();
+		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 	}
-	override function close()
-	{
-		pauseSong.stop();
-		PlayState.paused = false;
-		playstate.updateOption('Song Offset');
-		playstate.callScript('onUnpause');
-		playstate.setScript("this", playstate);
-		super.close();
-	}
-
-	var inputDelay:Float = 0.05;
 
 	override function update(elapsed:Float)
 	{
+		if (pauseMusic.volume < 0.5)
+			pauseMusic.volume += 0.01 * elapsed;
+
 		super.update(elapsed);
-		bottomTxt.text = "";
-		if(PlayState.botplay)
-			bottomTxt.text += "BOTPLAY";
-		
-		bottomTxt.x = FlxG.width - bottomTxt.width - 10;
-		bottomTxt.y = FlxG.height- bottomTxt.height- 10;
 
-		if(inputDelay > 0)
+		var upP = controls.UI_UP_P;
+		var downP = controls.UI_DOWN_P;
+		var accepted = controls.ACCEPT;
+		var bruh = controls.ACCEPT;
+
+		if (upP)
 		{
-			inputDelay -= elapsed;
-			return;
+			changeSelection(-1);
+		}
+		if (downP)
+		{
+			changeSelection(1);
 		}
 
-		if(!onCountdown)
+		if (accepted)
 		{
-			if(!pauseSong.playing && Conductor.songPos >= 0)
-				pauseSong.play(false, pauseSong.time);
-
-			if(Controls.justPressed(UI_UP))
-				changeSelection(-1);
-			if(Controls.justPressed(UI_DOWN))
-				changeSelection(1);
-
-			if(Controls.justPressed(ACCEPT))
-			{
-				switch(optionShit[curSelected])
-				{
-					default:
-						FlxG.sound.play(Paths.sound("menu/cancelMenu"));
-					
-					case "resume":
-						closePause();
-
-					case "restart song":
-						Main.skipStuff();
-						Main.resetState();
-					
-					case "botplay":
-						FlxG.sound.play(Paths.sound("menu/cancelMenu"));
-						PlayState.botplay = !PlayState.botplay;
-
-					case "options":
-						//Main.switchState(new states.menu.OptionsState(new LoadSongState()));
-						persistentDraw = false;
-						pauseSong.pause();
-						this.openSubState(new OptionsSubState(playstate));
-
-					case "exit to menu":
-						//Main.switchState(new MenuState());
-						persistentDraw = true;
-						PlayState.sendToMenu();
+			var daSelected:String = menuItems[curSelected];
+			for (i in 0...difficultyChoices.length-1) {
+				if(difficultyChoices[i] == daSelected) {
+					var name:String = PlayState.SONG.song.toLowerCase();
+					var poop = Highscore.formatSong(name, curSelected);
+					PlayState.SONG = Song.loadFromJson(poop, name);
+					PlayState.storyDifficulty = curSelected;
+					CustomFadeTransition.nextCamera = transCamera;
+					MusicBeatState.resetState();
+					FlxG.sound.music.volume = 0;
+					//PlayState.changedDifficulty = true;
+					//PlayState.cpuControlled = false;
+					return;
 				}
-			}
+			} 
 
-			// works the same as resume
-			if(Controls.justPressed(BACK))
-				closePause();
-		}
-		else
-		{
-			for(item in optionsGrp)
-				item.alpha = FlxMath.lerp(item.alpha, 0, elapsed * 12);
+			switch (daSelected)
+			{
+				case "Resume":
+					close();
+				case 'Change Difficulty':
+					menuItems = difficultyChoices;
+					regenMenu();
+				/*case 'Toggle Practice Mode':
+					PlayState.practiceMode = !PlayState.practiceMode;
+					PlayState.usedPractice = true;
+					practiceText.visible = PlayState.practiceMode;*/
+				case "Restart Song":
+					CustomFadeTransition.nextCamera = transCamera;
+					MusicBeatState.resetState();
+					FlxG.sound.music.volume = 0;
+				/*case 'Botplay':
+					PlayState.cpuControlled = !PlayState.cpuControlled;
+					PlayState.usedPractice = true;
+					botplayText.visible = PlayState.cpuControlled;*/
+				case "Exit to menu":
+					PlayState.deathCounter = 0;
+					PlayState.seenCutscene = false;
+					CustomFadeTransition.nextCamera = transCamera;
+					if(PlayState.isStoryMode) {
+						MusicBeatState.switchState(new StoryMenuState());
+					} else {
+						MusicBeatState.switchState(new FreeplayState());
+					}
+					FlxG.sound.playMusic(Paths.music('freakyMenu'));
+					/*PlayState.usedPractice = false;
+					PlayState.changedDifficulty = false;
+					PlayState.cpuControlled = false;*/
+
+				case 'BACK':
+					menuItems = menuItemsOG;
+					regenMenu();
+			}
 		}
 	}
 
-	function changeSelection(change:Int = 0)
+	override function destroy()
+	{
+		pauseMusic.destroy();
+
+		super.destroy();
+	}
+
+	function changeSelection(change:Int = 0):Void
 	{
 		curSelected += change;
-		curSelected = FlxMath.wrap(curSelected, 0, optionShit.length - 1);
 
-		for(item in optionsGrp)
+		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+
+		if (curSelected < 0)
+			curSelected = menuItems.length - 1;
+		if (curSelected >= menuItems.length)
+			curSelected = 0;
+
+		var bullShit:Int = 0;
+
+		for (item in grpMenuShit.members)
 		{
-			item.focusY = item.ID - curSelected;
+			item.targetY = bullShit - curSelected;
+			bullShit++;
 
-			item.alpha = 0.4;
-			if(item.ID == curSelected)
+			item.alpha = 0.6;
+			// item.setGraphicSize(Std.int(item.width * 0.8));
+
+			if (item.targetY == 0)
+			{
 				item.alpha = 1;
+				// item.setGraphicSize(Std.int(item.width));
+			}
 		}
-
-		if(change != 0)
-			FlxG.sound.play(Paths.sound("menu/scrollMenu"));
 	}
-}
+
+	function regenMenu():Void {
+		for (i in 0...grpMenuShit.members.length) {
+			this.grpMenuShit.remove(this.grpMenuShit.members[0], true);
+		}
+		for (i in 0...menuItems.length) {
+			var item = new Alphabet(0, 70 * i + 30, menuItems[i], true, false);
+			item.isMenuItem = true;
+			item.targetY = i;
+			grpMenuShit.add(item);
+		}
+		curSelected = 0;
+		changeSelection();
+	}
+			}
+			
