@@ -86,14 +86,14 @@ class CreditsState extends MusicBeatState
 
 		bg = new FlxSprite().loadGraphic(Paths.image('menu/backgrounds/menuDesat'));
 		bg.scale.set(1.2,1.2); bg.updateHitbox();
-		bg.screenLeft
-		add(bg);E
+		bg.screenCenter();
+		add(bg);
 
 		grpItems = new FlxGroup();
 		add(grpItems);
 
 		infoTxt = new FlxText(0, 0, FlxG.width * 0.6, 'balls');
-		infoTxt.setFormat(Main.gFont, 24, 0xFFFFFFFF, LEFT);
+		infoTxt.setFormat(Main.gFont, 24, 0xFFFFFFFF, CENTER);
         infoTxt.setBorderStyle(OUTLINE, 0xFF000000, 1.5);
         add(infoTxt);
 
@@ -103,7 +103,7 @@ class CreditsState extends MusicBeatState
 			var credit = creditList[i];
 
 			var item = new AlphabetMenu(0, 0, credit.name, (credit.icon == ""));
-			item.align = LEFT;
+			item.align = CENTER;
 			item.updateHitbox();
 
 			var xTo:Float = (FlxG.width / 2);
@@ -188,7 +188,7 @@ class CreditsState extends MusicBeatState
 		}
 
 		infoTxt.text = creditList[curSelected].info;
-		infoTxt.screenLeft(X);
+		infoTxt.screenCenter(X);
 		
 		if(bgTween != null) bgTween.cancel();
 		bgTween = FlxTween.color(bg, 0.4, bg.color, creditList[curSelected].color);
