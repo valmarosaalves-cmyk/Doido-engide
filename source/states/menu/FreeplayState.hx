@@ -2,6 +2,7 @@ package states.menu;
 
 import flixel.FlxSprite;
 import flixel.FlxObject;
+import flixel.FlxG;
 import flixel.group.FlxGroup;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
@@ -90,12 +91,11 @@ class FreeplayState extends MusicBeatState
 			var label:String = songList[i].name;
 			var item = new AlphabetMenu(0, 0, label, true);
 			
-			// AJUSTE PARA CENTRALIZAR
-			item.spaceX = 0; // Remove o deslocamento lateral
+			item.spaceX = 0; 
 			item.ID = i;
 			item.focusY = i - curSelected;
 			item.updatePos();
-			item.screenCenter(X); // Força no centro horizontal
+			item.screenCenter(X); 
 			grpItems.add(item);
 
 			var icon = new HealthIcon();
@@ -131,15 +131,12 @@ class FreeplayState extends MusicBeatState
 	{
 		super.update(elapsed);
 
-		// Manter itens e ícones centralizados durante o movimento
 		for(rawItem in grpItems.members)
 		{
 			if(Std.isOfType(rawItem, AlphabetMenu))
 			{
 				var item = cast(rawItem, AlphabetMenu);
-				item.screenCenter(X); // Força o texto no meio
-				
-				// Posiciona o ícone logo após o texto centralizado
+				item.screenCenter(X); 
 				item.icon.x = item.x + item.width + 10;
 				item.icon.y = item.y - 30;
 				item.icon.alpha = item.alpha;
@@ -169,7 +166,7 @@ class FreeplayState extends MusicBeatState
 				PlayState.songDiff = curSong.diffs[curDiff];
 				PlayState.loadSong(curSong.name);
 				Main.switchState(new LoadingState());
-			} catch(e) {
+			} catch(e:Dynamic) {
 				FlxG.sound.play(Paths.sound('menu/cancelMenu'));
 			}
 		}
@@ -234,13 +231,49 @@ class ScoreCounter extends FlxGroup
 		add(bg);
 		
 		text = new FlxText(0, 0, 0, "");
-		text.setFormat(Main.gFont, 28, 0xFFFFFFFF, CENTER); // Mudei para CENTER
+		text.setFormat(Main.gFont, 28, 0xFFFFFFFF, CENTER);
 		add(text);
 		
 		diffTxt = new FlxText(0,0,0,"< DURO >");
-		diffTxt.setFormat(Main.gFont, 28, 0xFFFFFFFF, CENTER); // Mudei para CENTER
+		diffTxt.setFormat(Main.gFont, 28, 0xFFFFFFFF, CENTER);
 		add(diffTxt);
 
 		realValues = {score: 0, accuracy: 0, misses: 0};
-		ler
+		lerpValues = {score: 0, accuracy: 0, misses: 0};
+	}
+
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+		
+		text.text = "HIGHSCORE: " + FlxStringUtil.formatMoney(Math.floor(lerpValues.score), false, true) +
+					"\nACCURACY:  " +(Math.floor(lerpValues.accuracy * 100) / 100) + "%" + ' [$rank]' +
+					"\nMISSES:    " + Math.floor(lerpValues.misses);
+
+		lerpValues.score 	= FlxMath.lerp(lerpValues.score, 	realValues.score, 	 elapsed * 8);
+		lerpValues.accuracy = FlxMath.lerp(lerpValues.accuracy, realValues.accuracy, elapsed * 8);
+		lerpValues.misses 	= FlxMath.lerp(lerpValues.misses, 	realValues.misses, 	 elapsed * 8);
+
+		rank = Timings.getRank(lerpValues.accuracy, Math.floor(lerpValues.misses), false, lerpValues.accuracy == realValues.accuracy);
+
+		bg.scale.x = ((text.width + 40) / 32);
+		bg.scale.y = ((text.height + diffTxt.height + 20) / 32);
+		bg.updateHitbox();
+
+		bg.screenCenter(X);
+		bg.y = 10;
+
+		text.screenCenter(X);
+		text.y = bg.y + 10;
+		
+		diffTxt.screenCenter(X);
+		diffTxt.y = text.y + text.height + 5;
+	}
+
+	public function updateDisplay(song:String, diff:String)
+	{
+		realValues = Highscore.getScore('${song}-${diff}');
+		diffTxt.text = '< ${diff.toUpperCase()} >';
+	}
+}
 
