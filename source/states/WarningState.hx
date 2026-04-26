@@ -25,7 +25,7 @@ class WarningState extends MusicBeatState
 		// 1. Carregar a imagem
 		// DICA: Certifique-se que o arquivo 1000523347.png está em: assets/images/
 		avisoImg = new FlxSprite();
-		avisoImg.loadGraphic(Paths.image('1000523347')); 
+		avisoImg.loadGraphic(Paths.image('erro!')); 
 		
 		avisoImg.antialiasing = true; // Deixa a imagem mais bonita
 		avisoImg.scrollFactor.set();
