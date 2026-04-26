@@ -19,10 +19,6 @@ import sys.thread.Mutex;
 import sys.thread.Thread;
 #end
 
-/*
-*	preloads all the stuff before going into playstate
-*	i would advise you to put your custom preloads inside here!!
-*/
 class LoadingState extends MusicBeatState
 {
 	var threadActive:Bool = true;
@@ -36,6 +32,11 @@ class LoadingState extends MusicBeatState
 	
 	var loadBar:FlxSprite;
 	var loadPercent:Float = 0;
+	
+	// Variável para controlar o tempo da onda
+	var waveTimer:Float = 0;
+	// Posição Y original da barra para ela saber onde voltar
+	var barOriginalY:Float = 0;
 	
 	function addBehind(item:FlxBasic)
 	{
@@ -53,7 +54,6 @@ class LoadingState extends MusicBeatState
 		color.screenCenter();
 		add(color);
 		
-		// loading image
 		bg = new FlxSprite().loadGraphic(Paths.image('funkay'));
 		bg.scale.set(0.8,0.8);
 		bg.updateHitbox();
@@ -61,14 +61,13 @@ class LoadingState extends MusicBeatState
 		add(bg);
 		
 		loadBar = new FlxSprite().makeGraphic(FlxG.width - 16, 20 - 8, 0xFFFF16D2);
-		loadBar.y = FlxG.height - loadBar.height - 8;
+		barOriginalY = FlxG.height - loadBar.height - 20; // Ajustado um pouco para cima para a onda ter espaço
+		loadBar.y = barOriginalY;
 		changeBarSize(0);
 		add(loadBar);
 
 		#if PRELOAD_SONG
 		mutex = new Mutex();
-		#else
-		var black = new FlxSprite().makeGraphic(FlxG.width * 2, FlxG.height * 2, 0xFF000000);
 		#end
 		
 		var oldAnti:Bool = FlxSprite.defaultAntialiasing;
@@ -112,15 +111,13 @@ class LoadingState extends MusicBeatState
 							charList.push(stageBuild.gfVersion);
 				}
 			}
-			Logs.print('preloaded stage and hud');
 			loadPercent = 0.2;
 			for(i in charList)
 			{
 				var char = new Character(i, playerChars.contains(i));
 				addBehind(char);
 
-				if(char.isPlayer
-				&& !charList.contains(char.deathChar))
+				if(char.isPlayer && !charList.contains(char.deathChar))
 				{
 					var dead = new Character(char.deathChar, true);
 					addBehind(dead);
@@ -135,7 +132,6 @@ class LoadingState extends MusicBeatState
 				loadPercent += (0.6 - 0.2) / charList.length;
 			}
 			
-			Logs.print('preloaded characters');
 			loadPercent = 0.6;
 			
 			var songDiff:String = PlayState.songDiff;
@@ -143,14 +139,11 @@ class LoadingState extends MusicBeatState
 			if(SONG.needsVoices)
 			{
 				Paths.preloadSound(Paths.songPath(SONG.song, 'Voices', songDiff, '-player'));
-				
-				// opponent voices
 				var oppPath:String = Paths.songPath(SONG.song, 'Voices', songDiff, '-opp');
 				if(oppPath.endsWith('-opp'))
 					Paths.preloadSound(oppPath);
 			}
 
-			Logs.print('preloaded music');
 			loadPercent = 0.75;
 
 			var dialData:DialogueData = DialogueUtil.loadDialogue(SONG.song, songDiff);
@@ -161,17 +154,8 @@ class LoadingState extends MusicBeatState
 			}
 
 			loadPercent = 0.85;
-			
-			// add custom preloads here!!
-			switch(SONG.song)
-			{
-				default:
-					Logs.print('preloaded NOTHING extra lol');
-			}
 			loadPercent = 0.95;
-			
 			loadPercent = 1.0;
-			Logs.print('finished loading');
 			threadActive = false;
 			FlxSprite.defaultAntialiasing = oldAnti;
 		#if PRELOAD_SONG
@@ -185,6 +169,10 @@ class LoadingState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		// Faz a onda acontecer!
+		waveTimer += elapsed * 5; // Muda esse 5 para a onda ser mais rápida ou lenta
+		loadBar.y = barOriginalY + (Math.sin(waveTimer) * 15); // O 15 é a altura da onda
 
 		if(!threadActive && !byeLol && loadBar.scale.x >= 0.98)
 		{
@@ -214,4 +202,5 @@ class LoadingState extends MusicBeatState
 		loadBar.updateHitbox();
 		loadBar.screenCenter(X);
 	}
-}
+	}
+
