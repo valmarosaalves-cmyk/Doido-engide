@@ -32,7 +32,7 @@ class CrashHandlerState extends MusicBeatState
         gradient.blend = ADD;
         add(gradient);
 
-        var titleTxt = new FlxText(0, 16, 0, "THE GAME HAS CRASHED!!");
+        var titleTxt = new FlxText(0, 16, 0, "An error occurred here, please check the error. ");
         titleTxt.setFormat(Main.gFont, 36, 0xFFFFFFFF, CENTER);
         titleTxt.screenCenter(X);
         add(titleTxt);
