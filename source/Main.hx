@@ -29,7 +29,7 @@ class Main extends Sprite
 	public static var fpsCounter:FPSCounter;
 
 	// Use these to customize your mod further!
-	public static final savePath:String = "DiogoTV/DoidoEngine";
+	public static final savePath:String = "arthur/noobEngine";
 	public static var gFont:String = Paths.font("vcr.ttf");
 
 	public function new()
