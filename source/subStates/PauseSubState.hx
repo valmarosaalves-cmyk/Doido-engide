@@ -1,248 +1,152 @@
-package subStates;
+package substates;
 
-import backend.song.Conductor;
+import backend.Controls;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
-import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
-import flixel.util.FlxTimer;
-import flixel.sound.FlxSound;
-import objects.menu.Alphabet;
-import objects.menu.AlphabetMenu;
-import states.*;
-import subStates.options.OptionsSubState;
+import flixel.util.FlxColor;
+import states.PlayState;
+import states.menu.MainMenuState;
+import states.menu.OptionsState;
+import backend.MusicBeatSubstate;
 
-class PauseSubState extends MusicBeatSubState
+class PauseSubState extends MusicBeatSubstate
 {
-	var optionShit:Array<String> = [
-		"resume",
-		"restart song",
-		"botplay",
-		"options",
-		"exit to menu",
-	];
-	
+	var grpMenu:FlxTypedGroup<FlxText>;
+	var menuItems:Array<String> = ['RESUME', 'RESTART', 'CONFIGS', 'BACK'];
 	var curSelected:Int = 0;
-	
-	var optionsGrp:FlxTypedGroup<AlphabetMenu>;
-	var textsGrp:FlxTypedGroup<FlxText>;
-	var bottomTxt:FlxText;
 
-	var pauseSong:FlxSound;
-	var onCountdown:Bool = false;
-	var delayTween:FlxTween;
-	var playstate:PlayState;
-
-	// Novas variáveis para os seus PNGs
-	var mebg:FlxSprite;
-	var fpov:FlxSprite;
+	var p_window:FlxSprite;
+	var p_backgroundDecor:FlxSprite; // Sua imagem "me bg"
+	var p_opponent:FlxSprite;
+	var songTxt:FlxText;
 
 	public function new()
 	{
 		super();
-		playstate = PlayState.instance;
-		playstate.setScript("this", this);
-		DiscordIO.changePresence("Paused - Restin' a bit");
-		this.cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 
-		// Fundo preto base
-		var banana = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, 0xFF000000);
-		add(banana);
-		banana.alpha = 0;
-		FlxTween.tween(banana, {alpha: 0.4}, 0.1);
+		// 1. Fundo escurecido atrás de tudo
+		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		bg.alpha = 0.6;
+		add(bg);
 
-		// 1. PNG mebg (Debaixo de tudo, movimento escadinha)
-		mebg = new FlxSprite().loadGraphic(Paths.image('mebg'));
-		mebg.antialiasing = true;
-		mebg.screenCenter();
-		add(mebg);
+		// 2. SUA IMAGEM DE FUNDO "me bg" (Adicionada primeiro para ficar atrás)
+		p_backgroundDecor = new FlxSprite(FlxG.width - 500, 200);
+		p_backgroundDecor.loadGraphic(Paths.image('mebg')); // Carrega o PNG "me bg"
+		p_backgroundDecor.antialiasing = true;
+		// Ajuste a escala se a imagem for muito grande ou pequena
+		// p_backgroundDecor.scale.set(0.8, 0.8); 
+		// p_backgroundDecor.updateHitbox();
+		add(p_backgroundDecor);
+		
+		// Inicia o movimento fluido em escada para a imagem
+		moveBackgroundDecor();
 
-		// Movimento suave de escadinha (diagonal ida e volta)
-		FlxTween.tween(mebg, {x: mebg.x + 30, y: mebg.y - 30}, 4, {
-			ease: FlxEase.sineInOut, 
-			type: PINGPONG
-		});
+		// 3. JANELA ESTILO PC (Lado Esquerdo, na frente do "me bg")
+		p_window = new FlxSprite(80, 100).makeGraphic(450, 550, 0xFFC0C0C0); // Cinza clássico Windows
+		add(p_window);
 
-		// 2. PNG fpov (No meio, acima do mebg)
-		fpov = new FlxSprite().loadGraphic(Paths.image('fpov'));
-		fpov.antialiasing = true;
-		fpov.screenCenter();
-		add(fpov);
+		// Barra de título da janela
+		var bar = new FlxSprite(80, 100).makeGraphic(450, 35, 0xFF000080); // Azul clássico
+		add(bar);
+		
+		var winTitle = new FlxText(90, 105, 0, "OPÇÕES DO SISTEMA", 16);
+		winTitle.setFormat(null, 16, FlxColor.WHITE, LEFT);
+		add(winTitle);
 
-		if(!PlayState.startedSong)
-			optionShit.remove("options");
+		// 4. ITENS DO MENU (Fonte padrão)
+		grpMenu = new FlxTypedGroup<FlxText>();
+		add(grpMenu);
 
-		optionsGrp = new FlxTypedGroup<AlphabetMenu>();
-		add(optionsGrp);
-
-		for(i in 0...optionShit.length)
+		for (i in 0...menuItems.length)
 		{
-			var newItem = new AlphabetMenu(0, 0, optionShit[i], true);
-			newItem.ID = i;
-			newItem.focusY = i - curSelected;
-
-			newItem.spaceX = 0; // Removido deslocamento para manter no centro
-			newItem.spaceY = 150; 
-
-			newItem.updatePos();
-			newItem.screenCenter(X); // Força as letras no meio
-			optionsGrp.add(newItem);
+			var text:FlxText = new FlxText(120, 200 + (i * 90), 0, menuItems[i], 45);
+			text.setFormat(null, 45, FlxColor.BLACK, LEFT);
+			text.ID = i;
+			grpMenu.add(text);
 		}
-		
-		textsGrp = new FlxTypedGroup<FlxText>();
-		add(textsGrp);
-		
-		var textArray:Array<String> = [
-			PlayState.SONG.song,
-			PlayState.songDiff,
-			'BLUEBALLED: ' + PlayState.blueballed,
-		];
-		for(i in 0...textArray.length)
-		{
-			if(textArray[i] == "") continue;
-		
-			var text = new FlxText(0,0,0,textArray[i].toUpperCase());
-			text.setFormat(Main.gFont, 36, 0xFFFFFFFF, RIGHT);
-			text.setPosition(FlxG.width - text.width - 10, 10 + 40 * i);
-			textsGrp.add(text);
-			
-			text.alpha = 0.00001;
-			text.y -= 20;
-			FlxTween.tween(text, {y: text.y + 20, alpha: 1}, 0.4, {ease: FlxEase.quadOut, startDelay: 0.2 + 0.18 * i});
-		}
-		
-		bottomTxt = new FlxText(0,0,0,"");
-		bottomTxt.setFormat(Main.gFont, 36, 0xFFFFFFFF, RIGHT);
-		add(bottomTxt);
 
-		pauseSong = new FlxSound();
-		if(Conductor.songPos > 0)
-		{
-			@:privateAccess
-			pauseSong.loadEmbedded(playstate.inst._sound, true, false);
-			pauseSong.play(Conductor.songPos);
-			pauseSong.pitch = 0.9;
-			pauseSong.volume = 0;
-			FlxTween.tween(pauseSong, {volume: 0.6}, 3, {startDelay: 1});
-		}
-		FlxG.sound.list.add(pauseSong);
+		// 5. NOME DA MÚSICA (Canto Superior Direito, com sua fonte)
+		// Usando sua fonte pixel-game.regular.otf
+		songTxt = new FlxText(FlxG.width - 600, 40, 550, PlayState.SONG.song.toUpperCase(), 42);
+		songTxt.setFormat(Paths.font("pixel-game.regular.otf"), 42, FlxColor.WHITE, RIGHT, OUTLINE, FlxColor.BLACK);
+		songTxt.antialiasing = false; // Fontes pixel ficam melhores assim
+		add(songTxt);
+
+		// 6. PERSONAGEM OPONENTE (Canto inferior direito, na frente do "me bg")
+		p_opponent = new FlxSprite(FlxG.width - 400, FlxG.height - 450);
+		// Tenta pegar o personagem que o PlayState está usando como "Dad" (Oponente)
+		p_opponent.loadGraphic(Paths.image('characters/' + PlayState.instance.dad.curCharacter)); 
+		p_opponent.antialiasing = true;
+		p_opponent.scale.set(0.7, 0.7);
+		p_opponent.updateHitbox();
+		add(p_opponent);
 
 		changeSelection();
 	}
 
-	function closePause()
+	// Lógica do movimento fluido em escada para a imagem PNG
+	function moveBackgroundDecor()
 	{
-		pauseSong.stop();
-		if(SaveData.data.get('Delay on Unpause') && PlayState.startedSong)
-		{
-			playstate.songSpeed = 0.0;
-			if(delayTween != null) delayTween.cancel();
-			delayTween = FlxTween.tween(playstate, {songSpeed: 1.0}, Conductor.crochet * 1 / 1000, {
-				ease: FlxEase.sineIn
-			});
-		}
-		else
-			playstate.songSpeed = 1.0;
-
-		close();
+		// Sobe 80px e vai 80px pro lado (Ajuste os valores para o tamanho da sua imagem)
+		FlxTween.tween(p_backgroundDecor, {x: p_backgroundDecor.x + 80, y: p_backgroundDecor.y - 80}, 0.8, {
+			ease: FlxEase.quartInOut,
+			onComplete: function(twn:FlxTween) {
+				// Se sumir da tela ou subir muito, reseta posição para reiniciar a "escada"
+				// Ajuste este valor (100) dependendo de onde você quer que ela reapareça
+				if(p_backgroundDecor.y < 100) {
+					p_backgroundDecor.setPosition(FlxG.width - 500, 450);
+				}
+				moveBackgroundDecor(); // Repete o ciclo
+			}
+		});
 	}
-
-	override function close()
-	{
-		pauseSong.stop();
-		PlayState.paused = false;
-		playstate.updateOption('Song Offset');
-		playstate.callScript('onUnpause');
-		playstate.setScript("this", playstate);
-		super.close();
-	}
-
-	var inputDelay:Float = 0.05;
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
 
-		// Manter as letras centralizadas durante o update
-		optionsGrp.forEach(function(item:AlphabetMenu) {
-			item.screenCenter(X);
-		});
+		if (controls.UI_UP_P) changeSelection(-1);
+		if (controls.UI_DOWN_P) changeSelection(1);
 
-		bottomTxt.text = "";
-		if(PlayState.botplay)
-			bottomTxt.text += "BOTPLAY";
-		
-		bottomTxt.x = FlxG.width - bottomTxt.width - 10;
-		bottomTxt.y = FlxG.height- bottomTxt.height- 10;
-
-		if(inputDelay > 0)
+		if (controls.ACCEPT)
 		{
-			inputDelay -= elapsed;
-			return;
-		}
-
-		if(!onCountdown)
-		{
-			if(!pauseSong.playing && Conductor.songPos >= 0)
-				pauseSong.play(false, pauseSong.time);
-
-			if(Controls.justPressed(UI_UP))
-				changeSelection(-1);
-			if(Controls.justPressed(UI_DOWN))
-				changeSelection(1);
-
-			if(Controls.justPressed(ACCEPT))
+			var daChoice:String = menuItems[curSelected];
+			switch (daChoice)
 			{
-				switch(optionShit[curSelected])
-				{
-					case "resume":
-						closePause();
-					case "restart song":
-						Main.skipStuff();
-						Main.resetState();
-					case "botplay":
-						FlxG.sound.play(Paths.sound("menu/cancelMenu"));
-						PlayState.botplay = !PlayState.botplay;
-					case "options":
-						persistentDraw = false;
-						pauseSong.pause();
-						this.openSubState(new OptionsSubState(playstate));
-					case "exit to menu":
-						persistentDraw = true;
-						PlayState.sendToMenu();
-					default:
-						FlxG.sound.play(Paths.sound("menu/cancelMenu"));
-				}
+				case "RESUME":
+					close();
+				case "RESTART":
+					FlxG.resetState();
+				case "CONFIGS":
+					FlxG.switchState(new OptionsState()); // Abre as configurações
+				case "BACK":
+					PlayState.deathCounter = 0;
+					PlayState.seenCutscene = false;
+					FlxG.switchState(new MainMenuState());
 			}
-
-			if(Controls.justPressed(BACK))
-				closePause();
-		}
-		else
-		{
-			for(item in optionsGrp)
-				item.alpha = FlxMath.lerp(item.alpha, 0, elapsed * 12);
 		}
 	}
 
-	function changeSelection(change:Int = 0)
+	function changeSelection(change:Int = 0):Void
 	{
 		curSelected += change;
-		curSelected = FlxMath.wrap(curSelected, 0, optionShit.length - 1);
+		if (curSelected < 0) curSelected = menuItems.length - 1;
+		if (curSelected >= menuItems.length) curSelected = 0;
 
-		for(item in optionsGrp)
+		for (item in grpMenu.members)
 		{
-			item.focusY = item.ID - curSelected;
-			item.alpha = 0.4;
-			if(item.ID == curSelected)
+			item.alpha = 0.5;
+			item.color = FlxColor.BLACK;
+			if (item.ID == curSelected) {
 				item.alpha = 1;
+				item.color = 0xFF0000FF; // Fica azul quando selecionado (estilo link)
+			}
 		}
-
-		if(change != 0)
-			FlxG.sound.play(Paths.sound("menu/scrollMenu"));
+		
+		if(change != 0) FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 }
-
