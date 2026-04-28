@@ -14,7 +14,7 @@ using StringTools;
 
 class MainMenuState extends MusicBeatState
 {
-	var optionShit:Array<String> = ["story mode", "freeplay", "donate", "credits", "options"];
+	var optionShit:Array<String> = ["story mode", "freeplay", "credits", "options"];
 	static var curSelected:Int = 0;
 	
 	var grpOptions:FlxTypedGroup<FlxSprite>;
@@ -96,11 +96,12 @@ class MainMenuState extends MusicBeatState
 				maxY -= itemSize;
 			}
 			
-			item.x = FlxG.width / 2;
+			// Posicionamento no lado direito
+			item.x = FlxG.width - (item.width * 1.2); 
 			item.y = FlxMath.lerp(
-				minY, // gets min Y
-				maxY, // gets max Y
-				i / (optionShit.length - 1) // sorts it according to its ID
+				minY, 
+				maxY, 
+				i / (optionShit.length - 1)
 			);
 			
 			item.ID = i;
@@ -130,7 +131,6 @@ class MainMenuState extends MusicBeatState
 		super.update(elapsed);
 
 		#if debug
-		// Crash the game. For CrashHandler test purposes
 		if(FlxG.keys.justPressed.R)
 			null.draw();
 		#end
@@ -159,42 +159,35 @@ class MainMenuState extends MusicBeatState
 			
 			if(Controls.justPressed(ACCEPT))
 			{
-				if(["donate"].contains(optionShit[curSelected]))
+				selectedSum = true;
+				FlxG.sound.play(Paths.sound('menu/confirmMenu'));
+				
+				for(item in grpOptions.members)
 				{
-					CoolUtil.openURL("https://ninja-muffin24.itch.io/funkin");
+					if(item.ID != curSelected)
+						FlxTween.tween(item, {alpha: 0}, 0.4, {ease: FlxEase.cubeOut});
 				}
-				else
+				
+				new FlxTimer().start(1.5, function(tmr:FlxTimer)
 				{
-					selectedSum = true;
-					FlxG.sound.play(Paths.sound('menu/confirmMenu'));
-					
-					for(item in grpOptions.members)
+					switch(optionShit[curSelected])
 					{
-						if(item.ID != curSelected)
-							FlxTween.tween(item, {alpha: 0}, 0.4, {ease: FlxEase.cubeOut});
-					}
+						case "story mode":
+							Main.switchState(new StoryMenuState());
 					
-					new FlxTimer().start(1.5, function(tmr:FlxTimer)
-					{
-						switch(optionShit[curSelected])
-						{
-							case "story mode":
-								Main.switchState(new StoryMenuState());
+						case "freeplay":
+							Main.switchState(new FreeplayState());
 						
-							case "freeplay":
-								Main.switchState(new FreeplayState());
-							
-							case "credits":
-								Main.switchState(new CreditsState());
+						case "credits":
+							Main.switchState(new CreditsState());
 
-							case "options":
-								Main.switchState(new OptionsState());
+						case "options":
+							Main.switchState(new OptionsState());
 
-							default: // avoids freezing
-								Main.resetState();
-						}
-					});
-				}
+						default:
+							Main.resetState();
+					}
+				});
 			}
 		}
 		else
@@ -242,7 +235,7 @@ class MainMenuState extends MusicBeatState
 				item.animation.play('hover');
 			
 			item.updateHitbox();
-			// makes it offset to its middle point
+			// Ajuste de offset para manter o ponto de referência correto na direita
 			item.offset.x += (item.frameWidth * item.scale.x) / 2;
 			item.offset.y += (item.frameHeight* item.scale.y) / 2;
 		}
