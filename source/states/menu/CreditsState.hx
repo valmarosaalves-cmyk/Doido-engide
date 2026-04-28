@@ -61,14 +61,11 @@ class CreditsState extends MusicBeatState
 		final nikoo:Bool = (FlxG.random.bool(1));
 		final specialPeople = 'Anakim, ArturYoshi, BeastlyChip♧, Bnyu, Evandro, NxtVithor, Pi3tr0, Raphalitos, ZieroSama';
 		final specialCoders = 'ShadzXD, pisayesiwsi, crowplexus, Lasystuff, Gazozoz, Joalor64GH, LeonGamerPS1';
-		// yes, this implies coders aren't people :D
 		
-		// btw you dont need to credit everyone here on your mod
-		// just credit doido engine as a whole and we're good
 		addCategory("noob Engine's Crew");
 		addCredit('arthur', 			'arthur', 	 0xFFC385FF, "I'm making a really cool mod, right? :3", 				'https://bsky.app/profile/diogotv.bsky.social');
 		addCredit('doido engine', 				'doido_logo', 	 0xFFFF95AC, "The engine is crazy because I can't find a perfect engine since the Psych Engine is made for PC and I don't have one.",					'https://youtube.com/@telesfnf');
-		addCredit('gemini',			'gemini', 	 0xFFFFE100, "Gemini helped me write the code because I don't know how to haxe :)"
+		addCredit('gemini',			'gemini', 	 0xFFFFE100, "Gemini ajudou a escrever o código porque eu não sei haxe :)");
 		
 		/*
 		*	Don't modify the rest of the code unless you know what you're doing!!
@@ -107,7 +104,6 @@ class CreditsState extends MusicBeatState
 				icon.loadGraphic(Paths.image('credits/${credit.icon}'));
 				grpItems.add(icon);
 
-				// BIG ASS EARS
 				if(credit.icon == "anna")
 					icon.offset.y = 30;
 
