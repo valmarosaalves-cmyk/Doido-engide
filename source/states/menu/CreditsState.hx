@@ -65,18 +65,10 @@ class CreditsState extends MusicBeatState
 		
 		// btw you dont need to credit everyone here on your mod
 		// just credit doido engine as a whole and we're good
-		addCategory("Doido Engine's Crew");
-		addCredit('DiogoTV', 			'diogotv', 	 0xFFC385FF, "Doido Engine's Owner and Main Coder", 				'https://bsky.app/profile/diogotv.bsky.social');
-		addCredit('teles', 				'teles', 	 0xFFFF95AC, "Doido Engine's Additional Coder",					'https://youtube.com/@telesfnf');
-		addCredit('GoldenFoxy',			'anna', 	 0xFFFFE100, "Main designer of Doido Engine's chart editor",		'https://bsky.app/profile/goldenfoxy.bsky.social');
-		addCredit('JulianoBeta', 		'juyko', 	 0xFF0BA5FF, "Composed Doido Engine's offset menu music",			'https://www.youtube.com/@prodjuyko');
-		addCredit('crowplexus',			'crowplexus',0xFF313538, "Creator of HScript Iris",							'https://github.com/crowplexus/hscript-iris');
-		addCredit('yoisabo',			'yoisabo',	 0xFF56EF19, "Chart Editor's Event Icons Artist",					'https://bsky.app/profile/yoisabo.bsky.social');
-		addCategory('Other Credits');
-		addCredit('cocopuffs',			'coco',	 	 0xFF56EF19, "Mobile Button Artist", 'https://x.com/cocopuffswow');
-		if(nikoo) addCredit('doubleonikoo', 'nikoo', 0xFF60458A, "Hey! What are you doing here?!",		'https://bsky.app/profile/doubleonikoo.bsky.social');
-		addCredit('Github Contributors','github', 	 0xFFFFFFFF, 'Thank you\n${specialCoders}!!', 		'https://github.com/DoidoTeam/FNF-Doido-Engine/graphs/contributors');
-		addCredit('Special Thanks', 	'heart', 	 0xFFC01B42, 'Thank you\n${specialPeople}!!\n<33', "https://youtu.be/N0IkgKHdgIc");
+		addCategory("noob Engine's Crew");
+		addCredit('arthur', 			'arthue :3', 	 0xFFC385FF, "I'm making a really cool mod, right? :3", 				'https://bsky.app/profile/diogotv.bsky.social');
+		addCredit('doido engine', 				'doido engine', 	 0xFFFF95AC, "The engine is crazy because I can't find a perfect engine since the Psych Engine is made for PC and I don't have one.",					'https://youtube.com/@telesfnf');
+		addCredit('gemini',			'gemini', 	 0xFFFFE100, "Gemini helped me write the code because I don't know how to haxe :)"
 		
 		/*
 		*	Don't modify the rest of the code unless you know what you're doing!!
