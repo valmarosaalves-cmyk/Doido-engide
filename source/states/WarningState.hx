@@ -34,7 +34,7 @@ class WarningState extends MusicBeatState
 		add(avisoImg);
 
 		// Se a imagem ainda estiver pequena demais, aumente aqui:
-		avisoImg.scale.set(1, 8); 
+		avisoImg.scale.set(2, 1); 
 		avisoImg.updateHitbox();
 		avisoImg.screenCenter();
 
