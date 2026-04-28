@@ -45,23 +45,6 @@ class MainMenuState extends MusicBeatState
 		bgMag.visible = false;
 		add(bgMag);
 		
-		if(FlxG.random.bool(0.001))
-		{
-			if(Paths.fileExists('images/herobrine.png'))
-			{
-				var herobrine = new FlxSprite(-300).loadGraphic(Paths.image('herobrine'));
-				herobrine.scale.set(4,4);
-				herobrine.updateHitbox();
-				herobrine.screenCenter(Y);
-				add(herobrine);
-
-				new FlxTimer().start(2, function(tmr) {
-					if(herobrine != null)
-						remove(herobrine);
-				});
-			}
-		}
-		
 		grpOptions = new FlxTypedGroup<FlxSprite>();
 		add(grpOptions);
 		
@@ -85,7 +68,6 @@ class MainMenuState extends MusicBeatState
 			item.updateHitbox();
 			
 			var itemSize:Float = (90 * optionSize);
-			
 			var minY:Float = 40 + itemSize;
 			var maxY:Float = FlxG.height - itemSize - 40;
 			
@@ -96,8 +78,10 @@ class MainMenuState extends MusicBeatState
 				maxY -= itemSize;
 			}
 			
-			// Posicionamento no lado direito
-			item.x = FlxG.width - (item.width * 1.2); 
+			// --- AJUSTE DE POSIÇÃO PARA A DIREITA ---
+			var margin:Float = 60; // Aumente ou diminua para afastar da borda
+			item.x = FlxG.width - item.width - margin; 
+			
 			item.y = FlxMath.lerp(
 				minY, 
 				maxY, 
@@ -130,23 +114,6 @@ class MainMenuState extends MusicBeatState
 	{
 		super.update(elapsed);
 
-		#if debug
-		if(FlxG.keys.justPressed.R)
-			null.draw();
-		#end
-
-		if(FlxG.keys.justPressed.V)
-		{
-			persistentUpdate = false;
-			openSubState(new subStates.video.VideoPlayerSubState("test"));
-		}
-
-		if(FlxG.keys.justPressed.EIGHT)
-		{
-			FlxG.sound.play(Paths.sound("menu/cancelMenu"));
-			Main.switchState(new states.editors.CharacterEditorState("bf", false));
-		}
-		
 		if(!selectedSum)
 		{
 			if(Controls.justPressed(UI_UP))
@@ -160,7 +127,7 @@ class MainMenuState extends MusicBeatState
 			if(Controls.justPressed(ACCEPT))
 			{
 				selectedSum = true;
-				FlxG.sound.play(Paths.sound('menu/confirmMenu'));
+				FlxG.sound.play(Paths.sound('confirmMenu'));
 				
 				for(item in grpOptions.members)
 				{
@@ -172,46 +139,13 @@ class MainMenuState extends MusicBeatState
 				{
 					switch(optionShit[curSelected])
 					{
-						case "story mode":
-							Main.switchState(new StoryMenuState());
-					
-						case "freeplay":
-							Main.switchState(new FreeplayState());
-						
-						case "credits":
-							Main.switchState(new CreditsState());
-
-						case "options":
-							Main.switchState(new OptionsState());
-
-						default:
-							Main.resetState();
+						case "story mode": Main.switchState(new StoryMenuState());
+						case "freeplay": Main.switchState(new FreeplayState());
+						case "credits": Main.switchState(new CreditsState());
+						case "options": Main.switchState(new OptionsState());
+						default: Main.resetState();
 					}
 				});
-			}
-		}
-		else
-		{
-			if(SaveData.data.get('Flashing Lights') != "OFF")
-			{
-				if(SaveData.data.get('Flashing Lights') != "REDUCED")
-				{
-					flickMag += elapsed;
-					if(flickMag >= 0.15)
-					{
-						flickMag = 0;
-						bgMag.visible = !bgMag.visible;
-					}
-				}
-				
-				flickBtn += elapsed;
-				if(flickBtn >= 0.15 / 2)
-				{
-					flickBtn = 0;
-					for(item in grpOptions.members)
-						if(item.ID == curSelected)
-							item.visible = !item.visible;
-				}
 			}
 		}
 		
@@ -221,7 +155,7 @@ class MainMenuState extends MusicBeatState
 
 	public function changeSelection(change:Int = 0)
 	{
-		if(change != 0) FlxG.sound.play(Paths.sound('menu/scrollMenu'));
+		if(change != 0) FlxG.sound.play(Paths.sound('scrollMenu'));
 		
 		curSelected += change;
 		curSelected = FlxMath.wrap(curSelected, 0, optionShit.length - 1);
@@ -235,9 +169,10 @@ class MainMenuState extends MusicBeatState
 				item.animation.play('hover');
 			
 			item.updateHitbox();
-			// Ajuste de offset para manter o ponto de referência correto na direita
-			item.offset.x += (item.frameWidth * item.scale.x) / 2;
-			item.offset.y += (item.frameHeight* item.scale.y) / 2;
+			
+			// Mantém o offset centralizado para a animação de escala não bugar
+			item.offset.x = item.frameWidth / 2;
+			item.offset.y = item.frameHeight / 2;
 		}
 	}
 }
