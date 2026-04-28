@@ -1,4 +1,4 @@
-package subStates; // Corrigido para S maiúsculo conforme o erro
+package subStates;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -12,9 +12,10 @@ import states.PlayState;
 import states.menu.MainMenuState;
 import states.menu.OptionsState;
 
-// Se der erro de "Type not found" de novo, tente mudar 'backend' para 'objects' ou remover o 'backend.'
-import backend.Controls; 
-import backend.MusicBeatSubstate;
+// Ajuste de imports para Doido Engine / Mobile
+// Se der erro de "Type not found", o Haxe procura automaticamente na raiz
+import Controls;
+import MusicBeatSubstate;
 
 class PauseSubState extends MusicBeatSubstate
 {
@@ -34,26 +35,31 @@ class PauseSubState extends MusicBeatSubstate
 	{
 		super();
 
+		// Fundo escurecido
 		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		bg.alpha = 0.6;
 		add(bg);
 
+		// Imagem PNG decorativa de fundo
 		p_backgroundDecor = new FlxSprite(FlxG.width - 500, 450);
 		p_backgroundDecor.loadGraphic(Paths.image('me bg')); 
 		p_backgroundDecor.antialiasing = true;
 		add(p_backgroundDecor);
 		moveBackgroundDecor();
 
+		// Caixa do nome da música
 		songContainer = new FlxSprite(FlxG.width - 500, 40).makeGraphic(450, 60, FlxColor.BLACK);
 		songContainer.alpha = 0.8;
 		add(songContainer);
 
 		songTxt = new FlxText(songContainer.x, songContainer.y + 10, 0, PlayState.SONG.song.toUpperCase(), 35);
+		// Usando sua fonte pixelada
 		songTxt.setFormat(Paths.font("pixel-game.regular.otf"), 35, FlxColor.WHITE, LEFT, OUTLINE, FlxColor.BLACK);
 		songTxt.antialiasing = false;
-		songTxt.clipRect = new flixel.math.FlxRect(0, 0, 450, 60); 
+		songTxt.clipRect = new FlxRect(0, 0, 450, 60); 
 		add(songTxt);
 
+		// Janela de opções estilo PC
 		p_window = new FlxSprite(80, 100).makeGraphic(450, 550, 0xFFC0C0C0); 
 		add(p_window);
 
@@ -64,6 +70,7 @@ class PauseSubState extends MusicBeatSubstate
 		winTitle.setFormat(null, 16, FlxColor.WHITE, LEFT);
 		add(winTitle);
 
+		// Itens do menu
 		grpMenu = new FlxTypedGroup<FlxText>();
 		add(grpMenu);
 
@@ -75,6 +82,7 @@ class PauseSubState extends MusicBeatSubstate
 			grpMenu.add(text);
 		}
 
+		// Personagem Oponente
 		p_opponent = new FlxSprite(FlxG.width - 400, FlxG.height - 450);
 		p_opponent.loadGraphic(Paths.image('characters/' + PlayState.instance.dad.curCharacter)); 
 		p_opponent.antialiasing = true;
@@ -102,6 +110,7 @@ class PauseSubState extends MusicBeatSubstate
 	{
 		super.update(elapsed);
 
+		// Letreiro do nome da música
 		if (songTxt.width > 450) {
 			songTxt.x -= textSpeed * elapsed;
 			if (songTxt.x < songContainer.x - songTxt.width) {
@@ -111,7 +120,7 @@ class PauseSubState extends MusicBeatSubstate
 			songTxt.x = songContainer.x + (songContainer.width / 2) - (songTxt.width / 2);
 		}
 
-		// IMPORTANTE: Se o erro de Controls persistir, verifique como sua engine chama os controles
+		// Controles (Usando a variável global da engine)
 		if (controls.UI_UP_P) changeSelection(-1);
 		if (controls.UI_DOWN_P) changeSelection(1);
 
