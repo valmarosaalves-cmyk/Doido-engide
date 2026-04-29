@@ -1,25 +1,35 @@
-package states;
+package states.menu;
 
-import backend.Achievements;
-import objects.AttachedAchievement;
+import flixel.FlxG;
+import flixel.FlxSprite;
+import flixel.group.FlxGroup;
+import flixel.text.FlxText;
+import flixel.util.FlxColor;
+import objects.menu.Alphabet;
+import states.menu.MainMenuState;
 
 class AchievementsMenuState extends MusicBeatState
 {
-	#if ACHIEVEMENTS_ALLOWED
-	var options:Array<String> = [];
+	// Nomes padrão da Psych Engine (Exemplos)
+	var achievementList:Array<String> = [
+		"friday_night_felon",
+		"she_call_me_pico",
+		"debugger"
+	];
+	
 	private var grpOptions:FlxTypedGroup<Alphabet>;
+	private var iconArray:Array<FlxSprite> = [];
 	private static var curSelected:Int = 0;
-	private var achievementArray:Array<AttachedAchievement> = [];
-	private var achievementIndex:Array<Int> = [];
 	private var descText:FlxText;
 
 	override function create() {
-		#if desktop
-		DiscordClient.changePresence("Achievements Menu", null);
+		#if DISCORD_ALLOWED
+		DiscordIO.changePresence("Achievements Menu");
 		#end
 
-		var menuBG:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuBGBlue'));
-		menuBG.antialiasing = ClientPrefs.data.antialiasing;
+		// Fundo da pasta Achievements
+		var menuBG:FlxSprite = new FlxSprite().loadGraphic(Paths.image('Achievements/menuBGBlue'));
+		menuBG.antialiasing = true;
 		menuBG.setGraphicSize(Std.int(menuBG.width * 1.1));
 		menuBG.updateHitbox();
 		menuBG.screenCenter();
@@ -28,85 +38,67 @@ class AchievementsMenuState extends MusicBeatState
 		grpOptions = new FlxTypedGroup<Alphabet>();
 		add(grpOptions);
 
-		Achievements.loadAchievements();
-		for (i in 0...Achievements.achievementsStuff.length) {
-			if(!Achievements.achievementsStuff[i][3] || Achievements.achievementsMap.exists(Achievements.achievementsStuff[i][2])) {
-				options.push(Achievements.achievementsStuff[i]);
-				achievementIndex.push(i);
-			}
-		}
-
-		for (i in 0...options.length) {
-			var achieveName:String = Achievements.achievementsStuff[achievementIndex[i]][2];
-			var optionText:Alphabet = new Alphabet(280, 300, Achievements.isAchievementUnlocked(achieveName) ? Achievements.achievementsStuff[achievementIndex[i]][0] : '?', false);
+		for (i in 0...achievementList.length) {
+			// Texto da conquista
+			var optionText:Alphabet = new Alphabet(280, 300, achievementList[i].replace('_', ' '), true);
 			optionText.isMenuItem = true;
 			optionText.targetY = i - curSelected;
-			optionText.snapToPosition();
 			grpOptions.add(optionText);
 
-			var icon:AttachedAchievement = new AttachedAchievement(optionText.x - 105, optionText.y, achieveName);
-			icon.sprTracker = optionText;
-			achievementArray.push(icon);
+			// Ícone da conquista (Puxando da sua pasta Achievements)
+			var icon:FlxSprite = new FlxSprite(optionText.x - 105, optionText.y);
+			// Tenta carregar o ícone. Se não achar, use 'locked' ou 'unknown'
+			icon.loadGraphic(Paths.image('Achievements/' + achievementList[i]));
+			icon.antialiasing = true;
+			icon.ID = i;
+			iconArray.push(icon);
 			add(icon);
 		}
 
-		descText = new FlxText(150, 600, 980, "", 32);
-		descText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		descText.scrollFactor.set();
-		descText.borderSize = 2.4;
+		descText = new FlxText(150, 600, 980, "Conquistas do Mod", 32);
+		descText.setFormat(Main.gFont, 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		descText.screenCenter(X);
 		add(descText);
-		changeSelection();
 		
-		                #if android
-                addVirtualPad(UP_DOWN, A_B);
-                #end
+		#if TOUCH_CONTROLS
+		createPad("up-down-back", "none");
+		#end
 
+		changeSelection();
 		super.create();
 	}
 
 	override function update(elapsed:Float) {
 		super.update(elapsed);
 
-		if (controls.UI_UP_P) {
-			changeSelection(-1);
-		}
-		if (controls.UI_DOWN_P) {
-			changeSelection(1);
-		}
+		if (Controls.justPressed(UI_UP)) changeSelection(-1);
+		if (Controls.justPressed(UI_DOWN)) changeSelection(1);
 
-		if (controls.BACK) {
-			FlxG.sound.play(Paths.sound('cancelMenu'));
-			MusicBeatState.switchState(new MainMenuState());
+		if (Controls.justPressed(BACK)) {
+			FlxG.sound.play(Paths.sound('menu/cancelMenu'));
+			Main.switchState(new MainMenuState());
+		}
+		
+		// Faz os ícones seguirem o texto
+		for (i in 0...iconArray.length) {
+			iconArray[i].y = grpOptions.members[i].y;
+			iconArray[i].x = grpOptions.members[i].x - 110;
 		}
 	}
 
 	function changeSelection(change:Int = 0) {
-		curSelected += change;
-		if (curSelected < 0)
-			curSelected = options.length - 1;
-		if (curSelected >= options.length)
-			curSelected = 0;
-
-		var bullShit:Int = 0;
+		curSelected = flixel.math.FlxMath.wrap(curSelected + change, 0, achievementList.length - 1);
 
 		for (item in grpOptions.members) {
-			item.targetY = bullShit - curSelected;
-			bullShit++;
-
 			item.alpha = 0.6;
-			if (item.targetY == 0) {
-				item.alpha = 1;
-			}
+			if (item.ID == curSelected) item.alpha = 1;
 		}
 
-		for (i in 0...achievementArray.length) {
-			achievementArray[i].alpha = 0.6;
-			if(i == curSelected) {
-				achievementArray[i].alpha = 1;
-			}
+		for (icon in iconArray) {
+			icon.alpha = 0.6;
+			if (icon.ID == curSelected) icon.alpha = 1;
 		}
-		descText.text = Achievements.achievementsStuff[achievementIndex[curSelected]][1];
-		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+		
+		if(change != 0) FlxG.sound.play(Paths.sound('menu/scrollMenu'), 0.4);
 	}
-	#end
 }
