@@ -38,20 +38,18 @@ class AchievementsMenuState extends MusicBeatState
 		}
 
 		descText = new FlxText(150, 600, 980, "Conquistas", 32);
-		descText.setFormat(Main.gFont, 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		descText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		descText.screenCenter(X);
 		add(descText);
 		
-		#if android
-		addVirtualPad(UP_DOWN, A_B); // Comando padrão para engines baseadas em Psych antiga/mobile
-		#end
-
 		changeSelection();
 		super.create();
 	}
 
 	override function update(elapsed:Float) {
 		super.update(elapsed);
+
+		// AJUSTE: Usando o sistema de controles que o seu log pediu (com 'controls' minúsculo)
 		if (controls.UI_UP_P) changeSelection(-1);
 		if (controls.UI_DOWN_P) changeSelection(1);
 		if (controls.BACK) MusicBeatState.switchState(new MainMenuState());
@@ -71,7 +69,8 @@ class AchievementsMenuState extends MusicBeatState
 		curSelected = flixel.math.FlxMath.wrap(curSelected + change, 0, achievementList.length - 1);
 		for (i in 0...grpOptions.members.length) {
 			grpOptions.members[i].alpha = (i == curSelected) ? 1 : 0.6;
-			iconArray[i].alpha = (i == curSelected) ? 1 : 0.6;
+			if(iconArray[i] != null) iconArray[i].alpha = (i == curSelected) ? 1 : 0.6;
 		}
+		if(change != 0) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 	}
 }
