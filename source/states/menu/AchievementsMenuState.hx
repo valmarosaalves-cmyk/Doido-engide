@@ -10,7 +10,6 @@ import states.menu.MainMenuState;
 
 class AchievementsMenuState extends MusicBeatState
 {
-	// Nomes padrão da Psych Engine (Exemplos)
 	var achievementList:Array<String> = [
 		"friday_night_felon",
 		"she_call_me_pico",
@@ -27,7 +26,6 @@ class AchievementsMenuState extends MusicBeatState
 		DiscordIO.changePresence("Achievements Menu");
 		#end
 
-		// Fundo da pasta Achievements
 		var menuBG:FlxSprite = new FlxSprite().loadGraphic(Paths.image('Achievements/menuBGBlue'));
 		menuBG.antialiasing = true;
 		menuBG.setGraphicSize(Std.int(menuBG.width * 1.1));
@@ -39,15 +37,13 @@ class AchievementsMenuState extends MusicBeatState
 		add(grpOptions);
 
 		for (i in 0...achievementList.length) {
-			// Texto da conquista
-			var optionText:Alphabet = new Alphabet(280, 300, achievementList[i].replace('_', ' '), true);
-			optionText.isMenuItem = true;
-			optionText.targetY = i - curSelected;
+			// Criando o texto sem usar isMenuItem (que deu erro)
+			var optionText:Alphabet = new Alphabet(0, 0, achievementList[i].replace('_', ' '), true);
+			optionText.ID = i;
 			grpOptions.add(optionText);
 
-			// Ícone da conquista (Puxando da sua pasta Achievements)
-			var icon:FlxSprite = new FlxSprite(optionText.x - 105, optionText.y);
-			// Tenta carregar o ícone. Se não achar, use 'locked' ou 'unknown'
+			// Ícone da conquista
+			var icon:FlxSprite = new FlxSprite();
 			icon.loadGraphic(Paths.image('Achievements/' + achievementList[i]));
 			icon.antialiasing = true;
 			icon.ID = i;
@@ -79,24 +75,30 @@ class AchievementsMenuState extends MusicBeatState
 			Main.switchState(new MainMenuState());
 		}
 		
-		// Faz os ícones seguirem o texto
-		for (i in 0...iconArray.length) {
-			iconArray[i].y = grpOptions.members[i].y;
-			iconArray[i].x = grpOptions.members[i].x - 110;
+		// Posicionamento manual para evitar o erro de targetY
+		for (i in 0...grpOptions.members.length) {
+			var item = grpOptions.members[i];
+			item.screenCenter(X);
+			item.y = FlxG.height / 2 + (i - curSelected) * 120;
+			
+			if (iconArray[i] != null) {
+				iconArray[i].y = item.y;
+				iconArray[i].x = item.x - 110;
+			}
 		}
 	}
 
 	function changeSelection(change:Int = 0) {
 		curSelected = flixel.math.FlxMath.wrap(curSelected + change, 0, achievementList.length - 1);
 
-		for (item in grpOptions.members) {
-			item.alpha = 0.6;
-			if (item.ID == curSelected) item.alpha = 1;
-		}
-
-		for (icon in iconArray) {
-			icon.alpha = 0.6;
-			if (icon.ID == curSelected) icon.alpha = 1;
+		for (i in 0...grpOptions.members.length) {
+			grpOptions.members[i].alpha = 0.6;
+			iconArray[i].alpha = 0.6;
+			
+			if (i == curSelected) {
+				grpOptions.members[i].alpha = 1;
+				iconArray[i].alpha = 1;
+			}
 		}
 		
 		if(change != 0) FlxG.sound.play(Paths.sound('menu/scrollMenu'), 0.4);
