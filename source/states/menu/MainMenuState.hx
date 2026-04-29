@@ -15,7 +15,7 @@ using StringTools;
 
 class MainMenuState extends MusicBeatState
 {
-	var optionShit:Array<String> = ["story mode", "freeplay", "credits", "menu_awards" "options"];
+	var optionShit:Array<String> = ["story mode", "freeplay", "credits", "menu_awards", "options"];
 	static var curSelected:Int = 0;
 	
 	var grpOptions:FlxTypedGroup<FlxSprite>;
