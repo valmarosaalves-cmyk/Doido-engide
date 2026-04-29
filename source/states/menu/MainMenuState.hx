@@ -9,6 +9,7 @@ import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxTimer;
+import flixel.effects.FlxFlicker;
 
 using StringTools;
 
@@ -23,15 +24,12 @@ class MainMenuState extends MusicBeatState
 	var bgMag:FlxSprite;
 	var bgPosY:Float = 0;
 	
-	// Variável para forçar a leitura de scripts externos (HScript ou Lua dependendo da engine)
 	var menuScript:Dynamic; 
 
 	override function create()
 	{
 		super.create();
 		
-		// --- LÓGICA DE SCRIPT EXTERNO ---
-		// Tenta carregar um script específico para o menu se existir nos arquivos
 		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
 		menuScript = Paths.getScript('data/scripts/MainMenuState'); 
 		#end
@@ -72,11 +70,10 @@ class MainMenuState extends MusicBeatState
 			item.scale.set(optionSize, optionSize);
 			item.updateHitbox();
 			
-			// --- FORÇANDO POSIÇÃO À DIREITA ---
+			// Posição inicial à direita
 			var margin:Float = 50; 
 			item.x = FlxG.width - item.width - margin; 
 
-			// Distribuição Vertical
 			var itemSize:Float = (90 * optionSize);
 			var minY:Float = 40 + itemSize;
 			var maxY:Float = FlxG.height - itemSize - 40;
@@ -119,11 +116,16 @@ class MainMenuState extends MusicBeatState
 				for(item in grpOptions.members)
 				{
 					if(item.ID != curSelected)
+					{
 						FlxTween.tween(item, {alpha: 0}, 0.4, {ease: FlxEase.cubeOut});
+					}
 					else
-						FlxTween.flicker(item, 1, 0.06, false, false, function(flick:flixel.effects.FlxFlicker) {
+					{
+						// CORREÇÃO DO ERRO DA IMAGEM: Uso correto do FlxFlicker
+						FlxFlicker.flicker(item, 1, 0.06, false, false, function(flick:FlxFlicker) {
 							loadState();
 						});
+					}
 				}
 			}
 		}
@@ -156,7 +158,7 @@ class MainMenuState extends MusicBeatState
 		for(item in grpOptions.members)
 		{
 			item.animation.play('idle');
-			item.alpha = 0.6; // Deixa os não selecionados mais escuros
+			item.alpha = 0.6; 
 			
 			if(curSelected == item.ID)
 			{
@@ -165,7 +167,10 @@ class MainMenuState extends MusicBeatState
 			}
 			
 			item.updateHitbox();
-			// Ajuste de ancoragem para a direita
+			
+			// Garante que o item fique na DIREITA mesmo após o updateHitbox
+			var margin:Float = 50;
+			item.x = FlxG.width - item.width - margin;
 			item.offset.x = 0; 
 		}
 	}
