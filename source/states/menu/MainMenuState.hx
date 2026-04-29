@@ -23,18 +23,24 @@ class MainMenuState extends MusicBeatState
 	var bgMag:FlxSprite;
 	var bgPosY:Float = 0;
 	
-	var flickMag:Float = 1;
-	var flickBtn:Float = 1;
-	
+	// Variável para forçar a leitura de scripts externos (HScript ou Lua dependendo da engine)
+	var menuScript:Dynamic; 
+
 	override function create()
 	{
 		super.create();
-		CoolUtil.playMusic("freakyMenu");
 		
+		// --- LÓGICA DE SCRIPT EXTERNO ---
+		// Tenta carregar um script específico para o menu se existir nos arquivos
+		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
+		menuScript = Paths.getScript('data/scripts/MainMenuState'); 
+		#end
+
+		CoolUtil.playMusic("freakyMenu");
 		DiscordIO.changePresence("In the Main Menu");
 
 		bg = new FlxSprite().loadGraphic(Paths.image('menu/backgrounds/menuBG'));
-		bg.scale.set(1.2,1.2);
+		bg.scale.set(1.2, 1.2);
 		bg.updateHitbox();
 		bg.screenCenter(X);
 		add(bg);
@@ -62,33 +68,23 @@ class MainMenuState extends MusicBeatState
 			item.animation.addByPrefix('idle',  optionShit[i] + ' basic', 24, true);
 			item.animation.addByPrefix('hover', optionShit[i] + ' white', 24, true);
 			item.animation.play('idle');
-			grpOptions.add(item);
 			
 			item.scale.set(optionSize, optionSize);
 			item.updateHitbox();
 			
+			// --- FORÇANDO POSIÇÃO À DIREITA ---
+			var margin:Float = 50; 
+			item.x = FlxG.width - item.width - margin; 
+
+			// Distribuição Vertical
 			var itemSize:Float = (90 * optionSize);
 			var minY:Float = 40 + itemSize;
 			var maxY:Float = FlxG.height - itemSize - 40;
 			
-			if(optionShit.length < 4)
-			for(i in 0...(4 - optionShit.length))
-			{
-				minY += itemSize;
-				maxY -= itemSize;
-			}
-			
-			// --- AJUSTE DE POSIÇÃO PARA A DIREITA ---
-			var margin:Float = 60; // Aumente ou diminua para afastar da borda
-			item.x = FlxG.width - item.width - margin; 
-			
-			item.y = FlxMath.lerp(
-				minY, 
-				maxY, 
-				i / (optionShit.length - 1)
-			);
+			item.y = FlxMath.lerp(minY, maxY, i / (optionShit.length - 1));
 			
 			item.ID = i;
+			grpOptions.add(item);
 		}
 		
 		var doidoSplash:String = 'noobs Engine ${lime.app.Application.current.meta.get('version')}';
@@ -101,11 +97,6 @@ class MainMenuState extends MusicBeatState
 		add(splashTxt);
 
 		changeSelection();
-		bg.y = bgPosY;
-
-		#if TOUCH_CONTROLS
-		createPad("back");
-		#end
 	}
 	
 	var selectedSum:Bool = false;
@@ -116,13 +107,9 @@ class MainMenuState extends MusicBeatState
 
 		if(!selectedSum)
 		{
-			if(Controls.justPressed(UI_UP))
-				changeSelection(-1);
-			if(Controls.justPressed(UI_DOWN))
-				changeSelection(1);
-			
-			if(Controls.justPressed(BACK))
-				Main.switchState(new TitleState());
+			if(Controls.justPressed(UI_UP)) changeSelection(-1);
+			if(Controls.justPressed(UI_DOWN)) changeSelection(1);
+			if(Controls.justPressed(BACK)) Main.switchState(new TitleState());
 			
 			if(Controls.justPressed(ACCEPT))
 			{
@@ -133,24 +120,28 @@ class MainMenuState extends MusicBeatState
 				{
 					if(item.ID != curSelected)
 						FlxTween.tween(item, {alpha: 0}, 0.4, {ease: FlxEase.cubeOut});
+					else
+						FlxTween.flicker(item, 1, 0.06, false, false, function(flick:flixel.effects.FlxFlicker) {
+							loadState();
+						});
 				}
-				
-				new FlxTimer().start(1.5, function(tmr:FlxTimer)
-				{
-					switch(optionShit[curSelected])
-					{
-						case "story mode": Main.switchState(new StoryMenuState());
-						case "freeplay": Main.switchState(new FreeplayState());
-						case "credits": Main.switchState(new CreditsState());
-						case "options": Main.switchState(new OptionsState());
-						default: Main.resetState();
-					}
-				});
 			}
 		}
 		
 		bg.y = FlxMath.lerp(bg.y, bgPosY, elapsed * 6);
 		bgMag.setPosition(bg.x, bg.y);
+	}
+
+	function loadState()
+	{
+		switch(optionShit[curSelected])
+		{
+			case "story mode": Main.switchState(new StoryMenuState());
+			case "freeplay": Main.switchState(new FreeplayState());
+			case "credits": Main.switchState(new CreditsState());
+			case "options": Main.switchState(new OptionsState());
+			default: Main.resetState();
+		}
 	}
 
 	public function changeSelection(change:Int = 0)
@@ -165,14 +156,17 @@ class MainMenuState extends MusicBeatState
 		for(item in grpOptions.members)
 		{
 			item.animation.play('idle');
+			item.alpha = 0.6; // Deixa os não selecionados mais escuros
+			
 			if(curSelected == item.ID)
+			{
 				item.animation.play('hover');
+				item.alpha = 1;
+			}
 			
 			item.updateHitbox();
-			
-			// Mantém o offset centralizado para a animação de escala não bugar
-			item.offset.x = item.frameWidth / 2;
-			item.offset.y = item.frameHeight / 2;
+			// Ajuste de ancoragem para a direita
+			item.offset.x = 0; 
 		}
 	}
 }
