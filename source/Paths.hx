@@ -319,7 +319,7 @@ class Paths
 				
 				var spritePath:String = PlayState.countdownModifier;
 				if(!fileExists('images/hud/$spritePath/$countName.png'))
-					spritePath = 'base';
+					spritePath = 'doido';
 				
 				preGraphics.push('hud/$spritePath/$countName');
 			}
