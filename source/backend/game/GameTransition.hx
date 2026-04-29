@@ -2,81 +2,90 @@ package backend.game;
 
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.util.FlxColor;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
-import flixel.group.FlxGroup;
 import backend.game.MusicBeatData.MusicBeatSubState;
 
 class GameTransition extends MusicBeatSubState
 {	
 	var fadeOut:Bool = false;
-	public var finishCallback:Void->Void;
-	var cubeGroup:FlxTypedGroup<FlxSprite>;
+	var transition:String = 'funkin';
 	
-	public function new(fadeOut:Bool = true, transition:String = "cubes")
+	public var finishCallback:Void->Void;
+
+	var blocks:FlxTypedGroup<FlxSprite>;
+	var sprBlack:FlxSprite;
+	
+	public function new(fadeOut:Bool = true, transition:String = "funkin")
 	{
 		super();
 		this.fadeOut = fadeOut;
+		this.transition = transition;
 
-		cubeGroup = new FlxTypedGroup<FlxSprite>();
-		add(cubeGroup);
+		switch(transition) {
+			case 'funkin':
+				blocks = new FlxTypedGroup<FlxSprite>();
+				add(blocks);
 
-		// Tamanho do cubo e colunas/linhas
-		var size:Int = 100; 
-		var cols:Int = Math.ceil(FlxG.width / size) + 1;
-		var rows:Int = Math.ceil(FlxG.height / size) + 1;
-		
-		for (row in 0...rows) {
-			for (col in 0...cols) {
-				// Cria o cubo (um pouco menor que o slot para parecer cubo individual)
-				var cube:FlxSprite = new FlxSprite(col * size, row * size).makeGraphic(size - 4, size - 4, 0xFF000000);
-				cube.antialiasing = true;
-				cubeGroup.add(cube);
+				var blockSize:Int = 100;
+				var cols:Int = Math.ceil(FlxG.width / blockSize);
+				var rows:Int = Math.ceil(FlxG.height / blockSize);
 				
-				// Se for Entrada (fadeOut = false), os cubos começam invisíveis e pequenos
-				// Se for Saída (fadeOut = true), eles já estão lá e somem
-				if (!fadeOut) {
-					cube.scale.set(0, 0);
-					cube.alpha = 0;
-					
-					// Delay baseado na posição (faz um efeito de onda diagonal)
-					var delay:Float = (col + row) * 0.05;
-					
-					FlxTween.tween(cube.scale, {x: 1, y: 1}, 0.4, {ease: FlxEase.cubeOut, startDelay: delay});
-					FlxTween.tween(cube, {alpha: 1}, 0.3, {
-						ease: FlxEase.quadOut, 
-						startDelay: delay,
-						onComplete: function(twn:FlxTween) {
-							if (row == rows - 1 && col == cols - 1) endTransition();
+				for (y in 0...rows) {
+					for (x in 0...cols) {
+						var block = new FlxSprite(x * blockSize, y * blockSize).makeGraphic(blockSize, blockSize, FlxColor.BLACK);
+						block.antialiasing = false;
+						
+						if (fadeOut) {
+							block.scale.set(1, 1);
+						} else {
+							block.scale.set(0, 0);
 						}
-					});
-				} else {
-					// Saindo da tela: os cubos diminuem até sumir
-					cube.scale.set(1, 1);
-					var delay:Float = (col + row) * 0.05;
-					
-					FlxTween.tween(cube.scale, {x: 0, y: 0}, 0.4, {ease: FlxEase.cubeIn, startDelay: delay});
-					FlxTween.tween(cube, {alpha: 0}, 0.3, {
-						ease: FlxEase.quadIn, 
-						startDelay: delay,
-						onComplete: function(twn:FlxTween) {
-							if (row == rows - 1 && col == cols - 1) endTransition();
-						}
-					});
+						
+						blocks.add(block);
+
+						var delay:Float = (x + y) * 0.04; 
+						
+						FlxTween.tween(block.scale, {x: (fadeOut ? 0 : 1), y: (fadeOut ? 0 : 1)}, 0.4, {
+							ease: FlxEase.cubeInOut,
+							startDelay: delay,
+							onComplete: function(twn:FlxTween) {
+								if (x == cols - 1 && y == rows - 1) {
+									endTransition();
+								}
+							}
+						});
+					}
 				}
-			}
+
+			default:
+				sprBlack = new FlxSprite().makeGraphic(FlxG.width * 2, FlxG.height * 2, 0xFF000000);
+				sprBlack.screenCenter();
+				add(sprBlack);
+				
+				sprBlack.alpha = (fadeOut ? 1 : 0);
+				FlxTween.tween(sprBlack, {alpha: fadeOut ? 0 : 1}, 0.32, {
+					onComplete: function(twn:FlxTween)
+					{
+						endTransition();
+					}
+				});
 		}
 	}
 
-	function endTransition() {
-		if(finishCallback != null) finishCallback();
-		else close();
+	function endTransition()
+	{
+		if(finishCallback != null)
+			finishCallback();
+		else
+			close();
 	}
 	
-	override function update(elapsed:Float) {
+	override function update(elapsed:Float)
+	{
 		super.update(elapsed);
-		if (FlxG.cameras.list.length > 0)
-			this.cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
+		this.cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 	}
 }
-
