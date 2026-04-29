@@ -111,7 +111,7 @@ class MainMenuState extends MusicBeatState
 			if(Controls.justPressed(ACCEPT))
 			{
 				selectedSum = true;
-				FlxG.sound.play(Paths.sound.menu('confirmMenu'));
+				FlxG.sound.play(Paths.sound('menu/confirmMenu'));
 				
 				for(item in grpOptions.members)
 				{
@@ -140,6 +140,7 @@ class MainMenuState extends MusicBeatState
 		{
 			case "story mode": Main.switchState(new StoryMenuState());
 			case "freeplay": Main.switchState(new FreeplayState());
+		    case "achievements": Main.switchState(new AchievementsMenuState());
 			case "credits": Main.switchState(new CreditsState());
 			case "options": Main.switchState(new OptionsState());
 			default: Main.resetState();
@@ -148,13 +149,13 @@ class MainMenuState extends MusicBeatState
 
 	public function changeSelection(change:Int = 0)
 	{
-		if(change != 0) FlxG.sound.play(Paths.sound.menu('scrollMenu'));
+		if(change != 0) FlxG.sound.play(Paths.sound('menu/scrollMenu'));
 		
 		curSelected += change;
 		curSelected = FlxMath.wrap(curSelected, 0, optionShit.length - 1);
 		
 		bgPosY = FlxMath.lerp(0, -(bg.height - FlxG.height), curSelected / (optionShit.length - 1));
-		
+
 		for(item in grpOptions.members)
 		{
 			item.animation.play('idle');
