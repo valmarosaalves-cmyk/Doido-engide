@@ -81,8 +81,6 @@ class PauseSubState extends MusicBeatSubState
 
 		// IMPORTANTE: Suporte para Mobile (Não apagar)
 		#if TOUCH_CONTROLS
-		createPad("up-down-back", "accept");
-		addPad();
 		#end
 
 		changeSelection();
