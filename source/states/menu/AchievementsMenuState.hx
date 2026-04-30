@@ -5,9 +5,7 @@ import flixel.FlxSprite;
 import flixel.group.FlxGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
-// Importando as pastas que o PC exige
 import backend.Paths;
-import backend.Controls;
 import objects.menu.Alphabet;
 import states.menu.MainMenuState;
 
@@ -41,7 +39,7 @@ class AchievementsMenuState extends MusicBeatState
 			add(icon);
 		}
 
-		descText = new FlxText(150, 600, 980, "Conquistas", 32);
+		descText = new FlxText(150, 600, 980, "Conquistas (Toque para navegar)", 32);
 		descText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		descText.screenCenter(X);
 		add(descText);
@@ -53,15 +51,27 @@ class AchievementsMenuState extends MusicBeatState
 	override function update(elapsed:Float) {
 		super.update(elapsed);
 
-		// Usando FlxG para garantir que funcione em tudo sem erro de variável
-		if (FlxG.keys.justPressed.UP || (controls != null && controls.UI_UP_P)) changeSelection(-1);
-		if (FlxG.keys.justPressed.DOWN || (controls != null && controls.UI_DOWN_P)) changeSelection(1);
-		
-		if (FlxG.keys.justPressed.ESCAPE || (controls != null && controls.BACK)) {
-			FlxG.sound.play(Paths.sound('cancelMenu'));
-			MusicBeatState.switchState(new MainMenuState());
-		}
+		// Teclado (Windows/Linux)
+		if (FlxG.keys.justPressed.UP) changeSelection(-1);
+		if (FlxG.keys.justPressed.DOWN) changeSelection(1);
+		if (FlxG.keys.justPressed.ESCAPE) voltar();
 
+		// Controle por TOQUE (Android) - Simples e sem erro
+		#if mobile
+		for (touch in FlxG.touches.list) {
+			if (touch.justPressed) {
+				if (touch.y < FlxG.height * 0.35) { // Toque no topo
+					changeSelection(-1);
+				} else if (touch.y > FlxG.height * 0.65) { // Toque no fundo
+					changeSelection(1);
+				} else if (touch.x > FlxG.width * 0.8) { // Toque no canto direito para sair
+					voltar();
+				}
+			}
+		}
+		#end
+
+		// Movimentação visual
 		for (i in 0...grpOptions.members.length) {
 			var item = grpOptions.members[i];
 			item.screenCenter(X);
@@ -71,6 +81,11 @@ class AchievementsMenuState extends MusicBeatState
 				iconArray[i].x = item.x - 110;
 			}
 		}
+	}
+
+	function voltar() {
+		FlxG.sound.play(Paths.sound('cancelMenu'));
+		MusicBeatState.switchState(new MainMenuState());
 	}
 
 	function changeSelection(change:Int = 0) {
