@@ -5,6 +5,7 @@ import flixel.FlxSprite;
 import flixel.group.FlxGroup;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import flixel.math.FlxMath; // Import correto para o erro do print
 import backend.Paths;
 import objects.menu.Alphabet;
 
@@ -27,6 +28,7 @@ class AchievementsMenuState extends MusicBeatState
 		add(grpOptions);
 
 		for (i in 0...achievementList.length) {
+			// Removi isMenuItem e targetY para evitar erro de campo inexistente
 			var optionText:Alphabet = new Alphabet(0, 0, achievementList[i].replace('_', ' '), true);
 			optionText.ID = i;
 			optionText.screenCenter(X);
@@ -47,16 +49,16 @@ class AchievementsMenuState extends MusicBeatState
 	override function update(elapsed:Float) {
 		super.update(elapsed);
 
-		// Controles Universais (PC e Android via toque)
 		if (FlxG.keys.justPressed.UP) changeSelection(-1);
 		if (FlxG.keys.justPressed.DOWN) changeSelection(1);
 		
-		if (FlxG.keys.justPressed.ESCAPE || FlxG.android.justPressed.BACK) {
+		if (FlxG.keys.justPressed.ESCAPE) {
 			FlxG.sound.play(Paths.sound('cancelMenu'));
-			MusicBeatState.switchState(new states.menu.MainMenuState());
+			// Usando FlxG.switchState que funciona em quase todas as versões
+			FlxG.switchState(new states.menu.MainMenuState());
 		}
 
-		// Toque na tela para Android (Cima sobe, Baixo desce)
+		// Toque na tela para Android
 		if (FlxG.touches.justStarted().length > 0) {
 			var touch = FlxG.touches.justStarted()[0];
 			if (touch.y < FlxG.height / 2) changeSelection(-1);
@@ -66,7 +68,8 @@ class AchievementsMenuState extends MusicBeatState
 		for (i in 0...grpOptions.members.length) {
 			var item = grpOptions.members[i];
 			item.screenCenter(X);
-			item.y = FlxG.math.FlxMath.lerp(item.y, (FlxG.height / 2) + ((i - curSelected) * 140), 0.15);
+			// Usando FlxMath direto para evitar o erro do print
+			item.y = FlxMath.lerp(item.y, (FlxG.height / 2) + ((i - curSelected) * 140), 0.15);
 			
 			if (iconArray[i] != null) {
 				iconArray[i].y = item.y;
@@ -76,7 +79,7 @@ class AchievementsMenuState extends MusicBeatState
 	}
 
 	function changeSelection(change:Int = 0) {
-		curSelected = FlxG.math.FlxMath.wrap(curSelected + change, 0, achievementList.length - 1);
+		curSelected = FlxMath.wrap(curSelected + change, 0, achievementList.length - 1);
 		if(change != 0) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 		
 		for (i in 0...grpOptions.members.length) {
