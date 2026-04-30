@@ -49,10 +49,13 @@ class AchievementsMenuState extends MusicBeatState
 	override function update(elapsed:Float) {
 		super.update(elapsed);
 
-		// AJUSTE: Usando o sistema de controles que o seu log pediu (com 'controls' minúsculo)
-		if (controls.UI_UP_P) changeSelection(-1);
-		if (controls.UI_DOWN_P) changeSelection(1);
-		if (controls.BACK) MusicBeatState.switchState(new MainMenuState());
+		// CORRIGIDO: Voltamos para o formato com "C" maiúsculo que já funciona na sua engine!
+		if (Controls.justPressed(UI_UP)) changeSelection(-1);
+		if (Controls.justPressed(UI_DOWN)) changeSelection(1);
+		if (Controls.justPressed(BACK)) {
+			FlxG.sound.play(Paths.sound('menu/cancelMenu'));
+			Main.switchState(new MainMenuState());
+		}
 
 		for (i in 0...grpOptions.members.length) {
 			var item = grpOptions.members[i];
