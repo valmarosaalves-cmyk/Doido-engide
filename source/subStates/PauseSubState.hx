@@ -1,4 +1,4 @@
-package subStates;
+package subStates; // Mantendo o 'S' maiúsculo como o erro pediu
 
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -7,7 +7,7 @@ import flixel.util.FlxColor;
 import flixel.math.FlxRect;
 import flixel.group.FlxGroup.FlxTypedGroup;
 
-// Na 3.4.1, os imports costumam ser diretos ou via subStates/objects
+// Imports padrão para a versão 3.4.1 do Doido Engine
 import MusicBeatSubstate;
 import Paths;
 import PlayState;
@@ -32,25 +32,25 @@ class PauseSubState extends MusicBeatSubstate
 		bg.scrollFactor.set();
 		add(bg);
 
-		// Menu centralizado (O quadrado que você pediu)
+		// Menu centralizado
 		bgBox = new FlxSprite().makeGraphic(420, 520, FlxColor.BLACK);
 		bgBox.alpha = 0.8;
 		bgBox.screenCenter();
 		bgBox.scrollFactor.set();
 		add(bgBox);
 
-		// Retângulo do topo (Onde fica o nome da música)
+		// Retângulo do topo para o nome da música
 		topRect = new FlxSprite(bgBox.x + 20, bgBox.y + 20).makeGraphic(380, 60, 0xFF222222);
 		topRect.scrollFactor.set();
 		add(topRect);
 
-		// Texto estilo rádio antigo
-		var name:String = "Musica: " + PlayState.SONG.song + "    ";
+		// Texto estilo rádio (Letreiro)
+		var name:String = "Tocando: " + PlayState.SONG.song + "    ";
 		songText = new FlxText(topRect.x + 10, topRect.y + 15, 0, name, 24);
 		songText.setFormat(Paths.font("pixel-game.regular.otf"), 24, FlxColor.WHITE, LEFT);
 		songText.scrollFactor.set();
 		
-		// O clipRect garante que o texto NÃO saia do retângulo
+		// ClipRect para o texto não sair do retângulo cinza
 		songText.clipRect = new FlxRect(0, 0, topRect.width, topRect.height);
 		add(songText);
 
@@ -74,13 +74,13 @@ class PauseSubState extends MusicBeatSubstate
 	{
 		super.update(elapsed);
 
-		// Faz o texto correr (Rádio)
+		// Movimentação do Letreiro
 		songText.x -= elapsed * 100;
 		if (songText.x < topRect.x - songText.width) {
 			songText.x = topRect.x + topRect.width;
 		}
 
-		// Atualiza o corte do texto para ele não "vazar" pro menu
+		// Recorte dinâmico para o texto não vazar para o fundo preto
 		songText.clipRect = new FlxRect(topRect.x - songText.x, 0, topRect.width, topRect.height);
 
 		if (controls.UI_UP_P) changeSelection(-1);
