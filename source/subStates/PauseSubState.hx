@@ -3,7 +3,6 @@ package subStates;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
-import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import backend.Paths;
 import objects.menu.Alphabet;
@@ -19,7 +18,7 @@ class PauseSubState extends MusicBeatSubState
 	{
 		super();
 		
-		// Fundo escuro para destacar o menu
+		// Fundo escuro simples
 		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		bg.alpha = 0.6;
 		add(bg);
@@ -31,6 +30,7 @@ class PauseSubState extends MusicBeatSubState
 		{
 			var item:Alphabet = new Alphabet(0, 0, menuItems[i], true);
 			item.ID = i;
+			// Forçando o centro para não ficarem "fora do menu"
 			item.screenCenter(X);
 			item.y = (i * 120) + 250;
 			grpMenuShit.add(item);
@@ -38,7 +38,7 @@ class PauseSubState extends MusicBeatSubState
 
 		changeSelection();
 		
-		// Importante: pausa o som do jogo ao entrar
+		// Pausa a música para não dar conflito
 		if (FlxG.sound.music != null) FlxG.sound.music.pause();
 	}
 
@@ -46,17 +46,22 @@ class PauseSubState extends MusicBeatSubState
 	{
 		super.update(elapsed);
 
+		// Controles de Teclado
 		if (FlxG.keys.justPressed.UP) changeSelection(-1);
 		if (FlxG.keys.justPressed.DOWN) changeSelection(1);
 
-		if (FlxG.keys.justPressed.ENTER || FlxG.android.justPressed.BACK || (FlxG.touches.justStarted().length > 0 && FlxG.touches.justStarted()[0].justPressed))
+		// Suporte a Toque e Tecla de Voltar do Android
+		var touchConfirm:Bool = false;
+		if (FlxG.touches.justStarted().length > 0) touchConfirm = true;
+
+		if (FlxG.keys.justPressed.ENTER || FlxG.android.justPressed.BACK || touchConfirm)
 		{
 			var daSelected:String = menuItems[curSelected].toLowerCase();
 
 			switch (daSelected)
 			{
 				case "resume":
-					close();
+					fecharMenu();
 				case "restart song":
 					MusicBeatState.resetState();
 				case "exit to menu":
@@ -67,10 +72,9 @@ class PauseSubState extends MusicBeatSubState
 		}
 	}
 
-	// ESSA FUNÇÃO RESOLVE O CONGELAMENTO
-	override function destroy() {
-		if (FlxG.sound.music != null) FlxG.sound.music.resume(); // Volta a música
-		super.destroy();
+	function fecharMenu() {
+		if (FlxG.sound.music != null) FlxG.sound.music.resume(); // RESOLVE O CONGELAMENTO
+		close();
 	}
 
 	function changeSelection(change:Int = 0):Void
@@ -80,7 +84,10 @@ class PauseSubState extends MusicBeatSubState
 
 		for (item in grpMenuShit.members) {
 			item.alpha = 0.6;
-			if (item.ID == curSelected) item.alpha = 1;
+			if (item.ID == curSelected) {
+				item.alpha = 1;
+				item.screenCenter(X); // Mantém centralizado mesmo selecionado
+			}
 		}
 	}
 			}
