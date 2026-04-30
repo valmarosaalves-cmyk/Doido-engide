@@ -49,12 +49,25 @@ class AchievementsMenuState extends MusicBeatState
 	override function update(elapsed:Float) {
 		super.update(elapsed);
 
-		// CORRIGIDO: Voltamos para o formato com "C" maiúsculo que já funciona na sua engine!
-		if (Controls.justPressed(UI_UP)) changeSelection(-1);
-		if (Controls.justPressed(UI_DOWN)) changeSelection(1);
-		if (Controls.justPressed(BACK)) {
+		// SOLUÇÃO: Usando o teclado puro do HaxeFlixel para não dar erro na engine
+		if (FlxG.keys.justPressed.UP || FlxG.keys.justPressed.W) changeSelection(-1);
+		if (FlxG.keys.justPressed.DOWN || FlxG.keys.justPressed.S) changeSelection(1);
+		
+		if (FlxG.keys.justPressed.ESCAPE || FlxG.keys.justPressed.BACKSPACE) {
 			FlxG.sound.play(Paths.sound('menu/cancelMenu'));
 			Main.switchState(new MainMenuState());
+		}
+
+		// Adicionei um suporte básico de toque para você conseguir sair no Android
+		for (touch in FlxG.touches.list) {
+			if (touch.justPressed) {
+				if (touch.y < FlxG.height / 3) changeSelection(-1);
+				else if (touch.y > (FlxG.height / 3) * 2) changeSelection(1);
+				else {
+					FlxG.sound.play(Paths.sound('menu/cancelMenu'));
+					Main.switchState(new MainMenuState());
+				}
+			}
 		}
 
 		for (i in 0...grpOptions.members.length) {
