@@ -1,94 +1,121 @@
-package subStates;
-
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.group.FlxGroup;
+import flixel.text.FlxText;
 import flixel.util.FlxColor;
-import backend.Paths;
-import objects.menu.Alphabet;
-import states.PlayState;
+import flixel.math.FlxRect;
+import flixel.group.FlxGroup.FlxTypedGroup;
 
-class PauseSubState extends MusicBeatSubState
+class CustomPauseScript extends MusicBeatSubstate
 {
-	var grpMenuShit:FlxTypedGroup<Alphabet>;
-	var menuItems:Array<String> = ['Resume', 'Restart Song', 'Exit to Menu'];
-	var curSelected:Int = 0;
+    var menuItems:Array<String> = ['Resume', 'Restart Song', 'Exit to Menu'];
+    var grpMenuShit:FlxTypedGroup<FlxText>;
+    var curSelected:Int = 0;
 
-	public function new()
-	{
-		super();
-		
-		// Fundo escuro simples
-		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		bg.alpha = 0.6;
-		add(bg);
+    var bgBox:FlxSprite;
+    var topRect:FlxSprite;
+    var songText:FlxText;
+    var textMask:FlxRect;
 
-		grpMenuShit = new FlxTypedGroup<Alphabet>();
-		add(grpMenuShit);
+    public function new()
+    {
+        super();
 
-		for (i in 0...menuItems.length)
-		{
-			var item:Alphabet = new Alphabet(0, 0, menuItems[i], true);
-			item.ID = i;
-			// Forçando o centro para não ficarem "fora do menu"
-			item.screenCenter(X);
-			item.y = (i * 120) + 250;
-			grpMenuShit.add(item);
-		}
+        // 1. Fundo escurecido
+        var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+        bg.alpha = 0.6;
+        add(bg);
 
-		changeSelection();
-		
-		// Pausa a música para não dar conflito
-		if (FlxG.sound.music != null) FlxG.sound.music.pause();
-	}
+        // 2. O Retângulo Central (Menu)
+        bgBox = new FlxSprite().makeGraphic(400, 500, FlxColor.BLACK);
+        bgBox.alpha = 0.8;
+        bgBox.screenCenter();
+        add(bgBox);
 
-	override function update(elapsed:Float)
-	{
-		super.update(elapsed);
+        // 3. Retângulo do Topo (Onde passa o nome da música)
+        topRect = new FlxSprite(bgBox.x + 10, bgBox.y + 10).makeGraphic(380, 50, 0xFF222222);
+        add(topRect);
 
-		// Controles de Teclado
-		if (FlxG.keys.justPressed.UP) changeSelection(-1);
-		if (FlxG.keys.justPressed.DOWN) changeSelection(1);
+        // 4. Texto da Música (Estilo Rádio)
+        songText = new FlxText(topRect.x + topRect.width, topRect.y + 12, 0, PlayState.SONG.song, 24);
+        songText.setFormat(Paths.font("pixel-game.regular.otf"), 24, FlxColor.WHITE, LEFT);
+        
+        // Define a área de corte (Mask) para o texto não sair do retângulo
+        textMask = new FlxRect(0, 0, topRect.width, topRect.height);
+        songText.clipRect = textMask;
+        add(songText);
 
-		// Suporte a Toque e Tecla de Voltar do Android
-		var touchConfirm:Bool = false;
-		if (FlxG.touches.justStarted().length > 0) touchConfirm = true;
+        // 5. Itens do Menu
+        grpMenuShit = new FlxTypedGroup<FlxText>();
+        add(grpMenuShit);
 
-		if (FlxG.keys.justPressed.ENTER || FlxG.android.justPressed.BACK || touchConfirm)
-		{
-			var daSelected:String = menuItems[curSelected].toLowerCase();
+        for (i in 0...menuItems.length)
+        {
+            var item:FlxText = new FlxText(0, bgBox.y + 150 + (i * 80), 0, menuItems[i], 32);
+            item.setFormat(Paths.font("pixel-game.regular.otf"), 32, FlxColor.WHITE, CENTER);
+            item.screenCenter(X);
+            item.ID = i;
+            grpMenuShit.add(item);
+        }
 
-			switch (daSelected)
-			{
-				case "resume":
-					fecharMenu();
-				case "restart song":
-					MusicBeatState.resetState();
-				case "exit to menu":
-					PlayState.seenCutscene = false;
-					PlayState.deathCounter = 0;
-					MusicBeatState.switchState(new states.menu.MainMenuState());
-			}
-		}
-	}
+        changeSelection();
+    }
 
-	function fecharMenu() {
-		if (FlxG.sound.music != null) FlxG.sound.music.resume(); // RESOLVE O CONGELAMENTO
-		close();
-	}
+    override function update(elapsed:Float)
+    {
+        super.update(elapsed);
 
-	function changeSelection(change:Int = 0):Void
-	{
-		curSelected = FlxG.math.FlxMath.wrap(curSelected + change, 0, menuItems.length - 1);
-		if(change != 0) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+        // Movimentação do Texto (Efeito Rádio Antigo)
+        songText.x -= elapsed * 100; // Velocidade do scroll
+        
+        // Se o texto sair totalmente da esquerda do retângulo, volta para a direita
+        if (songText.x + songText.width < topRect.x) {
+            songText.x = topRect.x + topRect.width;
+        }
 
-		for (item in grpMenuShit.members) {
-			item.alpha = 0.6;
-			if (item.ID == curSelected) {
-				item.alpha = 1;
-				item.screenCenter(X); // Mantém centralizado mesmo selecionado
-			}
-		}
-	}
+        // Ajuste dinâmico do ClipRect para manter o corte perfeito
+        songText.clipRect = new FlxRect(topRect.x - songText.x, 0, topRect.width, topRect.height);
+
+        // Controles de navegação
+        if (controls.UI_UP_P) changeSelection(-1);
+        if (controls.UI_DOWN_P) changeSelection(1);
+
+        if (controls.ACCEPT)
+        {
+            var daChoice:String = menuItems[curSelected];
+            switch (daChoice)
+            {
+                case 'Resume':
+                    close();
+                case 'Restart Song':
+                    FlxG.resetState();
+                case 'Exit to Menu':
+                    PlayState.deathCounter = 0;
+                    PlayState.seenCutscene = false;
+                    MusicBeatState.switchState(new MainMenuState());
+            }
+        }
+    }
+
+    function changeSelection(change:Int = 0):Void
+    {
+        curSelected += change;
+
+        if (curSelected < 0)
+            curSelected = menuItems.length - 1;
+        if (curSelected >= menuItems.length)
+            curSelected = 0;
+
+        grpMenuShit.forEach(function(txt:FlxText)
+        {
+            txt.color = FlxColor.WHITE;
+            txt.alpha = 0.6;
+
+            if (txt.ID == curSelected)
+            {
+                txt.color = FlxColor.YELLOW;
+                txt.alpha = 1;
+            }
+        });
+    }
 			}
 			
