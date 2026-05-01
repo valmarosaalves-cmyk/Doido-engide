@@ -15,7 +15,7 @@ using StringTools;
 
 class MainMenuState extends MusicBeatState
 {
-	var optionShit:Array<String> = ["story mode", "freeplay", "credits", "menu_awards", "options"];
+	var optionShit:Array<String> = ["story mode", "freeplay", "credits", "options"];
 	static var curSelected:Int = 0;
 	
 	var grpOptions:FlxTypedGroup<FlxSprite>;
@@ -140,7 +140,6 @@ class MainMenuState extends MusicBeatState
 		{
 			case "story mode": Main.switchState(new StoryMenuState());
 			case "freeplay": Main.switchState(new FreeplayState());
-		    case "achievements": Main.switchState(new AchievementsMenuState());
 			case "credits": Main.switchState(new CreditsState());
 			case "options": Main.switchState(new OptionsState());
 			default: Main.resetState();
