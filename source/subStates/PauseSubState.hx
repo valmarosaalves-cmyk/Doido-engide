@@ -21,6 +21,8 @@ class PauseSubState extends MusicBeatSubstate
   var retangulo:FlxSprite;
   var caixaMusica:FlxSprite;
   var levelnfo:FlxText;
+  public function new
+  super()
   groupMenuShit = new
   FlxTypeGroup<Alphabet>();
   for (i in 0...menuItems.lenght)
@@ -30,6 +32,7 @@ menuItems.isMenuItem = true;
 menuItems.targetY = i;
 menuItems.screemCenter(X);
 menuItems.ID = i;
+}
 
 groupMenuShit.add(menuItems);
 }
