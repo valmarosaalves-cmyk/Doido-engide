@@ -3,7 +3,7 @@
 
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="FNF: Doido Engine" file="DoidoEngine" packageName="com.diogotv.doidoengine" package="com.diogotv.doidoengine" main="Main" version="0.0.1" company="DiogoTV" />
+	<app title="FNF: Doido Engine" file="DoidoEngine" packageName="com.arthur.noobengine" package="com.arthur.noobengine" main="Main" version="3.5.2" company="arthur" />
 	
 	<!--The flixel preloader is not accurate in Chrome. You can use it regularly if you embed the swf into a html file
 		or you can set the actual size of your file manually at "FlxPreloaderBase-onUpdate-bytesTotal"-->
