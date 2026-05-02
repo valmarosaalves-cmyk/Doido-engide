@@ -1,109 +1,57 @@
 package;
 
-import backend.game.*;
-import backend.system.FPSCounter;
+import doido.objects.system.*;
 import flixel.FlxG;
 import flixel.FlxGame;
-import flixel.FlxState;
 import flixel.input.keyboard.FlxKey;
 import haxe.CallStack;
 import haxe.io.Path;
-import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.UncaughtErrorEvent;
-import flixel.util.typeLimit.NextState;
-import flixel.util.FlxSave; // Import necessário para o save
-
-#if desktop
-import backend.system.ALSoftConfig;
-#end
-
-#if !html5
+#if sys
 import sys.FileSystem;
 import sys.io.File;
 #end
 
-using StringTools;
-
 class Main extends Sprite
 {
-	// public static var FPSCounter:FPSCounter;
+	public static var game:FlxGame;
 
-	// Use these to customize your mod further!
-	public static final savePath:String = "arthur/noobEngine";
-	public static var gFont:String = Paths.font("vcr.ttf");
+	public static var gameWidth:Int = 1280;
+	public static var gameHeight:Int = 720;
+
+	var framerate:Int = 60;
+	var skipSplash:Bool = true;
+
+	public static final savePath:String = "DiogoTV/DEPudim";
+	public static final internalVer:String = "Alpha 1";
+	public static var fpsCounter:FPSCounter;
+	public static var globalFont:String;
 
 	public function new()
 	{
 		super();
-		// thanks @sqirradotdev
-		Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
+		initGame();
 
-		var ws:Array<String> = SaveData.displaySettings.get("Window Size")[0].split("x");
-		var windowSize:Array<Int> = [Std.parseInt(ws[0]),Std.parseInt(ws[1])];
-
-		// --- LÓGICA DA LOGO HAXEFLIXEL (APARECE UMA ÚNICA VEZ) ---
-		var showSplash:Bool = false; 
-		var splashSave:FlxSave = new FlxSave();
-		splashSave.bind('haxeSplashCheck', 'arthur/noobEngine');
-
-		if (splashSave.data.seenBefore != null && splashSave.data.seenBefore == true) {
-			showSplash = true; // Se já viu, skipSplash = true (Pula)
-		} else {
-			showSplash = false; // Se não viu, skipSplash = false (Mostra a logo colorido)
-			splashSave.data.seenBefore = true;
-			splashSave.flush();
-		}
-		// -------------------------------------------------------
-
-		// Agora usamos a variável showSplash no lugar do "true" que estava fixo
-		addChild(new FlxGame(windowSize[0], windowSize[1], Init, 120, 120, showSplash));
-
-		#if android
-		FlxG.android.preventDefaultKeys = [BACK];
-		#elseif desktop
-		addChild(fpsCounter = new FPSCounter(5, 3));
+		#if desktop
+		addChild(fpsCounter = new FPSCounter());
 		#end
 
-		#if ENABLE_PRINTING
-		Logs.init();
-		#end
-
-		// shader coords fix
-		FlxG.signals.focusGained.add(function() {
-			resetCamCache();
-		});
-		FlxG.signals.gameResized.add(function(w, h) {
-			resetCamCache();
-		});
-
-		FlxG.stage.addEventListener(openfl.events.KeyboardEvent.KEY_DOWN, (e) ->
-		{
-			if (e.keyCode == FlxKey.F11)
-				FlxG.fullscreen = !FlxG.fullscreen;
-			
-			if (e.keyCode == FlxKey.ENTER && e.altKey)
-				e.stopImmediatePropagation();
-		}, false, 100);
+		fixes();
 	}
-	
-	function resetCamCache()
+
+	function initGame()
 	{
-		if(FlxG.cameras != null) {
-			for(cam in FlxG.cameras.list) {
-				if(cam != null && cam.filters != null)
-					resetSpriteCache(cam.flashSprite);
-			}
-		}
-		if(FlxG.game != null)
-			resetSpriteCache(FlxG.game);
-	}
+		// adding the crash handler
+		openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 
-	static function resetSpriteCache(sprite:Sprite):Void {
-		@:privateAccess {
-			sprite.__cacheBitmap 	 = null;
-			sprite.__cacheBitmapData = null;
-		}
+		Logs.init(); // custom logging shit
+
+		game = new FlxGame(gameWidth, gameHeight, Init, framerate, framerate, skipSplash);
+		globalFont = Assets.font("vcr"); // we need to initialize this before the font ever gets used, otherwise it wont be found
+		@:privateAccess
+		game._customSoundTray = SoundTray;
+		addChild(game);
 	}
 
 	function onUncaughtError(e:UncaughtErrorEvent):Void
@@ -129,63 +77,167 @@ class Main extends Sprite
 		Logs.print(stackTraceString, ERROR, true, true, false, false);
 		Logs.print('Crash dump saved in $normalPath', WARNING, true, true, false, false);
 
-		#if (flixel < "6.0.0")
-		FlxG.bitmap.dumpCache();
+		// byebye
+		MusicBeat.stopMusic();
+		doido.Cache.clearCache();
+
+		MusicBeat.skipTrans = true;
+		MusicBeat.switchState(new doido.system.CrashHandler('Crash log created at: "${normalPath}"\n\n' + stackTraceString));
+	}
+
+	function fixes()
+	{
+		// shader coords fix
+		FlxG.signals.focusGained.add(resetCamCache);
+		FlxG.signals.gameResized.add((w, h) ->
+		{
+			resetCamCache();
+			scaleFps();
+		});
+
+		#if debug
+		FlxG.debugger.toggleKeys = [];
 		#end
 
-		FlxG.bitmap.clearCache();
-		CoolUtil.playMusic();
+		// fullscreen bind fix
+		FlxG.stage.addEventListener(openfl.events.KeyboardEvent.KEY_DOWN, keyDown, false, 100);
 
-		Main.skipTrans = true;
-		Main.switchState(new CrashHandlerState(stackTraceString + '\n\nCrash log created at: "${normalPath}"'));
+		// PLUGINS!!
+		FlxG.plugins.addPlugin(new InputDelayHandler());
+		#if SCREENSHOT_FEATURE
+		FlxG.plugins.addPlugin(new doido.system.Screenshot());
+		#end
 	}
-	
-	public static var activeState:FlxState;
-	
-	public static var skipClearMemory:Bool = false; 
-	public static var skipTrans:Bool = true; 
-	public static var lastTransition:String = '';
-	public static function switchState(?target:NextState, transition:String = 'funkin'):Void
-	{
-		lastTransition = transition;
-		var trans = new GameTransition(false, transition);
-		trans.finishCallback = function()
-		{
-			if(target != null)		
-				FlxG.switchState(target);
-			else
-				FlxG.resetState();
-		};
 
-		if(skipTrans)
-			return trans.finishCallback();
+	function keyDown(e:openfl.events.KeyboardEvent)
+	{
+		if (e.keyCode == FlxKey.F3)
+		{
+			Save.data.fpsCounter = !Save.data.fpsCounter;
+			fpsCounter.visible = Save.data.fpsCounter;
+			Save.save();
+		}
+
+		if (e.keyCode == FlxKey.F11)
+			FlxG.fullscreen = !FlxG.fullscreen;
+
+		if (e.keyCode == FlxKey.ENTER && e.altKey)
+			e.stopImmediatePropagation();
+
+		#if debug
+		if (e.keyCode == FlxKey.F2 && e.shiftKey)
+			FlxG.debugger.visible = !FlxG.debugger.visible;
+		#end
+	}
+
+	function resetCamCache()
+	{
+		if (FlxG.cameras != null)
+		{
+			for (cam in FlxG.cameras.list)
+			{
+				if (cam != null && cam.filters != null)
+					resetSpriteCache(cam.flashSprite);
+			}
+		}
+		if (FlxG.game != null)
+			resetSpriteCache(FlxG.game);
+	}
+
+	static function resetSpriteCache(sprite:Sprite):Void
+	{
+		@:privateAccess {
+			sprite.__cacheBitmap = null;
+			sprite.__cacheBitmapData = null;
+		}
+	}
+
+	public static var fpsX(default, set):Float = 5;
+	public static var fpsY(default, set):Float = 5;
+	public static var fpsWidth(get, never):Float;
+	public static var fpsHeight(get, never):Float;
+
+	public static function set_fpsX(f:Float)
+	{
+		fpsX = f;
+		scaleFps();
+		return f;
+	}
+
+	public static function set_fpsY(f:Float)
+	{
+		fpsY = f;
+		scaleFps();
+		return f;
+	}
+
+	public static function get_fpsWidth():Float
+		return fpsCounter?.bgWidth ?? 80;
+
+	public static function get_fpsHeight():Float
+		return fpsCounter?.bgHeight ?? 50;
+
+	public static function setFpsPos(x:Float, y:Float)
+	{
+		if(fpsCounter == null) return;
 		
-		if(activeState != null)
-			activeState.openSubState(trans);
-	}
-	
-	public static function resetState(transition:String = 'funkin'):Void
-		return switchState(null, transition);
-
-	public static function skipStuff(?ohreally:Bool = true):Void
-	{
-		skipClearMemory = ohreally;
-		skipTrans = ohreally;
+		@:bypassAccessor {
+			fpsX = x;
+			fpsY = y;
+		}
+		scaleFps();
 	}
 
-	public static function changeFramerate(rawFps:Float = 120)
+	public static function scaleFps()
 	{
-		var newFps:Int = Math.floor(rawFps);
+		if(fpsCounter == null) return;
 
-		if(newFps > FlxG.updateFramerate)
-		{
-			FlxG.updateFramerate = newFps;
-			FlxG.drawFramerate   = newFps;
-		}
-		else
-		{
-			FlxG.drawFramerate   = newFps;
-			FlxG.updateFramerate = newFps;
-		}
+		var scaleX:Float = FlxG.stage.window.width / FlxG.width;
+		var scaleY:Float = FlxG.stage.window.height / FlxG.height;
+		var scale:Float = Math.min(scaleX, scaleY);
+
+		fpsCounter.scaleX = scale;
+		fpsCounter.scaleY = scale;
+		fpsCounter.x = game.x + (fpsX * scale);
+		fpsCounter.y = game.y + (fpsY * scale);
+	}
+
+	public static var windowSizes(get, never):Array<String>;
+	public static var windowScales:Array<Float> = [0.5, 2 / 3, 0.75, 0.8, 0.9, 1, 16 / 15, 1.25, 1.5, 2, 3];
+
+	public static function get_windowSizes():Array<String>
+	{
+		var out:Array<String> = [];
+
+		for (s in windowScales)
+			out.push('${Math.ceil(gameWidth * s)}x${Math.ceil(gameHeight * s)}');
+
+		return (out);
+	}
+
+	public static function setWindowSize(key:String):Void
+	{
+		#if desktop
+		var size:Array<String> = key.split("x");
+		if (size.length != 2)
+			return;
+
+		var w:Null<Int> = Std.parseInt(size[0]);
+		var h:Null<Int> = Std.parseInt(size[1]);
+		if (w == null || h == null)
+			return;
+
+		var window = lime.app.Application.current.window;
+
+		var centerX = window.x + window.width / 2;
+		var centerY = window.y + window.height / 2;
+		window.resize(w, h);
+
+		window.x = Std.int(centerX - w / 2);
+		window.y = Std.int(centerY - h / 2);
+		#end
 	}
 }
+
+@:deprecated("Paths was moved to Assets")
+typedef Paths = doido.Assets;
