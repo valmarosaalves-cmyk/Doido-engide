@@ -3,7 +3,7 @@
 
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="FNF: Doido Engine" file="DoidoEngine" packageName="com.arthur.noobengine" package="com.arthur.noobengine" main="Main" version="3.5.2" company="arthur" />
+	<app title="FNF: Doido Engine" file="DoidoEngine" packageName="com.diogotv.doidoengine" package="com.diogotv.doidoengine" main="Main" version="0.0.1" company="DiogoTV" />
 	
 	<!--The flixel preloader is not accurate in Chrome. You can use it regularly if you embed the swf into a html file
 		or you can set the actual size of your file manually at "FlxPreloaderBase-onUpdate-bytesTotal"-->
@@ -32,6 +32,8 @@
 	<define name="ENABLE_PRINTING" 		if="cpp || hl || html5"/>
 	<define name="TOUCH_CONTROLS"		if="mobile"/>
 	<define name="SCREENSHOT_FEATURE" 	if="cpp" unless="mobile"/>
+	<define name="THREAD_LOADING" 	    if="cpp"/>
+	<define name="MODS_FOLDER" 	    	if="cpp" unless="mobile"/>
 
 	<!-- _____________________________ Path Settings ____________________________ -->
 
@@ -41,6 +43,7 @@
 
 	<source path="source" />
 	<assets path="assets" />
+	<assets path="mods" if="MODS_FOLDER"/>
 
 	<!-- OpenAL config -->
 	<section if="desktop">
@@ -58,9 +61,8 @@
 	<haxedef name="hscriptPos" />
 	
 	<haxelib name="hxdiscord_rpc" if="DISCORD_RPC" />
-	
-	<!-- ______ Custom Doido Libraries ______ -->
 	<haxelib name="flixel-animate" version="1.4.0" />
+	<haxelib name="polymod-lite" if="MODS_FOLDER" />
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
