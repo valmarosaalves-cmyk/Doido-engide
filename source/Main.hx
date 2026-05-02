@@ -27,7 +27,7 @@ using StringTools;
 
 class Main extends Sprite
 {
-	public static var fpsCounter:FPSCounter;
+	public static var FPSCounter:FPSCounter;
 
 	// Use these to customize your mod further!
 	public static final savePath:String = "arthur/noobEngine";
